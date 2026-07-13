@@ -16,6 +16,7 @@ my $deletefactor2;
 my $minfreespace1;
 my $minfreespace2;
 my $maxlogfiles;
+my $keeplogfiles;
 my $bins = LoxBerry::System::get_binaries();
 
 my $log = LoxBerry::Log->new (
@@ -105,7 +106,8 @@ sub logfiles_cleanup
 	$deletefactor2 = 5; # in %
 	$minfreespace1 = 200; # in MB
 	$minfreespace2 = 50; # in MB
-	$maxlogfiles = 100; # max log files per subfolder before emergency cleanup
+	$maxlogfiles = 100; # max log files per subfolder before trimming
+	$keeplogfiles = 24; # number of newest log files to keep when trimming
 	my $size = 3; # in MB
 	my $logdays = 30; # in days
 	my $gzdays = 60; # in days
@@ -187,6 +189,12 @@ sub logfiles_cleanup
 	
 	# Post-Logcleanup
 	&postlogcleanup();
+
+	# Trim folders with too many logfiles to the newest $keeplogfiles -
+	# independent of free disk space. This must NOT go through the emergency
+	# stages below: those are the disk space brake and delete everything.
+	LOGDEB "*** Trimming folders with more than $maxlogfiles log files... ***";
+	&trim_logcount(@paths);
 
 	# Re-Check which disks must still be cleaned
 	LOGDEB "*** STAGE 2: Scanning for tmpfs disks below " . $deletefactor1 . "% or " . $minfreespace1 . "MB free capacity... ***";
@@ -326,12 +334,23 @@ sub checkdisks {
 		if ($space_critical) {
 			LOGWARN "--> $folderinfo{mountpoint} below limit of $spacefactor%/${minfreespace}MB - EMERGENCY housekeeping needed.";
 			push(@paths, $disk);
-			next;
+		} else {
+			LOGDEB "--> $folderinfo{mountpoint} OK (disk space above limits)";
 		}
+	}
+	return(@paths);
+}
 
-		# File count is checked per subfolder (e.g. per plugin log dir), not for
-		# the whole tree - a single busy plugin must not trigger emergency
-		# cleanup for all other plugins. Only the offending subfolder is returned.
+#############################################################
+# trim_logcount - limit the number of logfiles per subfolder
+#############################################################
+
+sub trim_logcount {
+	my (@basepaths) = @_;
+
+	foreach my $disk (@basepaths) {
+		# Check per subfolder (e.g. per plugin log dir), not for the whole
+		# tree - a single busy plugin must not affect the logs of others.
 		my @countdirs = grep { -d $_ } glob("$disk/*");
 		push @countdirs, $disk;
 		foreach my $dir (@countdirs) {
@@ -339,15 +358,27 @@ sub checkdisks {
 			$rule = $rule->maxdepth(1) if ($dir eq $disk); # subfolders are checked separately
 			my @logfiles = $rule->in($dir);
 			my $filecount = scalar @logfiles;
-			if ($filecount > $maxlogfiles) {
-				LOGWARN "--> $dir has $filecount log files (limit: $maxlogfiles) - EMERGENCY housekeeping needed.";
-				push(@paths, $dir);
-			} else {
-				LOGDEB "--> $dir OK ($filecount log files, disk space OK)";
+			if ($filecount <= $maxlogfiles) {
+				LOGDEB "--> $dir OK ($filecount log files)";
+				next;
+			}
+			LOGWARN "--> $dir has $filecount log files (limit: $maxlogfiles) - trimming to the newest $keeplogfiles files.";
+			# Sort by mtime, oldest first - the newest $keeplogfiles survive
+			my @sorted = map { $_->[0] }
+				sort { $a->[1] <=> $b->[1] }
+				map { [ $_, (stat($_))[9] ] } @logfiles;
+			my @delfiles = @sorted[0 .. $#sorted - $keeplogfiles];
+			for my $file (@delfiles) {
+				my $delcount = unlink ("$file");
+				if($delcount) {
+					LOGDEB "--> $file DELETED.";
+				} else {
+					LOGWARN "--> $file COULD NOT BE DELETED.";
+				}
 			}
 		}
 	}
-	return(@paths);
+	return();
 }
 
 sub prelogcleanup {
