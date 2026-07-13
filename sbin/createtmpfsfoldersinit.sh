@@ -119,6 +119,19 @@ wait_for () {
 	done
 }
 
+createApacheLogSymlink () {
+	# Apache logs stay in the distro default /var/log/apache2 (tmpfs on DietPi).
+	# Provide the stable LoxBerry path log/system_tmpfs/apache2 as a symlink,
+	# so tools and configs can always use ${LBSTMPFSLOG}/apache2.
+	mkdir -p /var/log/apache2
+	if [ -d $LBHOMEDIR/log/system_tmpfs/apache2 ] && [ ! -L $LBHOMEDIR/log/system_tmpfs/apache2 ]; then
+		# Migrate leftovers from a former real directory (old APACHE_LOG_DIR redirect)
+		mv $LBHOMEDIR/log/system_tmpfs/apache2/* /var/log/apache2/ 2>/dev/null
+		rm -rf $LBHOMEDIR/log/system_tmpfs/apache2
+	fi
+	ln -sfn /var/log/apache2 $LBHOMEDIR/log/system_tmpfs/apache2
+}
+
 case "$1" in
 
 start)
@@ -126,6 +139,8 @@ start)
 	# No tmpfs on Virtual Machines and natice PCs
 	if  [ "$G_HW_MODEL" = '20' ] || [ "$G_HW_MODEL" = '21' ]; then
 		echo "This is a virtual machine or PC - no tmpfs needed."
+		echo "Creating Symlink for Apache logs..."
+		createApacheLogSymlink
 		# Create log folders for all plugins if not existing
 		echo "Create log folders for all installed plugins"
 		perl $LBHOMEDIR/sbin/createpluginfolders.pl > /dev/null 2>&1
@@ -157,10 +172,11 @@ start)
 		if ls $LBHOMEDIR/system/dhcp/*.leases 2>/dev/null 1>&2; then
 			cp -a $LBHOMEDIR/system/dhcp/*.leases /var/lib/dhcp/
 		fi
-	else
-		# For compatibility create Symlink for Apache logs
-		ln -s /var/log/apache2 $LBHOMEDIR/log/system_tmpfs/apache2
 	fi
+
+	# For compatibility create Symlink for Apache logs
+	echo "Creating Symlink for Apache logs..."
+	createApacheLogSymlink
 
 	# Copy logdb from SD card to RAM disk
 	if [ -e $LBHOMEDIR/log/system/logs_sqlite.dat.bkp ]; then
