@@ -114,7 +114,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "2.2.1.2";
+	public static $LBSYSTEMVERSION = "4.0.0.14";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
@@ -959,9 +959,47 @@ public static function plugindb_changed_time()
 	public static function execute($cmd, &$exitcode = null, &$error = null)
 	{
 		// stderr is redirected to a temporary file, so it can be returned separately.
-		// The command is wrapped in a subshell, so stderr of ALL pipeline members is captured.
+		// The redirection is done via a proc_open descriptor - NOT by appending
+		// "2>file" to the command string. Appending would force a wrapper shell whose
+		// command line contains the command text, so commands like "pgrep -f <pattern>"
+		// (used by many plugins) would match that wrapper shell and always return a
+		// false positive. The command line executed here is exactly $cmd, as it was
+		// before stderr capturing was introduced. All pipeline members inherit the
+		// redirected stderr, so stderr of the whole pipeline is captured anyway.
 		$errfile = tempnam(sys_get_temp_dir(), "execute_stderr_");
-		exec("( " . $cmd . " ) 2>" . escapeshellarg($errfile), $output, $exitcode);
+		$descriptors = array(
+			1 => array("pipe", "w"),
+			2 => array("file", $errfile, "w"),
+		);
+		$output = array();
+		// Like Perl does for qx/system: a command without shell metacharacters is
+		// executed directly (array form of proc_open, PHP >= 7.4, no wrapper shell).
+		// The wrapper shell ("sh -c pgrep -f <pattern>") stays alive while the
+		// command runs, so "pgrep -f" would match it and return a false positive.
+		// Commands WITH metacharacters are parsed by the shell as always.
+		if (preg_match('/[' . preg_quote('$&*(){}[]\'";\\|?<>~`=', '/') . '\r\n]/', $cmd)) {
+			$proc = proc_open($cmd, $descriptors, $pipes);
+		} else {
+			$argv = preg_split('/\s+/', trim($cmd), -1, PREG_SPLIT_NO_EMPTY);
+			$proc = !empty($argv) ? proc_open($argv, $descriptors, $pipes) : false;
+		}
+		if (is_resource($proc)) {
+			$stdout = stream_get_contents($pipes[1]);
+			fclose($pipes[1]);
+			$exitcode = proc_close($proc);
+			// Split stdout into lines like exec() did (trailing whitespace per line removed)
+			if ($stdout !== false && $stdout !== "") {
+				$lines = explode("\n", $stdout);
+				if (end($lines) === "") {
+					array_pop($lines);
+				}
+				foreach ($lines as $line) {
+					$output[] = rtrim($line);
+				}
+			}
+		} else {
+			$exitcode = 127;
+		}
 		$error = file_get_contents($errfile);
 		if ($error === false) {
 			$error = "";
