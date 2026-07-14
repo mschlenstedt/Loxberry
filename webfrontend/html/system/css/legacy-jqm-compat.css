@@ -137,6 +137,38 @@ body[class*="theme-"] select option {
 	background: var(--lb-select-option-bg, #ffffff) !important;
 }
 
+
+/* JQM_SELECTMENU_NATIVE_RESET_V312
+   jQuery Mobile owns the visible selectmenu rendering. Keep the original
+   select as the functional interaction layer, but prevent components.css
+   from drawing its text, surface and native arrow a second time. */
+body[class*="theme-"] .lb-content .ui-select {
+	position: relative;
+}
+
+body[class*="theme-"] .lb-content .ui-select > select {
+	position: absolute !important;
+	inset: 0 !important;
+	width: 100% !important;
+	height: 100% !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	border: 0 !important;
+	background: transparent !important;
+	background-image: none !important;
+	box-shadow: none !important;
+	opacity: 0 !important;
+	z-index: 2 !important;
+	cursor: pointer;
+	-webkit-appearance: none !important;
+	appearance: none !important;
+}
+
+body[class*="theme-"] .lb-content .ui-select > .ui-btn {
+	position: relative;
+	z-index: 1;
+}
+
 /* ============================================================
    4. Checkbox / radio button labels and icons
    ============================================================ */
