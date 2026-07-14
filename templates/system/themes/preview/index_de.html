@@ -645,6 +645,15 @@
 			text-shadow: none !important;
 		}
 
+
+		/* V18.45 Preview captions: use the active theme text token only.
+		   Deliberately limited to the clickable preview captions so controls,
+		   tables, native selects and multiselect option text stay untouched. */
+		body .lb-content label.lb-form-label.lb-preview-code-label {
+			color: var(--lb-preview-label-text, var(--lb-text, #111827)) !important;
+			text-shadow: none !important;
+		}
+
 	</style>
 </head>
 <body class="lb-layout __LB_CURRENT_THEME_CLASS__ __LB_RENDERER_CONTEXT_CLASS__">
@@ -653,7 +662,7 @@
 			<img class="lb-sidebar-logo" src="/system/images/Logo_green_transparent.png" alt="LoxBerry">
 			<div>
 				<div class="lb-sidebar-brand">LoxBerry <span>DS</span></div>
-				<div class="lb-sidebar-version">Preview V18.44</div>
+				<div class="lb-sidebar-version">Preview V18.45</div>
 			</div>
 		</a>
 		<nav class="lb-sidebar-nav">
@@ -1358,7 +1367,7 @@
 		</main>
 
 		<footer class="lb-footer">
-			<div class="lb-preview-muted">LoxBerry DS Preview V18.44</div>
+			<div class="lb-preview-muted">LoxBerry DS Preview V18.45</div>
 		</footer>
 	</div>
 
