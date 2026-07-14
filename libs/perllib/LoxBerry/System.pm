@@ -9,7 +9,7 @@ use Carp;
 use Encode;
 
 package LoxBerry::System;
-our $VERSION = "3.0.0.8";
+our $VERSION = "3.0.0.9";
 our $DEBUG;
 
 use base 'Exporter';
@@ -1771,13 +1771,39 @@ sub execute
 	}
 		
 	# stderr is redirected to a temporary file, so it can be returned separately.
-	# The command is wrapped in a subshell, so stderr of ALL pipeline members is captured.
+	# The redirection is done by duplicating the file descriptor in a forked child
+	# BEFORE exec - NOT by appending "2>$errfile" to the command string. Appending
+	# would force a wrapper shell whose command line contains the command text, so
+	# commands like "pgrep -f <pattern>" (used by many plugins) would match that
+	# wrapper shell and always return a false positive. The command line executed
+	# here is exactly $command, as it was before stderr capturing was introduced.
+	# All pipeline members inherit the redirected stderr, so stderr of the whole
+	# pipeline is captured anyway.
 	require File::Temp;
+	require POSIX;
 	my ($errfh, $errfile) = File::Temp::tempfile( "execute_stderr_XXXXXX", TMPDIR => 1 );
-	close($errfh);
 
-	my $output = qx { ( $command ) 2>$errfile };
-	my $exitcode  = $? >> 8;
+	my $output;
+	my $exitcode;
+	my $pid = open( my $outfh, "-|" );
+	if( defined $pid and $pid == 0 ) {
+		# Child process: stdout already goes to the pipe, route stderr to the temp file
+		open( STDERR, '>&', $errfh );
+		exec( $command );
+		print STDERR "execute: Cannot execute command: $!\n";
+		POSIX::_exit(127);
+	}
+	if( defined $pid ) {
+		close( $errfh );
+		$output = do { local $/; <$outfh> };
+		close( $outfh );
+		$exitcode = $? >> 8;
+	} else {
+		# Fork failed - run the command without separate stderr capturing
+		close( $errfh );
+		$output = qx { $command };
+		$exitcode = $? >> 8;
+	}
 	my $error = read_file($errfile);
 	unlink($errfile);
 	$output = "" if ( !defined $output );
