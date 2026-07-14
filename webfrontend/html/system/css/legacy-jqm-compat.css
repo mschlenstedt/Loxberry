@@ -5,8 +5,6 @@
    provide the variables; this file maps common jQM widget wrappers to them.
 
    Origin:
-   - Generalized from the successful Design Studio generated-theme proof of
-     concept V250-V252 and checked against Liquid Glass jQM compatibility rules.
    - Keep plugin-specific fixes out of this file.
 
    Scope:
@@ -138,15 +136,15 @@ body[class*="theme-"] select option {
 }
 
 
-/* JQM_SELECTMENU_NATIVE_RESET_V312
-   jQuery Mobile owns the visible selectmenu rendering. Keep the original
-   select as the functional interaction layer, but prevent components.css
-   from drawing its text, surface and native arrow a second time. */
+/* JQM_SELECTMENU_NESTED_SELECT_RESET_V313
+   jQuery Mobile nests the original <select> inside its generated .ui-btn,
+   not directly below .ui-select. Keep the native select as the interaction
+   layer but hide its own text, surface and arrow so only jQM renders visibly. */
 body[class*="theme-"] .lb-content .ui-select {
 	position: relative;
 }
 
-body[class*="theme-"] .lb-content .ui-select > select {
+body[class*="theme-"] .lb-content .ui-select select {
 	position: absolute !important;
 	inset: 0 !important;
 	width: 100% !important;
@@ -158,13 +156,15 @@ body[class*="theme-"] .lb-content .ui-select > select {
 	background-image: none !important;
 	box-shadow: none !important;
 	opacity: 0 !important;
+	color: transparent !important;
+	-webkit-text-fill-color: transparent !important;
 	z-index: 2 !important;
 	cursor: pointer;
 	-webkit-appearance: none !important;
 	appearance: none !important;
 }
 
-body[class*="theme-"] .lb-content .ui-select > .ui-btn {
+body[class*="theme-"] .lb-content .ui-select .ui-btn {
 	position: relative;
 	z-index: 1;
 }
@@ -172,6 +172,28 @@ body[class*="theme-"] .lb-content .ui-select > .ui-btn {
 /* ============================================================
    4. Checkbox / radio button labels and icons
    ============================================================ */
+
+/* JQM_NATIVE_INPUT_RESET_V311 */
+/* jQM renders checkbox/radio controls through the generated label icon.
+   Restore the native input to jQM's visually-hidden state so components.css
+   cannot draw a second checkbox/radio underneath the jQM control. */
+body[class*="theme-"] .lb-content .ui-checkbox > input[type="checkbox"],
+body[class*="theme-"] .lb-content .ui-radio > input[type="radio"] {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	margin: -1px !important;
+	padding: 0 !important;
+	border: 0 !important;
+	background: none !important;
+	background-image: none !important;
+	box-shadow: none !important;
+	opacity: 0 !important;
+	overflow: hidden !important;
+	clip: rect(0 0 0 0) !important;
+	clip-path: inset(50%) !important;
+	white-space: nowrap !important;
+}
 
 body[class*="theme-"] .ui-checkbox .ui-btn,
 body[class*="theme-"] .ui-radio .ui-btn {
