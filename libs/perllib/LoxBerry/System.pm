@@ -9,7 +9,7 @@ use Carp;
 use Encode;
 
 package LoxBerry::System;
-our $VERSION = "3.0.0.8";
+our $VERSION = "3.0.0.9";
 our $DEBUG;
 
 use base 'Exporter';
