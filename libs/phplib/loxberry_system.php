@@ -114,7 +114,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "2.2.1.3";
+	public static $LBSYSTEMVERSION = "4.0.0.14";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
