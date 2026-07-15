@@ -47,6 +47,12 @@ reboot_required("LoxBerry Update: Apache configuration changed (log directory, L
 LOGINF "Deploying mosquitto systemd unit (boot-ordering, tmpfs log)...";
 copy_to_loxberry('/system/systemd/mosquitto.service');
 execute( command => "dos2unix $lbhomedir/system/systemd/mosquitto.service", log => $log, ignoreerrors => 1 );
+# Ensure the LoxBerry unit is the ACTIVE one: /etc/systemd/system overrides the
+# distro unit in /lib/systemd/system. On installs where this symlink is missing
+# (never ran update_v3.0.0, or an apt upgrade of mosquitto removed it), the copied
+# unit above would have no effect and the distro unit (no tmpfs ExecStartPre, no
+# createtmpfs ordering) stays active. "ln -sfn" replaces a stale file or symlink.
+execute( command => "ln -sfn $lbhomedir/system/systemd/mosquitto.service /etc/systemd/system/mosquitto.service", log => $log, ignoreerrors => 1 );
 execute( command => "systemctl daemon-reload", log => $log, ignoreerrors => 1 );
 
 # Repair the LoxBerry-managed mosquitto config dir: it needs the execute/traverse
