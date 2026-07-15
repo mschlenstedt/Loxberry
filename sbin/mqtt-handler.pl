@@ -311,12 +311,87 @@ sub mosquitto_set
 		`ln -f -s $mosq_cfgfile /etc/mosquitto/conf.d/mosq_mqttgateway.conf`;
 		mosquitto_setcred();
 		mosquitto_enable();
+		ensure_mosquitto_dropin();
 		mosquitto_readconfig();
-	} 
+	}
 	else {
 		mosquitto_disable();
 	}
-	
+
+}
+
+##################################################################
+# ensure_mosquitto_dropin
+# Integrates LoxBerry's mosquitto needs (tmpfs logfile, createtmpfs
+# boot-ordering) as a systemd DROP-IN that EXTENDS the distro unit -
+# instead of the old /etc/systemd/system/mosquitto.service symlink that
+# shadowed the whole distro unit and was silently lost on mosquitto
+# package upgrades (broker fell back to the distro unit -> tmpfs logfile
+# never created -> "deleted inode", log stops growing). A .service.d
+# drop-in is never touched by dpkg, so it survives package upgrades.
+# Self-healing: runs on every mosquitto_set (WebUI save / update), so a
+# lost drop-in is re-created on the next config apply. Idempotent - only
+# writes + daemon-reloads when something actually changed.
+##################################################################
+sub ensure_mosquitto_dropin
+{
+	LOGDEB "ensure_mosquitto_dropin";
+
+	my $dropindir = "/etc/systemd/system/mosquitto.service.d";
+	my $dropin    = "$dropindir/loxberry.conf";
+
+	# NOTE: \${LBSTMPFSLOG} must stay literal - systemd expands it at runtime
+	# (via EnvironmentFile). The distro unit has no EnvironmentFile, so the
+	# drop-in must bring it, otherwise the variable would be empty.
+	my $want =
+		  "# Managed by LoxBerry - do not edit.\n"
+		. "# Extends the distro mosquitto.service with LoxBerry's tmpfs logfile and\n"
+		. "# createtmpfs boot-ordering. A drop-in survives mosquitto package upgrades.\n"
+		. "[Unit]\n"
+		. "After=createtmpfs.service\n"
+		. "Requires=createtmpfs.service\n"
+		. "\n"
+		. "[Service]\n"
+		. "EnvironmentFile=/etc/environment\n"
+		. "ExecStartPre=/bin/mkdir -m 740 -p /var/log/mosquitto\n"
+		. "ExecStartPre=/bin/chown mosquitto /var/log/mosquitto\n"
+		. "ExecStartPre=/bin/touch \${LBSTMPFSLOG}/mosquitto.log\n"
+		. "ExecStartPre=/bin/chown mosquitto:loxberry \${LBSTMPFSLOG}/mosquitto.log\n"
+		. "ExecStartPre=/bin/chmod 640 \${LBSTMPFSLOG}/mosquitto.log\n"
+		. "ExecStartPre=/bin/ln -sf \${LBSTMPFSLOG}/mosquitto.log /var/log/mosquitto/mosquitto.log\n";
+
+	# Current content (if any)
+	my $have = "";
+	if( open(my $rfh, '<', $dropin) ) {
+		local $/;
+		$have = <$rfh> // "";
+		close $rfh;
+	}
+
+	my $changed = 0;
+	if( $have ne $want ) {
+		`mkdir -p $dropindir`;
+		if( open(my $wfh, '>', $dropin) ) {
+			print $wfh $want;
+			close $wfh;
+			`chmod 644 $dropin`;
+			LOGINF "mosquitto systemd drop-in written: $dropin";
+			$changed = 1;
+		} else {
+			LOGERR "Could not write mosquitto drop-in $dropin: $!";
+		}
+	}
+
+	# Only after the drop-in exists, drop the stale whole-unit override symlink
+	# so the distro unit is the base and the drop-in is the single source of the
+	# LoxBerry additions. Order matters: never end up with neither.
+	if( -e $dropin && -l "/etc/systemd/system/mosquitto.service" ) {
+		LOGINF "Removing stale /etc/systemd/system/mosquitto.service override (superseded by drop-in)";
+		unlink "/etc/systemd/system/mosquitto.service";
+		$changed = 1;
+	}
+
+	`systemctl daemon-reload` if $changed;
 }
 
 sub mosquitto_enable

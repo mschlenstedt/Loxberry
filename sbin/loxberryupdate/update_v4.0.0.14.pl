@@ -38,34 +38,25 @@ execute( command => "usermod -a -G adm loxberry", log => $log );
 # envvars and LogLevel only take effect after a full Apache restart
 reboot_required("LoxBerry Update: Apache configuration changed (log directory, LogLevel) - a reboot is required to apply.");
 
-# --- Mosquitto: boot-ordering, tmpfs-log permissions, overload hardening ---
-# system/ is excluded from rsync (update-exclude.system), so the systemd unit
-# must be copied explicitly. The new unit adds After=/Requires=createtmpfs.service
-# so the RAM-disk log folder exists before mosquitto opens its logfile (a boot
-# race previously left mosquitto writing into a deleted inode - broker runs, log
-# stops growing).
-LOGINF "Deploying mosquitto systemd unit (boot-ordering, tmpfs log)...";
-copy_to_loxberry('/system/systemd/mosquitto.service');
-execute( command => "dos2unix $lbhomedir/system/systemd/mosquitto.service", log => $log, ignoreerrors => 1 );
-# Ensure the LoxBerry unit is the ACTIVE one: /etc/systemd/system overrides the
-# distro unit in /lib/systemd/system. On installs where this symlink is missing
-# (never ran update_v3.0.0, or an apt upgrade of mosquitto removed it), the copied
-# unit above would have no effect and the distro unit (no tmpfs ExecStartPre, no
-# createtmpfs ordering) stays active. "ln -sfn" replaces a stale file or symlink.
-execute( command => "ln -sfn $lbhomedir/system/systemd/mosquitto.service /etc/systemd/system/mosquitto.service", log => $log, ignoreerrors => 1 );
-execute( command => "systemctl daemon-reload", log => $log, ignoreerrors => 1 );
-
-# Repair the LoxBerry-managed mosquitto config dir: it needs the execute/traverse
-# bit (755) so the conf.d symlink into it resolves.
-LOGINF "Fixing permissions of config/system/mosquitto...";
-execute( command => "chmod 755 $lbhomedir/config/system/mosquitto", log => $log, ignoreerrors => 1 );
-
-# Rewrite the LoxBerry-managed mosquitto drop-in (adds overload hardening:
-# max_queued_messages / max_inflight_messages / persistent_client_expiration /
-# connection_messages) and restart the broker to apply the new unit + config.
-LOGINF "Rewriting mosquitto drop-in config and restarting broker...";
+# --- Mosquitto: robust systemd drop-in + overload hardening ---
+# The systemd integration (tmpfs logfile, createtmpfs boot-ordering) is a
+# .service.d drop-in written by mqtt-handler.pl (ensure_mosquitto_dropin),
+# NOT the old /etc/systemd/system/mosquitto.service symlink that shadowed the
+# distro unit and was silently lost on mosquitto package upgrades - observed on
+# both loxberrykeller and loxberrypoolboy, which had fallen back to the distro
+# /lib unit (no tmpfs ExecStartPre, no createtmpfs ordering -> "deleted inode").
+# A drop-in is never touched by dpkg and survives package upgrades.
+#
+# "mosquitto_set" does everything in one call: fixes config-dir perms (chmod 755),
+# rewrites the broker drop-in config with the overload hardening
+# (max_queued_messages / max_inflight_messages / persistent_client_expiration /
+# connection_messages), writes the systemd drop-in, removes the stale unit
+# override symlink and runs daemon-reload + SIGHUP. sbin/ is rsync'd normally, so
+# the new mqtt-handler.pl (with ensure_mosquitto_dropin) is already in place here.
+# The tmpfs logfile and queue limits take full effect on the reboot this update
+# already requires (Apache section above) - no extra broker restart needed.
+LOGINF "Applying robust mosquitto systemd drop-in + overload config...";
 execute( command => "$lbhomedir/sbin/mqtt-handler.pl action=mosquitto_set", log => $log, ignoreerrors => 1 );
-execute( command => "systemctl restart mosquitto", log => $log, ignoreerrors => 1 );
 
 LOGOK "Update script $0 finished." if ( $errors == 0 );
 LOGERR "Update script $0 finished with errors." if ( $errors != 0 );
