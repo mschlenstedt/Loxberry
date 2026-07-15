@@ -1,8 +1,13 @@
 [Unit]
 Description=Mosquitto MQTT Broker
 Documentation=man:mosquitto.conf(5) man:mosquitto(8)
-After=network.target
+After=network.target createtmpfs.service
 Wants=network.target
+# createtmpfs.service creates/bind-mounts log/system_tmpfs. Without this ordering
+# mosquitto could open its logfile before the RAM disk is ready; the subsequent
+# "rm -rf $RAM_LOG/*" + "mount --bind" then leaves mosquitto writing into a
+# deleted inode ("broker runs, log stops growing").
+Requires=createtmpfs.service
 
 [Service]
 Type=notify

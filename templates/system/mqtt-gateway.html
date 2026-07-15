@@ -2920,22 +2920,22 @@ $(function () {
 	<div class="lb-section-title">Logfiles</div>
 	<TMPL_VAR loglist_html>
 	
-	<div data-role='collapsible' id='coll_package_mosquitto' data-content-theme='true' data-collapsed='false' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
-		<h2 class='lb-section-title' id='package_mqttgateway_mosquitto'>Mosquitto Log</h2>
-		<table class="trans_table" style='width:100%; padding:8px; border:1px solid #ddd; border-collapse: collapse;'>
+	<TMPL_IF MOSQUITTO_LOG_EXISTS>
+	<details class='lb-collapsible' id='coll_package_mosquitto' open>
+		<summary class='lb-section-title' id='package_mosquitto'>Mosquitto <span style='font-size:80%;'>(MQTT Server Log)</span></summary>
+		<div class='lb-table-scroll'>
+		<table class='lb-table'>
 			<tr>
-				<td>mosquitto.log</td>
-				<td>The Mosquitto log cannot be accessed by the LoxBerry Logviewer. It is located in
-				<span class="mono">/var/log/mosquitto/mosquitto.log				
-				</span>
-				
-				</td>
-<!--				<td><a data-role='button' href='/admin/system/tools/logfile.cgi?logfile=%2Fopt%2Floxberry%2Flog%2Fplugins%2Fmqttgateway%2Fmosquitto.log&header=html&format=template&only=once' target='_blank' data-inline='true' data-mini='true' data-icon='action'>Logfile</a></td>
--->
-				<td></td>
+				<td style='text-align:center; background-color:#FFFFFF; width:80px; text-shadow: none;'></td>
+				<td>Mosquitto MQTT Server</td>
+				<td><TMPL_VAR MOSQUITTO_LOG_DATE></td>
+				<td><a data-role='button' href='/admin/system/tools/logfile.cgi?logfile=%2Fopt%2Floxberry%2Flog%2Fsystem_tmpfs%2Fmosquitto.log&header=html&format=template&only=once' target='_blank' data-inline='true' data-mini='true' data-icon='action'><TMPL_VAR COMMON.BUTTON_OPEN></a></td>
+				<td><TMPL_VAR MOSQUITTO_LOG_SIZE></td>
 			</tr>
 		</table>
-	</div>
+		</div>
+	</details>
+	</TMPL_IF>
 
 
 	
@@ -3204,13 +3204,20 @@ $(function () {
 
 	function doSave() {
 		// Sync form fields not covered by the change handler (protocol radio, udpport)
+		// Only touch these when the protocol control actually exists on this page
+		// (it lives in the FORM_BASIC/Gateway tab). On other tabs (e.g. subscriptions)
+		// the radios are absent, so leave the loaded mqttgateway.json values untouched
+		// instead of falling back to HTTP and overwriting the user's UDP setting.
 		cfg = cfg || {};
 		cfg.Main = cfg.Main || {};
-		var protocol = $('input[name="protocol"]:checked').val() || 'http';
-		cfg.Main.use_http = (protocol === "http" || protocol === "both") ? 1 : 0;
-		cfg.Main.use_udp  = (protocol === "udp"  || protocol === "both") ? 1 : 0;
-		var udpport = parseInt($("#basic_udpport").val());
-		if (!isNaN(udpport) && udpport > 0) cfg.Main.udpport = udpport;
+		var $proto = $('input[name="protocol"]');
+		if ($proto.length) {
+			var protocol = $proto.filter(':checked').val() || 'http';
+			cfg.Main.use_http = (protocol === "http" || protocol === "both") ? 1 : 0;
+			cfg.Main.use_udp  = (protocol === "udp"  || protocol === "both") ? 1 : 0;
+			var udpport = parseInt($("#basic_udpport").val());
+			if (!isNaN(udpport) && udpport > 0) cfg.Main.udpport = udpport;
+		}
 		$("#saveapply").attr("disabled", true);
 		var p = $.ajax( {
 				type: 'POST',
