@@ -1584,7 +1584,11 @@ sub check_mqtt
 		# Single-quote $SYS in the shell so it is not expanded; \$ keeps it literal here.
 		my $topicargs = join ' ', map { "-t '\$SYS/broker/$_'" } @systopics;
 		my $auth = ( $buser ne '' ) ? "-u '$buser' -P '$bpass'" : '';
-		my $raw = `timeout 5 mosquitto_sub -h localhost -p $bport $auth $topicargs -v 2>/dev/null`;
+		# 8s window: retained $SYS delivery is slower under high broker load (exactly
+		# the overload case we want to diagnose); 8s reliably captures all existing
+		# topics even at >10k msg/min. Only the live "recheck" path pays this; the
+		# widget summary is served from the cached healthcheck.json.
+		my $raw = `timeout 8 mosquitto_sub -h localhost -p $bport $auth $topicargs -v 2>/dev/null`;
 
 		my %sys;
 		for my $line ( split /\n/, ( $raw // '' ) ) {
