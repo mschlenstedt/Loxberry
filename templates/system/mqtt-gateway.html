@@ -2920,22 +2920,20 @@ $(function () {
 	<div class="lb-section-title">Logfiles</div>
 	<TMPL_VAR loglist_html>
 	
-	<div data-role='collapsible' id='coll_package_mosquitto' data-content-theme='true' data-collapsed='false' data-collapsed-icon='carat-d' data-expanded-icon='carat-u' data-iconpos='right'>
-		<h2 class='lb-section-title' id='package_mqttgateway_mosquitto'>Mosquitto Log</h2>
-		<table class="trans_table" style='width:100%; padding:8px; border:1px solid #ddd; border-collapse: collapse;'>
+	<details class='lb-collapsible' id='coll_package_mosquitto' open>
+		<summary class='lb-section-title' id='package_mosquitto'>Mosquitto <span style='font-size:80%;'>(MQTT Server Log)</span></summary>
+		<div class='lb-table-scroll'>
+		<table class='lb-table'>
 			<tr>
+				<td style='text-align:center; background-color:#FFFFFF; width:80px; text-shadow: none;'></td>
+				<td>Mosquitto MQTT Server</td>
 				<td>mosquitto.log</td>
-				<td>The Mosquitto log cannot be accessed by the LoxBerry Logviewer. It is located in
-				<span class="mono">/var/log/mosquitto/mosquitto.log				
-				</span>
-				
-				</td>
-<!--				<td><a data-role='button' href='/admin/system/tools/logfile.cgi?logfile=%2Fopt%2Floxberry%2Flog%2Fplugins%2Fmqttgateway%2Fmosquitto.log&header=html&format=template&only=once' target='_blank' data-inline='true' data-mini='true' data-icon='action'>Logfile</a></td>
--->
+				<td><a data-role='button' href='/admin/system/tools/logfile.cgi?logfile=%2Fopt%2Floxberry%2Flog%2Fsystem_tmpfs%2Fmosquitto.log&header=html&format=template&only=once' target='_blank' data-inline='true' data-mini='true' data-icon='action'>Logfile</a></td>
 				<td></td>
 			</tr>
 		</table>
-	</div>
+		</div>
+	</details>
 
 
 	
