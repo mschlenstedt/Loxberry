@@ -201,10 +201,14 @@ sub write
 	} 
 	else {
 		print STDERR "LoxBerry::JSON->write: No exklusive lock - re-open file\n" if ($DEBUG);
+		# Open read-write ('+<'), NOT '>': '>' truncates the file immediately, before
+		# we hold the lock. If we then fail to get the lock and return, the file is
+		# left empty - a config like general.json can end up at 0 bytes. Truncation
+		# happens after writing instead (truncate below), as the exclusive branch does.
 		# Bail out if open() failed: otherwise $fh is undef and the flock loop below
 		# spins forever on a closed handle (the file exists per the -w check above,
 		# but open can still fail - e.g. a race with tmpfs cleanup, or EMFILE).
-		if( ! CORE::open($fh, '>', $self->{filename}) ) {
+		if( ! CORE::open($fh, '+<', $self->{filename}) ) {
 			print STDERR "LoxBerry::JSON->write: ERROR Could not open $self->{filename}: $!\n";
 			return undef;
 		}
@@ -220,6 +224,7 @@ sub write
 			close($fh);
 			return undef;
 		}
+		seek($fh, 0, 0);
 	}
 	print STDERR "LoxBerry::JSON->write: Writing\n" if ($DEBUG);
 	print $fh $jsoncontent_new;
