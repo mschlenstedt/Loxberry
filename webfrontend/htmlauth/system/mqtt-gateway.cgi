@@ -5,6 +5,7 @@ use LoxBerry::Web;
 use LoxBerry::Log;
 use JSON;
 use CGI;
+use POSIX qw(strftime);
 #require "$lbpbindir/libs/LoxBerry/JSON/JSONIO.pm";
 
 my $cfgfile = "$lbsconfigdir/mqttgateway.json";
@@ -216,6 +217,17 @@ sub logs_form
 {
 
 	$template->param('loglist_html', LoxBerry::Web::loglist_html( PACKAGE => 'mqtt' ));
+
+	# Mosquitto is not registered in the LoxBerry log DB, so its log is added
+	# statically in the template. Provide date + size like the other log rows;
+	# the block is only shown when the file actually exists.
+	my $mosqlog = "$lbstmpfslogdir/mosquitto.log";
+	if( -e $mosqlog ) {
+		my $mtime = ( stat($mosqlog) )[9];
+		$template->param('MOSQUITTO_LOG_EXISTS', 1);
+		$template->param('MOSQUITTO_LOG_DATE', strftime("%d.%m.%Y %H:%M", localtime($mtime)));
+		$template->param('MOSQUITTO_LOG_SIZE', LoxBerry::System::bytes_humanreadable(-s $mosqlog, "B"));
+	}
 
 }
 

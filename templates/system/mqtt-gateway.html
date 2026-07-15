@@ -2920,6 +2920,7 @@ $(function () {
 	<div class="lb-section-title">Logfiles</div>
 	<TMPL_VAR loglist_html>
 	
+	<TMPL_IF MOSQUITTO_LOG_EXISTS>
 	<details class='lb-collapsible' id='coll_package_mosquitto' open>
 		<summary class='lb-section-title' id='package_mosquitto'>Mosquitto <span style='font-size:80%;'>(MQTT Server Log)</span></summary>
 		<div class='lb-table-scroll'>
@@ -2927,13 +2928,14 @@ $(function () {
 			<tr>
 				<td style='text-align:center; background-color:#FFFFFF; width:80px; text-shadow: none;'></td>
 				<td>Mosquitto MQTT Server</td>
-				<td>mosquitto.log</td>
-				<td><a data-role='button' href='/admin/system/tools/logfile.cgi?logfile=%2Fopt%2Floxberry%2Flog%2Fsystem_tmpfs%2Fmosquitto.log&header=html&format=template&only=once' target='_blank' data-inline='true' data-mini='true' data-icon='action'>Logfile</a></td>
-				<td></td>
+				<td><TMPL_VAR MOSQUITTO_LOG_DATE></td>
+				<td><a data-role='button' href='/admin/system/tools/logfile.cgi?logfile=%2Fopt%2Floxberry%2Flog%2Fsystem_tmpfs%2Fmosquitto.log&header=html&format=template&only=once' target='_blank' data-inline='true' data-mini='true' data-icon='action'><TMPL_VAR COMMON.BUTTON_OPEN></a></td>
+				<td><TMPL_VAR MOSQUITTO_LOG_SIZE></td>
 			</tr>
 		</table>
 		</div>
 	</details>
+	</TMPL_IF>
 
 
 	
