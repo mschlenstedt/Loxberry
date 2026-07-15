@@ -261,9 +261,86 @@ function mshttp_call($msnr, $command)
 	$value = $matches[1];
 	preg_match ( '/Code\=\"(.*?)\"/' , $resp, $matches );
 	$code = $matches[1];
-			
+
 	return array ($value, $code, $resp);
-	
+
+}
+
+// mshttp_call2
+// Enhanced variant of mshttp_call. Returns the full response body plus a
+// detailed responseinfo array and supports additional options.
+//
+// Options (assoc array):
+//   'timeout'             Request timeout in seconds (default 5)
+//   'ssl_verify_mode'     Verify the SSL peer certificate (default 0 = off)
+//   'ssl_verify_hostname' Verify the SSL hostname (default 0 = off)
+//   'filename'            If set, the response body is written to this file
+//
+// Returns: array( $body, $responseinfo )
+//   $body         The response body, or null on failure
+//   $responseinfo Assoc array with the keys:
+//                   code     -> HTTP response code (601 = Miniserver unknown)
+//                   status   -> HTTP status line
+//                   error    -> 0 = ok, 1 = error
+//                   message  -> human-readable status message
+//                   filename -> set if the body was written to a file
+function mshttp_call2($msnr, $command, $options = array())
+{
+	$responseinfo = array();
+
+	$timeout             = isset($options['timeout']) ? $options['timeout'] : 5;
+	$ssl_verify_mode     = isset($options['ssl_verify_mode']) ? $options['ssl_verify_mode'] : 0;
+	$ssl_verify_hostname = isset($options['ssl_verify_hostname']) ? $options['ssl_verify_hostname'] : 0;
+	$filename            = isset($options['filename']) ? $options['filename'] : null;
+
+	$ms = LBSystem::get_miniservers();
+	if (!isset($ms[$msnr])) {
+		error_log("Miniserver $msnr not found or configuration not finished");
+		$responseinfo['code'] = 601;
+		$responseinfo['error'] = 1;
+		$responseinfo['message'] = "Miniserver $msnr not found or configuration not finished";
+		return array(null, $responseinfo);
+	}
+
+	$FullURI = $ms[$msnr]['FullURI'];
+	$url = $FullURI . $command;
+
+	$ch = curl_init($url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_HEADER, false);
+	curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $ssl_verify_mode ? true : false);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $ssl_verify_hostname ? 2 : 0);
+	$resp = curl_exec($ch);
+	$curl_code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+	$curl_error = curl_error($ch);
+	curl_close($ch);
+
+	$responseinfo['code'] = $curl_code;
+	$responseinfo['status'] = $curl_code . ($curl_error ? " " . $curl_error : "");
+
+	// Request failed completely (transport error or HTTP error status)
+	if ($resp === false || $curl_code < 200 || $curl_code >= 400) {
+		$responseinfo['error'] = 1;
+		$responseinfo['message'] = "$command FAILED - Error " . $curl_code . ": " . $responseinfo['status'];
+		error_log("mshttp_call2: " . $responseinfo['message']);
+		return array(null, $responseinfo);
+	}
+
+	$responseinfo['error'] = 0;
+	$responseinfo['message'] = "Request ok";
+
+	if ($filename !== null) {
+		if (@file_put_contents($filename, $resp) === false) {
+			$err = error_get_last();
+			$responseinfo['error'] = 1;
+			$responseinfo['message'] = "Could not write file $filename: " . ($err ? $err['message'] : '');
+		} else {
+			$responseinfo['filename'] = $filename;
+		}
+	}
+
+	return array($resp, $responseinfo);
 }
 
 // mshttp_get
