@@ -17,6 +17,9 @@
 	<!-- Plugin-managed user themes. Filled by cssframework.cgi via theme-file.cgi from data/plugins/cssframework/themes/theme-user-*.css. -->
 	__LB_PLUGIN_THEME_LINKS__
 
+	<!-- Optional progressive enhancement. Replaced only when CSS Framework Studio is installed. -->
+	<!-- __LB_OPTIONAL_LIQUID_GLASS_RUNTIME__ -->
+
 	<style>
 
 		/* Preview/Help pages use the LoxBerry/Core system font stack.
@@ -206,6 +209,7 @@
 			color: var(--lb-text-muted);
 			margin: 3px 0 0;
 		}
+		/* V18.53 AppStore status badges use the Core contrast token for light surfaces. */
 		.lb-preview-app-badge {
 			font-size: 11px;
 			font-weight: 700;
@@ -214,7 +218,8 @@
 			border-radius: 999px;
 			white-space: nowrap;
 			background: var(--lb-success-soft-bg, color-mix(in srgb, var(--lb-primary, #6dac20) 14%, white));
-			color: var(--lb-success-text, var(--lb-primary, #6dac20));
+			color: var(--lb-on-light-text, #000000);
+			-webkit-text-fill-color: var(--lb-on-light-text, #000000);
 		}
 		.lb-preview-app-desc {
 			font-size: var(--lb-font-sm, 13px);
@@ -314,95 +319,202 @@
 
 
 
-		/* V293: Liquid Glass dropdown/listbox surfaces for shared Preview/Help.
-		   Native selects and details-based multiselects should use the same
-		   milky input surface as the other Liquid Glass fields on these pages. */
-		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content select.lb-select,
-		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect > summary {
-			background: rgba(255, 255, 255, 0.20) !important;
-			background-color: rgba(255, 255, 255, 0.20) !important;
+		/* V18.50 Liquid Glass Preview controls and popup separation.
+		   Without the optional Studio runtime all dropdown controls remain reliable
+		   light browser surfaces with dark text. When the runtime is available,
+		   only the closed single-line select/multiselect shells receive the real
+		   Liquid Glass layers. Native option popups, open multiselect menus and
+		   select[multiple] listboxes deliberately stay white with dark text. */
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content {
+			--lb-preview-dropdown-bg: #ffffff;
+			--lb-preview-dropdown-text: var(--lb-light-surface-text, var(--lb-gray-900, #171717));
+			--lb-preview-dropdown-border: var(--lb-input-popup-border, var(--lb-gray-300, #d1d5db));
+			--lb-preview-dropdown-hover-bg: var(--lb-gray-100, #f3f4f6);
+			--lb-preview-dropdown-selected-bg: var(--lb-primary, #8fc7ff);
+			--lb-preview-dropdown-glass-text: var(--lb-input-text, var(--lb-text, #ffffff));
+			--lb-preview-dropdown-glass-disabled-text: var(--lb-text-secondary, #b9c7da);
+
+			--lb-select-bg: var(--lb-preview-dropdown-bg);
+			--lb-select-text: var(--lb-preview-dropdown-text);
+			--lb-select-border: var(--lb-preview-dropdown-border);
+			--lb-select-hover-bg: var(--lb-preview-dropdown-hover-bg);
+			--lb-select-hover-text: var(--lb-preview-dropdown-text);
+			--lb-select-hover-border: var(--lb-primary, #8fc7ff);
+			--lb-select-option-hover-text: var(--lb-preview-dropdown-text);
+
+			--lb-dropdown-menu-bg: var(--lb-preview-dropdown-bg);
+			--lb-dropdown-menu-text: var(--lb-preview-dropdown-text);
+
+			--lb-multiselect-bg: var(--lb-preview-dropdown-bg);
+			--lb-multiselect-text: var(--lb-preview-dropdown-text);
+			--lb-multiselect-border: var(--lb-preview-dropdown-border);
+			--lb-multiselect-summary-bg: var(--lb-preview-dropdown-bg);
+			--lb-multiselect-summary-hover-bg: var(--lb-preview-dropdown-hover-bg);
+			--lb-multiselect-summary-hover-text: var(--lb-preview-dropdown-text);
+			--lb-multiselect-summary-hover-border: var(--lb-primary, #8fc7ff);
+			--lb-multiselect-menu-bg: var(--lb-preview-dropdown-bg);
+			--lb-multiselect-menu-border: var(--lb-preview-dropdown-border);
+			--lb-multiselect-option-hover-bg: var(--lb-gray-200, #e5e7eb);
+			--lb-multiselect-option-hover-text: var(--lb-preview-dropdown-text);
+		}
+
+		/* CSS-only fallback and the browser-rendered open popup/list surfaces. */
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field select.lb-select,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field .lb-multiselect > summary,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field .lb-multiselect-menu {
+			background: var(--lb-preview-dropdown-bg) !important;
+			background-color: var(--lb-preview-dropdown-bg) !important;
 			background-image: none !important;
-			color: #ffffff !important;
-			-webkit-text-fill-color: #ffffff !important;
-			border-color: rgba(255, 255, 255, 0.28) !important;
-			box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.16) !important;
-			backdrop-filter: blur(0.35px) saturate(150%) !important;
-			-webkit-backdrop-filter: blur(0.35px) saturate(150%) !important;
+			color: var(--lb-preview-dropdown-text) !important;
+			-webkit-text-fill-color: var(--lb-preview-dropdown-text) !important;
+			border-color: var(--lb-preview-dropdown-border) !important;
+			backdrop-filter: none !important;
+			-webkit-backdrop-filter: none !important;
 			text-shadow: none !important;
+			color-scheme: light !important;
 			opacity: 1 !important;
 		}
 
-		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content select.lb-select:hover,
-		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content select.lb-select:focus,
-		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect > summary:hover,
-		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect[open] > summary,
-		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect:focus-within > summary {
-			background: rgba(255, 255, 255, 0.28) !important;
-			background-color: rgba(255, 255, 255, 0.28) !important;
-			border-color: rgba(255, 255, 255, 0.42) !important;
-			box-shadow:
-				0 0 0 3px rgba(143, 199, 255, 0.14),
-				inset 0 1px 1px rgba(255, 255, 255, 0.20) !important;
-		}
-
-		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect-menu {
-			background: rgba(7, 16, 28, 0.78) !important;
-			background-color: rgba(7, 16, 28, 0.78) !important;
-			background-image: none !important;
-			color: #ffffff !important;
-			-webkit-text-fill-color: #ffffff !important;
-			border-color: rgba(255, 255, 255, 0.28) !important;
-			box-shadow:
-				0 14px 34px rgba(0, 0, 0, 0.28),
-				inset 0 1px 1px rgba(255, 255, 255, 0.12) !important;
-			backdrop-filter: blur(14px) saturate(160%) !important;
-			-webkit-backdrop-filter: blur(14px) saturate(160%) !important;
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field select.lb-select,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field select.lb-select optgroup,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field select.lb-select option,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field .lb-multiselect > summary,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field .lb-multiselect > summary *,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field .lb-multiselect-menu,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field .lb-multiselect-menu *,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field .lb-multiselect .lb-multiselect-option,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field .lb-multiselect .lb-multiselect-option * {
+			color: var(--lb-preview-dropdown-text) !important;
+			-webkit-text-fill-color: var(--lb-preview-dropdown-text) !important;
 			text-shadow: none !important;
 		}
 
-		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect-option,
-		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect-option * {
-			color: #ffffff !important;
-			-webkit-text-fill-color: #ffffff !important;
-			text-shadow: none !important;
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field select.lb-select:hover,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field select.lb-select:focus,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field .lb-multiselect > summary:hover,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field .lb-multiselect[open] > summary,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field .lb-multiselect:focus-within > summary {
+			background: var(--lb-preview-dropdown-hover-bg) !important;
+			background-color: var(--lb-preview-dropdown-hover-bg) !important;
+			color: var(--lb-preview-dropdown-text) !important;
+			-webkit-text-fill-color: var(--lb-preview-dropdown-text) !important;
+			border-color: var(--lb-primary, #8fc7ff) !important;
 		}
 
-		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-multiselect-option:hover {
-			background: rgba(255, 255, 255, 0.14) !important;
-			background-color: rgba(255, 255, 255, 0.14) !important;
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field .lb-multiselect .lb-multiselect-option:hover {
+			background: var(--lb-multiselect-option-hover-bg) !important;
+			background-color: var(--lb-multiselect-option-hover-bg) !important;
+			color: var(--lb-preview-dropdown-text) !important;
+			-webkit-text-fill-color: var(--lb-preview-dropdown-text) !important;
 		}
 
-		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content select.lb-select[multiple] {
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field .lb-multiselect .lb-multiselect-option:hover * {
+			color: var(--lb-preview-dropdown-text) !important;
+			-webkit-text-fill-color: var(--lb-preview-dropdown-text) !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field select.lb-select[multiple] {
 			display: block !important;
 			min-height: 150px !important;
 			padding: 8px 10px !important;
-			background: rgba(255, 255, 255, 0.20) !important;
-			background-color: rgba(255, 255, 255, 0.20) !important;
-			background-image: none !important;
-			color: #ffffff !important;
-			-webkit-text-fill-color: #ffffff !important;
-			border-color: rgba(255, 255, 255, 0.28) !important;
 			border-radius: var(--lb-radius-sm, 12px) !important;
-			box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.12) !important;
-			text-shadow: none !important;
-			opacity: 1 !important;
+			box-shadow: none !important;
 		}
 
-		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content select.lb-select[multiple] option {
-			color: #ffffff !important;
-			-webkit-text-fill-color: #ffffff !important;
-			background: rgba(7, 16, 28, 0.82) !important;
-			background-color: rgba(7, 16, 28, 0.82) !important;
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field select.lb-select option {
+			background: var(--lb-preview-dropdown-bg) !important;
+			background-color: var(--lb-preview-dropdown-bg) !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field select.lb-select[multiple] option {
 			padding: 4px 6px !important;
 		}
 
-		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content select.lb-select[multiple] option:checked {
-			color: #ffffff !important;
-			-webkit-text-fill-color: #ffffff !important;
-			background: var(--lb-primary, #8fc7ff) !important;
-			background-color: var(--lb-primary, #8fc7ff) !important;
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass) .lb-content .lb-form-field select.lb-select[multiple] option:checked {
+			color: var(--lb-preview-dropdown-text) !important;
+			-webkit-text-fill-color: var(--lb-preview-dropdown-text) !important;
+			background: var(--lb-preview-dropdown-selected-bg) !important;
+			background-color: var(--lb-preview-dropdown-selected-bg) !important;
 		}
 
+		/* Optional Studio runtime: closed native single selects become real glass.
+		   Their browser popup options remain governed by the light rules above. */
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass)[data-lb-liquid-glass-preview-runtime="active"] .lb-content .lb-form-field .lb-lg-native-glass.lb-lg-native-select:has(> select.lb-select:not([multiple])) {
+			background: transparent !important;
+			background-color: transparent !important;
+			background-image: none !important;
+			color: var(--lb-preview-dropdown-glass-text) !important;
+			-webkit-text-fill-color: var(--lb-preview-dropdown-glass-text) !important;
+			border-color: var(--lb-lg-real-layer-border, rgba(255,255,255,0.18)) !important;
+			backdrop-filter: none !important;
+			-webkit-backdrop-filter: none !important;
+			color-scheme: light !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass)[data-lb-liquid-glass-preview-runtime="active"] .lb-content .lb-form-field .lb-lg-native-glass.lb-lg-native-select > select.lb-select:not([multiple]) {
+			background: transparent !important;
+			background-color: transparent !important;
+			background-image: none !important;
+			color: var(--lb-preview-dropdown-glass-text) !important;
+			-webkit-text-fill-color: var(--lb-preview-dropdown-glass-text) !important;
+			border: 0 !important;
+			box-shadow: none !important;
+			text-shadow: none !important;
+			color-scheme: light !important;
+		}
+
+		/* Optional Studio runtime: only the closed multiselect summary is glass.
+		   The menu itself stays a white popup with dark option text. */
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass)[data-lb-liquid-glass-preview-runtime="active"] .lb-content .lb-form-field .lb-multiselect > summary.lb-lg-real-glass {
+			background: transparent !important;
+			background-color: transparent !important;
+			background-image: none !important;
+			color: var(--lb-preview-dropdown-glass-text) !important;
+			-webkit-text-fill-color: var(--lb-preview-dropdown-glass-text) !important;
+			border-color: var(--lb-lg-real-layer-border, rgba(255,255,255,0.18)) !important;
+			backdrop-filter: none !important;
+			-webkit-backdrop-filter: none !important;
+			text-shadow: none !important;
+			color-scheme: light !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass)[data-lb-liquid-glass-preview-runtime="active"] .lb-content .lb-form-field .lb-multiselect > summary.lb-lg-real-glass > .lb-lg-glass-content,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass)[data-lb-liquid-glass-preview-runtime="active"] .lb-content .lb-form-field .lb-multiselect > summary.lb-lg-real-glass > .lb-lg-glass-content * {
+			color: var(--lb-preview-dropdown-glass-text) !important;
+			-webkit-text-fill-color: var(--lb-preview-dropdown-glass-text) !important;
+			text-shadow: none !important;
+		}
+
+		/* Disabled controls keep the real layers but remain visibly disabled.
+		   A disabled form row already dims its complete contents, so avoid a
+		   second opacity reduction on the generated native-control shell. */
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass)[data-lb-liquid-glass-preview-runtime="active"] .lb-content .lb-lg-native-glass.lb-lg-is-disabled,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass)[data-lb-liquid-glass-preview-runtime="active"] .lb-content .lb-multiselect > summary.lb-lg-real-glass.lb-lg-is-disabled {
+			opacity: 0.72 !important;
+			filter: saturate(0.82) !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass)[data-lb-liquid-glass-preview-runtime="active"] .lb-content .lb-form-row.lb-disabled .lb-lg-native-glass.lb-lg-is-disabled {
+			opacity: 1 !important;
+			filter: none !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass)[data-lb-liquid-glass-preview-runtime="active"] .lb-content .lb-lg-native-glass.lb-lg-is-disabled > select.lb-select:not([multiple]),
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass)[data-lb-liquid-glass-preview-runtime="active"] .lb-content .lb-multiselect.lb-disabled > summary.lb-lg-real-glass > .lb-lg-glass-content,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass)[data-lb-liquid-glass-preview-runtime="active"] .lb-content .lb-multiselect[aria-disabled="true"] > summary.lb-lg-real-glass > .lb-lg-glass-content {
+			color: var(--lb-preview-dropdown-glass-disabled-text) !important;
+			-webkit-text-fill-color: var(--lb-preview-dropdown-glass-disabled-text) !important;
+		}
+
+		/* Runtime-created content wrappers keep text above the distortion layers. */
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass)[data-lb-liquid-glass-preview-runtime="active"] .lb-content summary > .lb-lg-glass-content {
+			display: inline !important;
+		}
+
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass)[data-lb-liquid-glass-preview-runtime="active"] .lb-content .note > .lb-lg-glass-content,
+		:is(body.theme-user-liquid-glass, body.theme-liquid-glass)[data-lb-liquid-glass-preview-runtime="active"] .lb-content .lb-collapsible-content > .lb-lg-glass-content {
+			display: block !important;
+		}
 		/* ============================================================
 		   Print / XPS support
 		   ------------------------------------------------------------
@@ -662,7 +774,7 @@
 			<img class="lb-sidebar-logo" src="/system/images/Logo_green_transparent.png" alt="LoxBerry">
 			<div>
 				<div class="lb-sidebar-brand">LoxBerry <span>DS</span></div>
-				<div class="lb-sidebar-version">Preview V18.45</div>
+				<div class="lb-sidebar-version">Preview V18.53</div>
 			</div>
 		</a>
 		<nav class="lb-sidebar-nav">
@@ -725,7 +837,7 @@
 			<section id="forms">
 				<div class="lb-section-title">Formular-Elemente</div>
 				<div class="lb-preview-grid">
-					<div class="lb-card">
+					<div class="lb-card" data-lb-real-glass="off">
 						<h4>Inputs / Selects</h4>
 						<div class="lb-form-row">
 							<label class="lb-form-label" for="text1">Text:</label>
@@ -812,7 +924,7 @@
 							</div>
 						</div>
 					</div>
-					<div class="lb-card">
+					<div class="lb-card" data-lb-real-glass="off">
 						<h4>Checkbox / Radio / Toggle</h4>
 						<div class="lb-form-row">
 							<label class="lb-form-label">Checkbox:</label>
@@ -1079,27 +1191,27 @@
 			<section id="cards">
 				<div class="lb-section-title">Cards / Collapsible / Notes</div>
 				<div class="lb-preview-grid">
-					<div class="lb-card">
+					<div class="lb-card" data-lb-real-glass="off">
 						<h4>Card</h4>
 						<p>Eine <span class="lb-preview-code">lb-card</span> hebt Inhalte mit Rahmen, Radius und optionalem Schatten hervor.</p>
 					</div>
 					<div>
 						<details class="lb-collapsible" open>
-							<summary>Abschnitt A</summary>
-							<div class="lb-collapsible-content">Inhalt des geöffneten Bereichs.</div>
+							<summary data-lb-real-glass="off">Abschnitt A</summary>
+							<div class="lb-collapsible-content" data-lb-real-glass="off">Inhalt des geöffneten Bereichs.</div>
 						</details>
 						<details class="lb-collapsible">
-							<summary>Abschnitt B</summary>
-							<div class="lb-collapsible-content">Weiterer Inhalt.</div>
+							<summary data-lb-real-glass="off">Abschnitt B</summary>
+							<div class="lb-collapsible-content" data-lb-real-glass="off">Weiterer Inhalt.</div>
 						</details>
 					</div>
 				</div>
-				<div class="note" style="margin-top: var(--lb-space-md, 16px);">Hinweisbox über bestehende <span class="lb-preview-code">.note</span>-Regel.</div>
+				<div class="note" data-lb-real-glass="off" style="margin-top: var(--lb-space-md, 16px);">Hinweisbox über bestehende <span class="lb-preview-code">.note</span>-Regel.</div>
 			</section>
 
 			<section id="tables">
 				<div class="lb-section-title">Tabellen</div>
-				<div class="lb-card" style="margin-bottom: var(--lb-space-md, 16px);">
+				<div class="lb-card" data-lb-real-glass="off" style="margin-bottom: var(--lb-space-md, 16px);">
 					<h4>Core-Regressionscheck</h4>
 					<div class="lb-preview-help-text">Diese Preview zeigt Tabellen möglichst nahe an Core: Außenrahmen über <span class="lb-preview-code">.lb-table</span> oder <span class="lb-preview-code">.lb-table-frame</span>, Dropdown-/Tooltip-Overflow über <span class="lb-preview-code">.lb-table-dropdowns-visible</span>, <span class="lb-preview-code">.lb-dropdown-layer</span> und <span class="lb-preview-code">.lb-tooltip-anchor</span>.</div>
 				</div>
@@ -1367,7 +1479,7 @@
 		</main>
 
 		<footer class="lb-footer">
-			<div class="lb-preview-muted">LoxBerry DS Preview V18.45</div>
+			<div class="lb-preview-muted">LoxBerry DS Preview V18.53</div>
 		</footer>
 	</div>
 
