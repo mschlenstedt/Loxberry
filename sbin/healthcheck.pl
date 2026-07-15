@@ -1558,24 +1558,51 @@ sub check_mqtt
 	push @text, "Your keepaliveepoch is current.";
 	}
 
-	# Check broker drop-rate via $SYS - detects overload: the broker discards
-	# QoS-0 messages when a client's send-queue overflows (max_queued_messages).
-	# load/publish/dropped/1min is a moving average of messages dropped per minute.
-	# Only evaluated when $SYS is readable (local broker / sufficient ACL);
-	# silently skipped otherwise (e.g. external broker without $SYS access).
-	my $dropped_1min = LoxBerry::IO::mqtt_get( '$SYS/broker/load/publish/dropped/1min', 5000 );
-	if( defined $dropped_1min && $dropped_1min ne "" ) {
-		if( $dropped_1min >= 1 ) {
-			my $dropped_total = LoxBerry::IO::mqtt_get( '$SYS/broker/publish/messages/dropped', 5000 );
+	# Broker diagnostics via $SYS for overload detection. $SYS values are retained,
+	# so each mqtt_get returns the current value quickly. Only evaluated when $SYS is
+	# readable: if clients/connected is not returned we assume $SYS is unavailable
+	# (external broker / ACL) and skip the whole block silently (bounds the cost to
+	# one failed lookup). The compact load line is shown in every state (also OK),
+	# WARNING only when the broker is actively dropping messages.
+	my $sysget = sub {
+		my $v = LoxBerry::IO::mqtt_get( '$SYS/broker/' . $_[0], 2000 );
+		return ( defined $v && $v ne "" ) ? $v + 0 : undef;
+	};
+	my $fmt = sub { defined $_[0] ? sprintf("%g", $_[0]) : "?" };
+
+	my $bclients = $sysget->('clients/connected');
+	if( defined $bclients ) {
+		my $bin     = $sysget->('load/messages/received/1min');   # inbound msg/min
+		my $bout    = $sysget->('load/messages/sent/1min');       # outbound msg/min (fan-out)
+		my $bconn   = $sysget->('load/connections/1min');         # new connections/min (churn)
+		my $bstored = $sysget->('messages/stored');               # messages held in store
+		my $bheap   = $sysget->('heap/current');                  # heap bytes
+		my $bdtot   = $sysget->('publish/messages/dropped');      # dropped total (lifetime)
+		my $bd1     = $sysget->('load/publish/dropped/1min');     # dropped/min moving avg
+		my $bd5     = $sysget->('load/publish/dropped/5min');
+		my $bd15    = $sysget->('load/publish/dropped/15min');
+
+		my @m;
+		push @m, sprintf("%d clients", $bclients);
+		if( defined $bin && defined $bout ) {
+			my $fo = ( $bin > 0 ) ? sprintf("%.1fx", $bout / $bin) : "-";
+			push @m, sprintf("msg in %.0f/out %.0f per min (fan-out %s)", $bin, $bout, $fo);
+		}
+		push @m, sprintf("new conn %.0f/min", $bconn)       if defined $bconn;
+		push @m, sprintf("stored %d", $bstored)             if defined $bstored;
+		push @m, sprintf("heap %.1f MiB", $bheap / 1048576) if defined $bheap;
+		push @m, sprintf("dropped total %d, rate 1m/5m/15m %s/%s/%s",
+			( $bdtot // 0 ), $fmt->($bd1), $fmt->($bd5), $fmt->($bd15) );
+		push @text, "MQTT Server load: " . join(" | ", @m) . ".";
+
+		# WARNING if the broker is actively dropping in any recent window.
+		my $worst = 0;
+		for my $d ( $bd1, $bd5, $bd15 ) { $worst = $d if defined $d && $d > $worst; }
+		if( $worst >= 1 ) {
 			$result{status} = setstatus(4, $result{status});
-			push @text, sprintf(
-				"MQTT Server is dropping messages (%.0f msg/min%s) - broker overloaded. Reduce the number of published messages/wildcard subscribers or raise max_queued_messages.",
-				$dropped_1min,
-				( defined $dropped_total && $dropped_total ne "" ? sprintf(", %d total", $dropped_total) : "" )
-			);
+			push @text, "MQTT Server is dropping messages - broker overloaded. Reduce published messages / wildcard subscribers, or raise max_queued_messages.";
 		} else {
 			$result{status} = setstatus(5, $result{status});
-			push @text, "MQTT Server drop-rate is normal (no overload).";
 		}
 	}
 
