@@ -1558,8 +1558,29 @@ sub check_mqtt
 	push @text, "Your keepaliveepoch is current.";
 	}
 
+	# Check broker drop-rate via $SYS - detects overload: the broker discards
+	# QoS-0 messages when a client's send-queue overflows (max_queued_messages).
+	# load/publish/dropped/1min is a moving average of messages dropped per minute.
+	# Only evaluated when $SYS is readable (local broker / sufficient ACL);
+	# silently skipped otherwise (e.g. external broker without $SYS access).
+	my $dropped_1min = LoxBerry::IO::mqtt_get( '$SYS/broker/load/publish/dropped/1min', 5000 );
+	if( defined $dropped_1min && $dropped_1min ne "" ) {
+		if( $dropped_1min >= 1 ) {
+			my $dropped_total = LoxBerry::IO::mqtt_get( '$SYS/broker/publish/messages/dropped', 5000 );
+			$result{status} = setstatus(4, $result{status});
+			push @text, sprintf(
+				"MQTT Server is dropping messages (%.0f msg/min%s) - broker overloaded. Reduce the number of published messages/wildcard subscribers or raise max_queued_messages.",
+				$dropped_1min,
+				( defined $dropped_total && $dropped_total ne "" ? sprintf(", %d total", $dropped_total) : "" )
+			);
+		} else {
+			$result{status} = setstatus(5, $result{status});
+			push @text, "MQTT Server drop-rate is normal (no overload).";
+		}
+	}
+
 	$result{result} = join ' ', @text;
-	
+
 	return(\%result);
 }
 

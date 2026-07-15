@@ -368,6 +368,17 @@ sub mosquitto_setcred
 	}
 	$mosq_config .= "\n";
 
+	# Overload hardening (global options - must precede any listener in Mosquitto 2.x).
+	# Buffer bursts instead of dropping QoS-0 messages when a client send-queue
+	# overflows (default max_queued_messages is 1000).
+	$mosq_config .= "# Overload hardening: buffer bursts instead of dropping QoS-0 messages\n";
+	$mosq_config .= "max_queued_messages 5000\n";
+	$mosq_config .= "max_inflight_messages 40\n";
+	# Drop stale persistent sessions (and their queued messages) after 1h.
+	$mosq_config .= "persistent_client_expiration 1h\n";
+	# Log client connect/disconnect - needed to diagnose which client is dropped.
+	$mosq_config .= "connection_messages true\n\n";
+
 	# Plain listener
 	$mosq_config .= "listener $brokerport\n\n";
 	$mosq_config .= "# To reduce SD writes, save Mosquitto DB only once a day\n";
