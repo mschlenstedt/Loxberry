@@ -1558,51 +1558,77 @@ sub check_mqtt
 	push @text, "Your keepaliveepoch is current.";
 	}
 
-	# Broker diagnostics via $SYS for overload detection. $SYS values are retained,
-	# so each mqtt_get returns the current value quickly. Only evaluated when $SYS is
-	# readable: if clients/connected is not returned we assume $SYS is unavailable
-	# (external broker / ACL) and skip the whole block silently (bounds the cost to
-	# one failed lookup). The compact load line is shown in every state (also OK),
-	# WARNING only when the broker is actively dropping messages.
-	my $sysget = sub {
-		my $v = LoxBerry::IO::mqtt_get( '$SYS/broker/' . $_[0], 2000 );
-		return ( defined $v && $v ne "" ) ? $v + 0 : undef;
-	};
-	my $fmt = sub { defined $_[0] ? sprintf("%g", $_[0]) : "?" };
+	# Broker diagnostics via $SYS for overload detection. We read a snapshot of the
+	# relevant retained $SYS topics from the LOCAL broker in one mosquitto_sub call.
+	# Per-topic mqtt_get is unreliable here: $SYS retained backlog is delivered
+	# slowly under load, and the dropped counters do not even exist until the first
+	# drop occurs. Subscribing to the specific topics with a short window completes
+	# reliably in a few seconds. The compact load line is shown in every state (also
+	# OK); WARNING only when the broker is actively dropping. Local broker only.
+	if( is_enabled( $gencfg->{Mqtt}->{Uselocalbroker} ) ) {
+		my $bport = $gencfg->{Mqtt}->{Brokerport} || 1883;
+		my $buser = $gencfg->{Mqtt}->{Brokeruser} // '';
+		my $bpass = $gencfg->{Mqtt}->{Brokerpass} // '';
+		my @systopics = qw(
+			clients/connected
+			load/messages/received/1min
+			load/messages/sent/1min
+			load/connections/1min
+			messages/stored
+			heap/current
+			publish/messages/dropped
+			load/publish/dropped/1min
+			load/publish/dropped/5min
+			load/publish/dropped/15min
+		);
+		# Single-quote $SYS in the shell so it is not expanded; \$ keeps it literal here.
+		my $topicargs = join ' ', map { "-t '\$SYS/broker/$_'" } @systopics;
+		my $auth = ( $buser ne '' ) ? "-u '$buser' -P '$bpass'" : '';
+		my $raw = `timeout 5 mosquitto_sub -h localhost -p $bport $auth $topicargs -v 2>/dev/null`;
 
-	my $bclients = $sysget->('clients/connected');
-	if( defined $bclients ) {
-		my $bin     = $sysget->('load/messages/received/1min');   # inbound msg/min
-		my $bout    = $sysget->('load/messages/sent/1min');       # outbound msg/min (fan-out)
-		my $bconn   = $sysget->('load/connections/1min');         # new connections/min (churn)
-		my $bstored = $sysget->('messages/stored');               # messages held in store
-		my $bheap   = $sysget->('heap/current');                  # heap bytes
-		my $bdtot   = $sysget->('publish/messages/dropped');      # dropped total (lifetime)
-		my $bd1     = $sysget->('load/publish/dropped/1min');     # dropped/min moving avg
-		my $bd5     = $sysget->('load/publish/dropped/5min');
-		my $bd15    = $sysget->('load/publish/dropped/15min');
-
-		my @m;
-		push @m, sprintf("%d clients", $bclients);
-		if( defined $bin && defined $bout ) {
-			my $fo = ( $bin > 0 ) ? sprintf("%.1fx", $bout / $bin) : "-";
-			push @m, sprintf("msg in %.0f/out %.0f per min (fan-out %s)", $bin, $bout, $fo);
+		my %sys;
+		for my $line ( split /\n/, ( $raw // '' ) ) {
+			$sys{$1} = $2 if $line =~ m{^\$SYS/broker/(\S+)\s+(.*)$};
 		}
-		push @m, sprintf("new conn %.0f/min", $bconn)       if defined $bconn;
-		push @m, sprintf("stored %d", $bstored)             if defined $bstored;
-		push @m, sprintf("heap %.1f MiB", $bheap / 1048576) if defined $bheap;
-		push @m, sprintf("dropped total %d, rate 1m/5m/15m %s/%s/%s",
-			( $bdtot // 0 ), $fmt->($bd1), $fmt->($bd5), $fmt->($bd15) );
-		push @text, "MQTT Server load: " . join(" | ", @m) . ".";
 
-		# WARNING if the broker is actively dropping in any recent window.
-		my $worst = 0;
-		for my $d ( $bd1, $bd5, $bd15 ) { $worst = $d if defined $d && $d > $worst; }
-		if( $worst >= 1 ) {
-			$result{status} = setstatus(4, $result{status});
-			push @text, "MQTT Server is dropping messages - broker overloaded. Reduce published messages / wildcard subscribers, or raise max_queued_messages.";
-		} else {
-			$result{status} = setstatus(5, $result{status});
+		if( %sys ) {
+			my $fmt = sub { defined $_[0] ? sprintf("%g", $_[0]) : "?" };
+			my $g   = sub { exists $sys{$_[0]} ? $sys{$_[0]} + 0 : undef };
+
+			my $bclients = $g->('clients/connected');
+			my $bin      = $g->('load/messages/received/1min');   # inbound msg/min
+			my $bout     = $g->('load/messages/sent/1min');       # outbound msg/min (fan-out)
+			my $bconn    = $g->('load/connections/1min');         # new connections/min (churn)
+			my $bstored  = $g->('messages/stored');               # messages held in store
+			my $bheap    = $g->('heap/current');                  # heap bytes
+			# Dropped counters only exist once a drop has occurred -> absence = 0 (healthy).
+			my $bdtot    = $g->('publish/messages/dropped')   // 0;
+			my $bd1      = $g->('load/publish/dropped/1min')  // 0;
+			my $bd5      = $g->('load/publish/dropped/5min')  // 0;
+			my $bd15     = $g->('load/publish/dropped/15min') // 0;
+
+			my @m;
+			push @m, sprintf("%d clients", $bclients)           if defined $bclients;
+			if( defined $bin && defined $bout ) {
+				my $fo = ( $bin > 0 ) ? sprintf("%.1fx", $bout / $bin) : "-";
+				push @m, sprintf("msg in %.0f/out %.0f per min (fan-out %s)", $bin, $bout, $fo);
+			}
+			push @m, sprintf("new conn %.0f/min", $bconn)       if defined $bconn;
+			push @m, sprintf("stored %d", $bstored)             if defined $bstored;
+			push @m, sprintf("heap %.1f MiB", $bheap / 1048576) if defined $bheap;
+			push @m, sprintf("dropped total %d, rate 1m/5m/15m %s/%s/%s",
+				$bdtot, $fmt->($bd1), $fmt->($bd5), $fmt->($bd15) );
+			push @text, "MQTT Server load: " . join(" | ", @m) . "." if @m;
+
+			# WARNING if the broker is actively dropping in any recent window.
+			my $worst = 0;
+			for my $d ( $bd1, $bd5, $bd15 ) { $worst = $d if $d > $worst; }
+			if( $worst >= 1 ) {
+				$result{status} = setstatus(4, $result{status});
+				push @text, "MQTT Server is dropping messages - broker overloaded. Reduce published messages / wildcard subscribers, or raise max_queued_messages.";
+			} else {
+				$result{status} = setstatus(5, $result{status});
+			}
 		}
 	}
 
