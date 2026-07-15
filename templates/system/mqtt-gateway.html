@@ -3204,13 +3204,20 @@ $(function () {
 
 	function doSave() {
 		// Sync form fields not covered by the change handler (protocol radio, udpport)
+		// Only touch these when the protocol control actually exists on this page
+		// (it lives in the FORM_BASIC/Gateway tab). On other tabs (e.g. subscriptions)
+		// the radios are absent, so leave the loaded mqttgateway.json values untouched
+		// instead of falling back to HTTP and overwriting the user's UDP setting.
 		cfg = cfg || {};
 		cfg.Main = cfg.Main || {};
-		var protocol = $('input[name="protocol"]:checked').val() || 'http';
-		cfg.Main.use_http = (protocol === "http" || protocol === "both") ? 1 : 0;
-		cfg.Main.use_udp  = (protocol === "udp"  || protocol === "both") ? 1 : 0;
-		var udpport = parseInt($("#basic_udpport").val());
-		if (!isNaN(udpport) && udpport > 0) cfg.Main.udpport = udpport;
+		var $proto = $('input[name="protocol"]');
+		if ($proto.length) {
+			var protocol = $proto.filter(':checked').val() || 'http';
+			cfg.Main.use_http = (protocol === "http" || protocol === "both") ? 1 : 0;
+			cfg.Main.use_udp  = (protocol === "udp"  || protocol === "both") ? 1 : 0;
+			var udpport = parseInt($("#basic_udpport").val());
+			if (!isNaN(udpport) && udpport > 0) cfg.Main.udpport = udpport;
+		}
 		$("#saveapply").attr("disabled", true);
 		var p = $.ajax( {
 				type: 'POST',
