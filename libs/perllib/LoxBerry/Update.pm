@@ -501,7 +501,12 @@ sub test_dpkg_apt
 
 	for ($i=0; $i<600; $i++) {
 		my ($rc_apt) = LoxBerry::System::execute( 'pgrep "apt-get|apt|dpkg"' );
-		my ($rc_unattended_upgrade) = LoxBerry::System::execute( 'pgrep -f /usr/bin/unattended-upgrade' );
+		# Bracket the first letter ('[u]') so this pgrep -f pattern does not match
+		# its own invocation: execute() runs the command in a subshell whose argv
+		# contains this string literally, and 'pgrep -f' would otherwise match that
+		# shell - a permanent false positive. '[u]' matches a real 'u' in a running
+		# unattended-upgrade, but not the literal "[u]".
+		my ($rc_unattended_upgrade) = LoxBerry::System::execute( 'pgrep -f /usr/bin/[u]nattended-upgrade' );
 		my ($rc_dpkg_lock) = LoxBerry::System::execute( 'fuser /var/lib/dpkg/lock' );
 		my ($rc_dpkg_frontend_lock) = LoxBerry::System::execute( 'fuser /var/lib/dpkg/lock-frontend' );
 		my ($rc_apt_archives_lock) = LoxBerry::System::execute( 'fuser /var/cache/apt/archives/lock' );

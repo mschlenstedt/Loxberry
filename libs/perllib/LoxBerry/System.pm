@@ -1382,7 +1382,12 @@ sub lock
 		my $rc_apt_archives_lock;
 		($rc_apt) = LoxBerry::System::execute( 'pgrep "apt-get|apt"' );
 		($rc_dpkg) = LoxBerry::System::execute( 'pgrep "dpkg"' );
-		($rc_unattended_upgrade) = LoxBerry::System::execute( 'pgrep -f /usr/bin/unattended-upgrade' );
+		# Bracket the first letter ('[u]') so this pgrep -f pattern does not match
+		# its own invocation: execute() runs the command in a subshell whose argv
+		# contains this string literally, and 'pgrep -f' would otherwise match that
+		# shell - a permanent false positive that blocks every update. '[u]' matches
+		# a real 'u' in a running unattended-upgrade, but not the literal "[u]".
+		($rc_unattended_upgrade) = LoxBerry::System::execute( 'pgrep -f /usr/bin/[u]nattended-upgrade' );
 		($rc_dpkg_lock) = LoxBerry::System::execute( 'fuser /var/lib/dpkg/lock' );
 		($rc_dpkg_frontend_lock) = LoxBerry::System::execute( 'fuser /var/lib/dpkg/lock-frontend' );
 		($rc_apt_archives_lock) = LoxBerry::System::execute( 'fuser /var/cache/apt/archives/lock' );
