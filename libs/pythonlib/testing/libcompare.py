@@ -22,6 +22,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from loxberry import system as lb
+from loxberry import web as lbweb
 
 
 def emit(name, data):
@@ -119,5 +120,10 @@ lb.unlock(lockfile="libcompare_py_test")
 _rlock = lb.lock(lockfile="libcompare_py_test", wait=0)
 _runlock = lb.unlock(lockfile="libcompare_py_test")
 emit("lock_unlock", {"lock": _rlock, "unlock": _runlock})
+
+# --- Web::iso_languages ---
+emit("iso_languages_values", lbweb.iso_languages(selection="values"))
+emit("iso_languages_labels", lbweb.iso_languages(selection="labels"))
+emit("iso_languages_values_avail", lbweb.iso_languages(onlyavail=True, selection="values"))
 
 sys.exit(0)

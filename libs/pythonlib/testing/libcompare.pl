@@ -22,6 +22,7 @@ BEGIN {
 }
 
 use LoxBerry::System;
+use LoxBerry::Web;
 use JSON;
 
 my $J = JSON->new->canonical(1)->allow_nonref(1);
@@ -142,6 +143,16 @@ emit('get_binaries', LoxBerry::System::get_binaries());
 	my $rlock   = LoxBerry::System::lock(lockfile => 'libcompare_py_test', wait => 0);
 	my $runlock = LoxBerry::System::unlock(lockfile => 'libcompare_py_test');
 	emit('lock_unlock', { lock => $rlock, unlock => $runlock });
+}
+
+# --- Web::iso_languages ---
+{
+	my @vals = LoxBerry::Web::iso_languages(0, 'values');
+	emit('iso_languages_values', \@vals);
+	my %labels = LoxBerry::Web::iso_languages(0, 'labels');
+	emit('iso_languages_labels', \%labels);
+	my @availvals = LoxBerry::Web::iso_languages(1, 'values');
+	emit('iso_languages_values_avail', \@availvals);
 }
 
 exit 0;
