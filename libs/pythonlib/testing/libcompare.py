@@ -23,6 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from loxberry import system as lb
 from loxberry import web as lbweb
+from loxberry import storage as lbstorage
 
 
 def emit(name, data):
@@ -125,5 +126,9 @@ emit("lock_unlock", {"lock": _rlock, "unlock": _runlock})
 emit("iso_languages_values", lbweb.iso_languages(selection="values"))
 emit("iso_languages_labels", lbweb.iso_languages(selection="labels"))
 emit("iso_languages_values_avail", lbweb.iso_languages(onlyavail=True, selection="values"))
+
+# --- Storage::get_netservers / get_usbstorage ---
+emit("get_netservers", lbstorage.get_netservers())
+emit("get_usbstorage", lbstorage.get_usbstorage(""))
 
 sys.exit(0)

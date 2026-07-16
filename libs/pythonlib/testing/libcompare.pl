@@ -23,6 +23,7 @@ BEGIN {
 
 use LoxBerry::System;
 use LoxBerry::Web;
+use LoxBerry::Storage;
 use JSON;
 
 my $J = JSON->new->canonical(1)->allow_nonref(1);
@@ -153,6 +154,14 @@ emit('get_binaries', LoxBerry::System::get_binaries());
 	emit('iso_languages_labels', \%labels);
 	my @availvals = LoxBerry::Web::iso_languages(1, 'values');
 	emit('iso_languages_values_avail', \@availvals);
+}
+
+# --- Storage::get_netservers / get_usbstorage ---
+{
+	my @servers = LoxBerry::Storage::get_netservers();
+	emit('get_netservers', \@servers);
+	my @usb = LoxBerry::Storage::get_usbstorage('');
+	emit('get_usbstorage', \@usb);
 }
 
 exit 0;
