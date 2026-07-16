@@ -393,8 +393,16 @@ def _query_miniserver_ftpport(ms: dict) -> "str | None":
     if not uri:
         return None
     url = uri.rstrip("/") + "/dev/cfg/ftp"
+    # Loxone Miniservers present a self-signed certificate, so TLS verification
+    # is disabled here (same as LoxBerry::IO). Silence the resulting warning.
     try:
-        resp = requests.get(url, timeout=5)
+        import urllib3
+
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    except Exception:
+        pass
+    try:
+        resp = requests.get(url, timeout=5, verify=False)
         if resp.status_code < 200 or resp.status_code >= 300:
             return None
         m = re.search(r'value="([^"]*)"', resp.text)
