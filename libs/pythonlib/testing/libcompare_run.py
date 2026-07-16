@@ -30,16 +30,18 @@ PY_SCRIPT = os.path.join(HERE, "libcompare.py")
 
 # Volatile keys removed (recursively, by key name) before comparing.
 IGNORE = {
-    # get_miniservers: for CloudDNS miniservers the Python port does not yet
-    # resolve the address (set_clouddns is step 2), so IP/URI-derived fields
-    # can differ. On local (non-CloudDNS) setups everything matches.
+    # diskspaceinfo: used/available/usedpercent change between the two runs.
+    "diskspaceinfo_root": {"used", "available", "usedpercent"},
 }
 
 NOTES = {
-    "get_miniservers": "CloudDNS miniservers may differ until set_clouddns is "
-                       "ported (step 2). Local setups match fully.",
+    "get_miniservers": "Local setups match fully. CloudDNS miniservers depend "
+                       "on a live cloud lookup and may differ between runs.",
     "epoch2lox_fixed": "Depends on host timezone; identical on both sides.",
     "lox2epoch_fixed": "Depends on host timezone; identical on both sides.",
+    "diskspaceinfo_root": "used/available/usedpercent ignored (change between runs).",
+    "check_securepin_invalid": "Invalid PIN; counter file reset around the call.",
+    "lock_unlock": "Dedicated test lockfile 'libcompare_py_test'.",
 }
 
 

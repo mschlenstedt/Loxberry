@@ -25,6 +25,7 @@ use LoxBerry::System;
 use JSON;
 
 my $J = JSON->new->canonical(1)->allow_nonref(1);
+my $HOME = $ENV{LBHOMEDIR} || '/opt/loxberry';
 
 sub emit {
 	my ($name, $data) = @_;
@@ -101,6 +102,46 @@ emit('lbcountry',       { value => LoxBerry::System::lbcountry() });
 {
 	my %ms = LoxBerry::System::get_miniservers();
 	emit('get_miniservers', \%ms);
+}
+
+# --- get_binaries ---
+emit('get_binaries', LoxBerry::System::get_binaries());
+
+# --- diskspaceinfo (single folder "/") ---
+{
+	my %di = LoxBerry::System::diskspaceinfo("/");
+	emit('diskspaceinfo_root', \%di);
+}
+
+# --- get_plugins ---
+{
+	my @plugins = LoxBerry::System::get_plugins();
+	emit('get_plugins', \@plugins);
+}
+
+# --- pluginversion / pluginloglevel of the first plugin (by folder) ---
+{
+	my @plugins = LoxBerry::System::get_plugins();
+	my $folder = @plugins ? $plugins[0]->{PLUGINDB_FOLDER} : '';
+	emit('pluginversion_named',  { folder => $folder, version  => LoxBerry::System::pluginversion($folder) });
+	emit('pluginloglevel_named', { folder => $folder, loglevel => LoxBerry::System::pluginloglevel($folder) });
+}
+
+# --- check_securepin (invalid PIN, counter reset around the call) ---
+{
+	my $errfile = "$HOME/log/system_tmpfs/securepin.errors";
+	unlink $errfile if (-e $errfile);
+	my $r = LoxBerry::System::check_securepin("zzz_invalid_pin_zzz");
+	emit('check_securepin_invalid', { result => defined $r ? $r+0 : undef });
+	unlink $errfile if (-e $errfile);
+}
+
+# --- lock / unlock (dedicated test lockfile) ---
+{
+	LoxBerry::System::unlock(lockfile => 'libcompare_py_test');
+	my $rlock   = LoxBerry::System::lock(lockfile => 'libcompare_py_test', wait => 0);
+	my $runlock = LoxBerry::System::unlock(lockfile => 'libcompare_py_test');
+	emit('lock_unlock', { lock => $rlock, unlock => $runlock });
 }
 
 exit 0;

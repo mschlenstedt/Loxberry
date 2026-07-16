@@ -287,6 +287,133 @@ def read_generaljson() -> "int | None":
 
 
 # ---------------------------------------------------------------------------
+# set_clouddns  (System.pm lines 610-702)
+# INTERNAL: resolves a CloudDNS Miniserver's external IP/ports and updates the
+# in-memory miniserver entry. Results are cached in a tmpfs JSON file.
+# ---------------------------------------------------------------------------
+def set_clouddns(msnr, clouddnsaddress) -> None:
+    miniservers = _state["miniservers"] or {}
+    ms = miniservers.get(msnr)
+    if ms is None:
+        return
+
+    memfile = "%s/log/system_tmpfs/clouddns_cache.json" % lbhomedir
+    cache = {}
+    raw = read_file(memfile)
+    if raw:
+        try:
+            cache = json.loads(raw) or {}
+        except ValueError:
+            cache = {}
+
+    cachekey = ms.get("CloudURL")
+    entry = cache.get(cachekey) if cachekey is not None else None
+    if (entry and entry.get("refresh_timestamp") and
+            entry["refresh_timestamp"] > time.time() and
+            entry.get("IPAddress") is not None):
+        ms["IPAddress"] = entry.get("IPAddress")
+        ms["Port"] = entry.get("Port")
+        ms["PortHttps"] = entry.get("PortHttps")
+        return
+
+    try:
+        import requests
+    except Exception:
+        return
+
+    checkurl = "http://%s?getip&snr=%s&json=true" % (clouddnsaddress, ms.get("CloudURL"))
+    try:
+        resp = requests.get(checkurl, timeout=5, allow_redirects=False)
+        ok = 200 <= resp.status_code < 300
+    except Exception:
+        ok = False
+        resp = None
+
+    if not ok:
+        ms["IPAddress"] = "0.0.0.0"
+        ms["Port"] = "0"
+        ms["PortHttps"] = "0"
+        if cachekey in cache:
+            del cache[cachekey]
+        write_file(memfile, json.dumps(cache))
+        return
+
+    try:
+        respjson = resp.json()
+    except Exception:
+        return
+
+    def _split_ip_port(value):
+        # IPv6 form "[addr]:port" or IPv4 "addr:port"
+        if value is None:
+            return (None, None)
+        sq1 = value.find("[")
+        if sq1 != -1:
+            sq2 = value.find("]")
+            if sq2 != -1:
+                return (value[sq1 + 1:sq2], value[sq2 + 2:])
+            return (value, None)
+        parts = value.split(":", 1)
+        if len(parts) == 2:
+            return (parts[0], parts[1])
+        return (value, None)
+
+    ip, port = _split_ip_port(respjson.get("IP"))
+    if ip is not None:
+        ms["IPAddress"] = ip
+    if port is not None:
+        ms["Port"] = port
+
+    if is_enabled(ms.get("PreferHttps")):
+        ip6, porth = _split_ip_port(respjson.get("IPHTTPS"))
+        if ip6 is not None:
+            ms["IPAddress"] = ip6
+        if porth is not None:
+            ms["PortHttps"] = porth
+
+    import random
+    cache[cachekey] = {
+        "IPAddress": ms.get("IPAddress"),
+        "Port": ms.get("Port"),
+        "PortHttps": ms.get("PortHttps"),
+        "refresh_timestamp": int(time.time()) + 3600 + random.randint(0, 3599),
+    }
+    write_file(memfile, json.dumps(cache))
+
+
+# ---------------------------------------------------------------------------
+# get_binaries  (System.pm lines 292-320)
+# ---------------------------------------------------------------------------
+def get_binaries() -> dict:
+    """Return a dict of well-known binary paths."""
+    return {
+        "FIND": "/usr/bin/find",
+        "GREP": "/bin/grep",
+        "TAR": "/bin/tar",
+        "NTPDATE": "/usr/sbin/ntpdate",
+        "UNZIP": "/usr/bin/unzip",
+        "MAIL": "/usr/bin/mailx",
+        "BASH": "/bin/bash",
+        "APT": "/usr/bin/apt-get",
+        "ZIP": "/usr/bin/zip",
+        "GZIP": "/bin/gzip",
+        "CHOWN": "/bin/chown",
+        "SUDO": "/usr/bin/sudo",
+        "DPKG": "/usr/bin/dpkg",
+        "REBOOT": "/sbin/reboot",
+        "WGET": "/usr/bin/wget",
+        "CURL": "/usr/bin/curl",
+        "CHMOD": "/bin/chmod",
+        "SENDMAIL": "/usr/sbin/sendmail",
+        "AWK": "/usr/bin/awk",
+        "DOS2UNIX": "/usr/bin/dos2unix",
+        "BZIP2": "/bin/bzip2",
+        "DATE": "/bin/date",
+        "POWEROFF": "/sbin/poweroff",
+    }
+
+
+# ---------------------------------------------------------------------------
 # get_miniservers  (System.pm lines 196-253)
 # NOTE: CloudDNS resolution (set_clouddns) is deferred to the 2nd port step;
 # for UseCloudDNS entries the configured IP is used as-is, but all derived
@@ -304,7 +431,9 @@ def get_miniservers() -> dict:
     for msnr in list(miniservers.keys()):
         ms = miniservers[msnr]
 
-        # CloudDNS handling is deferred (set_clouddns, step 2). IP stays as-is.
+        # CloudDNS handling
+        if is_enabled(ms.get("UseCloudDNS")) and ms.get("CloudURL"):
+            set_clouddns(msnr, _state["clouddnsaddress"])
 
         if not ms.get("Port"):
             ms["Port"] = 80
@@ -677,6 +806,27 @@ def reboot_required(message: str = None) -> None:
 
         pw = pwd.getpwnam("loxberry")
         os.chown(reboot_required_file, pw.pw_uid, pw.pw_gid)
+    except Exception:
+        pass
+
+
+# ---------------------------------------------------------------------------
+# reboot_force  (System.pm lines 1244-1260)
+# ---------------------------------------------------------------------------
+def reboot_force(message: str = None) -> None:
+    try:
+        with open(reboot_force_popup_file, "a", encoding="utf-8") as fh:
+            if not message:
+                fh.write("A reboot is necessary to continue updates.")
+            else:
+                fh.write("%s" % message)
+    except OSError:
+        return
+    try:
+        import pwd
+
+        pw = pwd.getpwnam("loxberry")
+        os.chown(reboot_force_popup_file, pw.pw_uid, pw.pw_gid)
     except Exception:
         pass
 

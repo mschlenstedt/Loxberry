@@ -90,4 +90,34 @@ try:
 except Exception as exc:
     emit("general_json_error", {"error": str(exc)})
 
+# --- get_binaries (deterministic) ---
+emit("get_binaries", lb.get_binaries())
+
+# --- diskspaceinfo (single folder "/") ---
+emit("diskspaceinfo_root", lb.diskspaceinfo("/"))
+
+# --- get_plugins ---
+plugins = lb.get_plugins()
+emit("get_plugins", plugins)
+
+# --- pluginversion / pluginloglevel of the first plugin (by folder) ---
+folder = plugins[0]["PLUGINDB_FOLDER"] if plugins else ""
+emit("pluginversion_named", {"folder": folder, "version": lb.pluginversion(folder)})
+emit("pluginloglevel_named", {"folder": folder, "loglevel": lb.pluginloglevel(folder)})
+
+# --- check_securepin (invalid PIN, counter reset around the call) ---
+_errfile = "%s/log/system_tmpfs/securepin.errors" % lb.lbhomedir
+if os.path.exists(_errfile):
+    os.unlink(_errfile)
+_r = lb.check_securepin("zzz_invalid_pin_zzz")
+emit("check_securepin_invalid", {"result": _r})
+if os.path.exists(_errfile):
+    os.unlink(_errfile)
+
+# --- lock / unlock (dedicated test lockfile) ---
+lb.unlock(lockfile="libcompare_py_test")
+_rlock = lb.lock(lockfile="libcompare_py_test", wait=0)
+_runlock = lb.unlock(lockfile="libcompare_py_test")
+emit("lock_unlock", {"lock": _rlock, "unlock": _runlock})
+
 sys.exit(0)

@@ -41,11 +41,13 @@ from .core import (
     read_generaljson,
     lbversion,
     systemloglevel,
+    get_binaries,
     # Miniserver
     get_miniservers,
     get_miniserver_by_ip,
     get_miniserver_by_name,
     get_ftpport,
+    set_clouddns,
     # Network / host
     get_localip,
     lbhostname,
@@ -69,6 +71,7 @@ from .core import (
     tz_offset,
     # Misc
     reboot_required,
+    reboot_force,
     bytes_humanreadable,
     vers_tag,
     plugin_version_compare,
@@ -78,19 +81,42 @@ from .core import (
     write_file,
 )
 
+# Plugin database (get_plugins & friends)
+from .plugindb import (
+    get_plugins,
+    plugindata,
+    pluginversion,
+    pluginloglevel,
+    plugindb_changed_time,
+)
+
+# Process / system interaction
+from .proc import (
+    execute,
+    lock,
+    unlock,
+    diskspaceinfo,
+    check_securepin,
+)
+
 __all__ = [
     "lbhomedir", "lbpplugindir", "lbpconfigdir", "lbpbindir", "lbpdatadir",
     "lbplogdir", "lbphtmldir", "lbphtmlauthdir", "lbcgidir", "lbptemplatedir",
     "lbsconfigdir", "lbsdatadir", "lbslogdir", "lbstmpfslogdir", "lbstemplatedir",
     "lbshtmldir", "lbshtmlauthdir", "lbsbindir", "lbssbindir",
     "reboot_required_file", "reboot_force_popup_file", "PLUGINDATABASE",
-    "read_generaljson", "lbversion", "systemloglevel",
+    "read_generaljson", "lbversion", "systemloglevel", "get_binaries",
     "get_miniservers", "get_miniserver_by_ip", "get_miniserver_by_name",
-    "get_ftpport", "get_localip", "lbhostname", "lbfriendlyname",
+    "get_ftpport", "set_clouddns", "get_localip", "lbhostname", "lbfriendlyname",
     "lbwebserverport", "lblanguage", "lbcountry", "readlanguage",
     "is_enabled", "is_disabled", "begins_with", "trim", "ltrim", "rtrim",
     "currtime", "epoch2lox", "lox2epoch", "tz_offset",
-    "reboot_required", "bytes_humanreadable", "vers_tag",
+    "reboot_required", "reboot_force", "bytes_humanreadable", "vers_tag",
     "plugin_version_compare", "plugin_version_has_prerelease",
     "read_file", "write_file",
+    # plugin database
+    "get_plugins", "plugindata", "pluginversion", "pluginloglevel",
+    "plugindb_changed_time",
+    # process / system
+    "execute", "lock", "unlock", "diskspaceinfo", "check_securepin",
 ]
