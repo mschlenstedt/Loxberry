@@ -34,6 +34,13 @@ if ( -e "$pylib/install_pth.py" ) {
 	LOGWARN "$pylib/install_pth.py not found - skipping Python .pth install.";
 }
 
+# ---------------------------------------------------------------------------
+# The Python loxberry.io library uses paho-mqtt for MQTT. Install the Debian
+# package so "import paho.mqtt.client" works on all supported distributions.
+# ---------------------------------------------------------------------------
+LOGINF "Installing python3-paho-mqtt for the Python MQTT library...";
+apt_install("python3-paho-mqtt");
+
 LOGOK "Update script $0 finished." if ( $errors == 0 );
 LOGERR "Update script $0 finished with errors." if ( $errors != 0 );
 
