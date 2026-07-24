@@ -853,15 +853,125 @@ class LBLog
 		);
 		$context  = stream_context_create($options);
 		$result = file_get_contents($NOTIFHANDLERURL, false, $context);
-		if ($result === FALSE) { 
-			error_log("get_notifications_html: Could not get notifications"); 
+		if ($result === FALSE) {
+			error_log("get_notifications_html: Could not get notifications");
 			return;
 		}
-		
+
 		return $result;
-	
+
 	}
-	
+
+	// get_notification_count
+	// Returns an array with the number of notifications:
+	//   [ 0 => error count (SEVERITY 3),
+	//     1 => ok count (SEVERITY 6),
+	//     2 => sum ]
+	public static function get_notification_count ($package = NULL, $name = NULL)
+	{
+		$notifications = LBLog::get_notifications($package, $name);
+
+		$notification_error = 0;
+		$notification_ok = 0;
+
+		if (is_array($notifications)) {
+			foreach ($notifications as $n) {
+				if (is_array($n)) {
+					$severity = isset($n['SEVERITY']) ? $n['SEVERITY'] : null;
+				} else {
+					$severity = isset($n->SEVERITY) ? $n->SEVERITY : null;
+				}
+				if ($severity == 3) {
+					$notification_error++;
+				} elseif ($severity == 6) {
+					$notification_ok++;
+				}
+			}
+		}
+
+		return array($notification_error, $notification_ok, $notification_error + $notification_ok);
+	}
+
+	// get_logs
+	// Returns an array with all log sessions (optionally filtered by
+	// package/name) from the log database (log/system_tmpfs/logs_sqlite.dat).
+	// Each entry is an assoc array with base fields (PACKAGE, NAME, FILENAME,
+	// KEY, LOGSTART/END/LASTMODIFIED as ISO and human-readable strings) plus
+	// all stored attributes (e.g. LOGSTARTMESSAGE, STATUS).
+	// With $nofilter = true, sessions whose logfile no longer exists are kept.
+	public static function get_logs ($package = NULL, $name = NULL, $nofilter = false)
+	{
+		$dbfile = LBHOMEDIR . "/log/system_tmpfs/logs_sqlite.dat";
+		if (!file_exists($dbfile)) {
+			error_log("get_logs: Log database $dbfile not found");
+			return array();
+		}
+
+		try {
+			$dbh = new SQLite3($dbfile, SQLITE3_OPEN_READONLY);
+			$dbh->busyTimeout(5000);
+		} catch (Exception $e) {
+			error_log("get_logs: Could not open log database: " . $e->getMessage());
+			return array();
+		}
+
+		$qu = "SELECT * FROM logs ";
+		if ($package && $name) {
+			$qu .= "WHERE PACKAGE = :package AND NAME = :name ";
+		} elseif ($package) {
+			$qu .= "WHERE PACKAGE = :package ";
+		}
+		$qu .= "ORDER BY PACKAGE, NAME, LASTMODIFIED DESC ";
+
+		$sth = $dbh->prepare($qu);
+		if ($package) { $sth->bindValue(':package', $package, SQLITE3_TEXT); }
+		if ($package && $name) { $sth->bindValue(':name', $name, SQLITE3_TEXT); }
+		$res = $sth->execute();
+
+		$logs = array();
+		while ($res && ($key = $res->fetchArray(SQLITE3_ASSOC))) {
+			// Skip sessions whose logfile no longer exists (unless nofilter)
+			if (!$nofilter && !empty($key['LOGSTART']) && !file_exists($key['FILENAME'])) {
+				continue;
+			}
+
+			$log = array();
+			$logstart = !empty($key['LOGSTART'])      ? strtotime($key['LOGSTART'])      : false;
+			$logend   = !empty($key['LOGEND'])        ? strtotime($key['LOGEND'])        : false;
+			$lastmod  = !empty($key['LASTMODIFIED'])  ? strtotime($key['LASTMODIFIED'])  : false;
+
+			if ($logstart !== false) {
+				$log['LOGSTARTISO'] = date('Y-m-d\TH:i:s', $logstart);
+				$log['LOGSTARTSTR'] = date('d.m.Y H:i', $logstart);
+			}
+			if ($logend !== false) {
+				$log['LOGENDISO'] = date('Y-m-d\TH:i:s', $logend);
+				$log['LOGENDSTR'] = date('d.m.Y H:i', $logend);
+			}
+			if ($lastmod !== false) {
+				$log['LASTMODIFIEDISO'] = date('Y-m-d\TH:i:s', $lastmod);
+				$log['LASTMODIFIEDSTR'] = date('d.m.Y H:i', $lastmod);
+			}
+
+			$log['PACKAGE'] = $key['PACKAGE'];
+			$log['NAME'] = $key['NAME'];
+			$log['FILENAME'] = $key['FILENAME'];
+			$log['KEY'] = $key['LOGKEY'];
+
+			// Merge attributes from logs_attr (keyref, attrib, value)
+			$attrstmt = $dbh->prepare("SELECT attrib, value FROM logs_attr WHERE keyref = :keyref;");
+			$attrstmt->bindValue(':keyref', $key['LOGKEY'], SQLITE3_INTEGER);
+			$attrres = $attrstmt->execute();
+			while ($attrres && ($attrib = $attrres->fetchArray(SQLITE3_NUM))) {
+				$log[$attrib[0]] = $attrib[1];
+			}
+
+			$logs[] = $log;
+		}
+		$dbh->close();
+		return $logs;
+	}
+
 }
 
 # End of class LBLog

@@ -1007,6 +1007,294 @@ public static function plugindb_changed_time()
 		unlink($errfile);
 		return $output;
 	}
+
+	####################################################
+	# systemloglevel
+	# Returns the system-wide loglevel from general.json
+	# (Default 6 if not defined)
+	####################################################
+	public static function systemloglevel()
+	{
+		global $cfg;
+
+		LBSystem::read_generaljson();
+		if (isset($cfg->Base->Systemloglevel) && $cfg->Base->Systemloglevel !== '') {
+			return $cfg->Base->Systemloglevel;
+		}
+		return 6;
+	}
+
+	####################################################
+	# bytes_humanreadable
+	# Converts a size (with input factor B/K/M/G/T) into a
+	# human-readable string, e.g. "137.4KB" or "2.7GB".
+	# Calculation factor is 1024 (not 1000).
+	####################################################
+	public static function bytes_humanreadable($size, $inputfactor = "")
+	{
+		$inputfactor = strtoupper($inputfactor);
+		if ($inputfactor == 'K') { $size = $size * 1024; }
+		if ($inputfactor == 'M') { $size = $size * 1024 * 1024; }
+		if ($inputfactor == 'G') { $size = $size * 1024 * 1024 * 1024; }
+		if ($inputfactor == 'T') { $size = $size * 1024 * 1024 * 1024 * 1024; }
+
+		if ($size > (1024 * 1024 * 1024 * 1024)) {
+			$outputfactor = "T";
+			$size = $size / 1024 / 1024 / 1024 / 1024;
+		} elseif ($size > (1024 * 1024 * 1024)) {
+			$outputfactor = "G";
+			$size = $size / 1024 / 1024 / 1024;
+		} elseif ($size > (1024 * 1024)) {
+			$outputfactor = "M";
+			$size = $size / 1024 / 1024;
+		} elseif ($size > 1024) {
+			$outputfactor = "K";
+			$size = $size / 1024;
+		} else {
+			$outputfactor = "";
+		}
+
+		return sprintf("%.1f", $size) . $outputfactor . "B";
+	}
+
+	####################################################
+	# diskspaceinfo
+	# Returns disk space information for a single path,
+	# or for all mountpoints (evaluates the "df" command).
+	# With $folder set: returns one assoc array.
+	# Without $folder: returns an array keyed by mountpoint.
+	# Returns NULL on error.
+	# Keys: filesystem, size, used, available, usedpercent, mountpoint
+	####################################################
+	public static function diskspaceinfo($folder = null)
+	{
+		$folderarg = $folder ? ' ' . escapeshellarg($folder) : '';
+
+		$out    = LBSystem::execute("df --output=size,used,avail,pcent" . $folderarg, $ec1);
+		if ($ec1 != 0) { error_log("diskspaceinfo: Error calling df with path $folder."); return null; }
+		$outmp  = LBSystem::execute("df --output=target" . $folderarg, $ec2);
+		if ($ec2 != 0) { error_log("diskspaceinfo: Error calling df with path $folder."); return null; }
+		$outsrc = LBSystem::execute("df --output=source" . $folderarg, $ec3);
+		if ($ec3 != 0) { error_log("diskspaceinfo: Error calling df with path $folder."); return null; }
+
+		$disklist = array();
+		$linenr = 0;
+		$index = 1;
+		foreach ($out as $line) {
+			$linenr++;
+			if ($linenr == 1) { continue; } // skip header line
+			// Remove leading spaces and collapse multiple spaces to one
+			$line = preg_replace('/ +/', ' ', trim($line));
+			$parts = explode(' ', $line, 4);
+			if (count($parts) < 4) { $index++; continue; }
+			list($size, $used, $available, $usedpercent) = $parts;
+			$diskhash = array(
+				'filesystem'  => isset($outsrc[$index]) ? trim($outsrc[$index]) : '',
+				'size'        => $size,
+				'used'        => $used,
+				'available'   => $available,
+				'usedpercent' => $usedpercent,
+				'mountpoint'  => isset($outmp[$index]) ? trim($outmp[$index]) : '',
+			);
+			if ($folder) {
+				return $diskhash;
+			}
+			$disklist[$diskhash['mountpoint']] = $diskhash;
+			$index++;
+		}
+		return $disklist;
+	}
+
+	####################################################
+	# check_securepin
+	# Verifies the LoxBerry SecurePIN. Handles the brute
+	# force protection (failure counting / locking) via
+	# log/system_tmpfs/securepin.errors.
+	# Returns: NULL = ok, 1 = wrong PIN, 3 = locked
+	####################################################
+	public static function check_securepin($securepin)
+	{
+		global $lbssbindir;
+
+		$pinerror_file = LBHOMEDIR . "/log/system_tmpfs/securepin.errors";
+
+		if (file_exists($pinerror_file)) {
+			$pinerr = json_decode(file_get_contents($pinerror_file), true);
+			if (!is_array($pinerr)) { $pinerr = array(); }
+
+			if (isset($pinerr['locked']) && $pinerr['locked']) {
+				if (time() < ($pinerr['locked'] + 5 * 60)) {
+					error_log("SecurePIN is locked");
+					sleep(3);
+					return 3;
+				} else {
+					unset($pinerr['locked']);
+					unset($pinerr['failure_count']);
+				}
+			}
+			file_put_contents($pinerror_file, json_encode($pinerr));
+		}
+
+		LBSystem::execute("sudo " . $lbssbindir . "/credentialshandler.pl checksecurepin " . escapeshellarg($securepin), $exitcode);
+
+		if ($exitcode == 0) {
+			// OK
+			if (file_exists($pinerror_file)) { unlink($pinerror_file); }
+			return null;
+		} else {
+			// Not equal
+			$pinerr = array();
+			if (file_exists($pinerror_file)) {
+				$pinerr = json_decode(file_get_contents($pinerror_file), true);
+				if (!is_array($pinerr)) { $pinerr = array(); }
+			}
+			if (empty($pinerr['failure_count'])) { $pinerr['failure_count'] = 0; }
+			sleep($pinerr['failure_count']);
+			$pinerr['failure_count'] += 1;
+			if (empty($pinerr['failure_time'])) { $pinerr['failure_time'] = time(); }
+			if ($pinerr['failure_count'] > 5) {
+				error_log("SecurePIN was locked");
+				$pinerr['locked'] = time();
+				file_put_contents($pinerror_file, json_encode($pinerr));
+				return 3;
+			}
+			file_put_contents($pinerror_file, json_encode($pinerr));
+			return 1;
+		}
+	}
+
+	####################################################
+	# lock
+	# LoxBerry-wide file locking to keep the system
+	# consistent. Checks running apt/dpkg processes and
+	# the important lock files list, cleans orphaned locks
+	# and creates /var/lock/<lockfile>.lock with the PID.
+	# Parameter (assoc array): 'lockfile' => name, 'wait' => secs
+	# Returns NULL if the lock was set (ok),
+	# otherwise the blocking reason as string.
+	####################################################
+	public static function lock($p = array())
+	{
+		global $lbsconfigdir;
+
+		$wait     = isset($p['wait']) ? $p['wait'] : 0;
+		$lockfile = isset($p['lockfile']) ? $p['lockfile'] : null;
+		if ($wait && $wait < 5) { $wait = 5; }
+
+		// Read important lock files list
+		$importantlockfilesfile = $lbsconfigdir . "/lockfiles.default";
+		$data = @file($importantlockfilesfile, FILE_IGNORE_NEW_LINES);
+		if ($data === false) {
+			error_log("Error opening important lock files file $importantlockfilesfile");
+			return "Error opening important lock files list";
+		}
+		if ($lockfile) { $data[] = $lockfile; }
+
+		$seemsrunning = 0;
+		$delay = 0;
+		do {
+			$seemsrunning = 0;
+
+			// Check for apt-get and dpkg updates running (exitcode 0 -> found)
+			LBSystem::execute('pgrep "apt-get|apt"', $rc_apt);
+			LBSystem::execute('pgrep "dpkg"', $rc_dpkg);
+			LBSystem::execute('pgrep -f /usr/bin/unattended-upgrade', $rc_uu);
+			LBSystem::execute('fuser /var/lib/dpkg/lock', $rc_dpkg_lock);
+			LBSystem::execute('fuser /var/lib/dpkg/lock-frontend', $rc_dpkg_frontend_lock);
+			LBSystem::execute('fuser /var/cache/apt/archives/lock', $rc_apt_archives_lock);
+
+			if ($rc_apt == 0 || $rc_dpkg == 0 || $rc_uu == 0 || $rc_dpkg_lock == 0 || $rc_dpkg_frontend_lock == 0 || $rc_apt_archives_lock == 0) {
+				if ($rc_apt == 0 || $rc_dpkg == 0 || $rc_dpkg_lock == 0 || $rc_dpkg_frontend_lock == 0 || $rc_apt_archives_lock == 0) {
+					$seemsrunning = 'apt, apt-get or dpkg';
+				}
+				if ($rc_uu == 0) { $seemsrunning = 'unattended-upgrade'; }
+				if ($wait) { sleep(5); $delay += 5; }
+			}
+
+			// Check for lock files
+			foreach ($data as $lf) {
+				$lf = trim($lf);
+				if ($lf === '') { continue; }
+				$lockfilename = "/var/lock/$lf.lock";
+				if (!file_exists($lockfilename)) { continue; }
+
+				$pid = trim(@file_get_contents($lockfilename));
+				if ($pid === '' || $pid === false) {
+					// PID file is empty
+					$unlockstatus = LBSystem::unlock(array('lockfile' => $lf));
+					if ($unlockstatus) {
+						$seemsrunning = $lf;
+						if (!$wait) { return "$lf: Cannot unlock " . $lockfile; }
+					} else {
+						continue;
+					}
+				} elseif (is_dir("/proc/$pid")) {
+					// PID is running
+					if (!$wait) { return $lf; }
+					$seemsrunning = $lf;
+				} else {
+					// PID is NOT running - unlock orphaned lock
+					$unlockstatus = LBSystem::unlock(array('lockfile' => $lf));
+					if ($unlockstatus) {
+						$seemsrunning = $lf;
+						if (!$wait) { return "$lf: Cannot unlock " . $lockfile; }
+					} else {
+						continue;
+					}
+				}
+				if ($seemsrunning && $wait) { sleep(5); $delay += 5; }
+			}
+		} while ($seemsrunning && $wait && $delay < $wait);
+		if ($seemsrunning) { return $seemsrunning; }
+
+		// Set own lockfile
+		if ($lockfile) {
+			$seemsrunning = 0;
+			$lockfilename = "/var/lock/$lockfile.lock";
+			do {
+				$res = @file_put_contents($lockfilename, getmypid());
+				if ($res === false) {
+					// Error writing the PID
+					$err = error_get_last();
+					$seemsrunning = 1;
+					if (!$wait) { return "$lockfile: " . ($err ? $err['message'] : 'Cannot write lock file'); }
+				} else {
+					// Writing was ok - change permissions to 0666
+					$loxberry = posix_getpwnam("loxberry");
+					if ($loxberry) {
+						@chown($lockfilename, $loxberry['uid']);
+						@chgrp($lockfilename, $loxberry['gid']);
+					}
+					@chmod($lockfilename, 0666);
+					return null;
+				}
+				$delay += 5;
+			} while ($delay < $wait);
+			return $lockfile;
+		}
+
+		return null;
+	}
+
+	####################################################
+	# unlock
+	# Removes a lock file created with LBSystem::lock().
+	# Parameter (assoc array): 'lockfile' => name
+	# Returns NULL if ok, otherwise the reason as string.
+	####################################################
+	public static function unlock($p = array())
+	{
+		$lockfile = isset($p['lockfile']) ? $p['lockfile'] : null;
+		$lockfilename = "/var/lock/" . $lockfile . ".lock";
+		if (file_exists($lockfilename)) {
+			if (!@unlink($lockfilename)) {
+				$err = error_get_last();
+				return "$lockfile: Cannot delete lock file - " . ($err ? $err['message'] : '');
+			}
+			return null;
+		}
+		return null;
+	}
 }
 
 // END of class LBSystem
