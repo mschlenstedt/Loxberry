@@ -421,10 +421,72 @@ EOT;
 		$logopath = "$lbshtmldir/images/icons/$lbpplugindir/icon_$iconsize.png";
 		$logopath_web = "/system/images/icons/$lbpplugindir/icon_$iconsize.png";
 	
-		if (file_exists($logopath)) { 
+		if (file_exists($logopath)) {
 			return $logopath_web;
 		}
 		return undef;
+	}
+
+	///////////////////////////////////////////////////////////////////
+	// iso_languages - returns the ISO-639-1 language codes and names
+	// Parameters:
+	//   $onlyavail  If true, only languages with an existing
+	//               system language file (language_XX.ini) are returned.
+	//   $selection  'values' -> returns an array of ISO-639-1 codes
+	//               'labels' -> returns an assoc array code => LanguageName
+	///////////////////////////////////////////////////////////////////
+	public static function iso_languages($onlyavail = false, $selection = 'values')
+	{
+		global $lbsconfigdir;
+		global $lbstemplatedir;
+
+		$filename = $lbsconfigdir . "/languages.default";
+		$lines = @file($filename, FILE_IGNORE_NEW_LINES);
+		if ($lines === false) {
+			error_log("iso_languages: Cannot open system language list $filename");
+			return array();
+		}
+
+		// Collect available system languages from the lang directory
+		$availlangs = array();
+		$dir = $lbstemplatedir . "/lang/";
+		if (is_dir($dir)) {
+			foreach (scandir($dir) as $direntry) {
+				if ($direntry === '.' || $direntry === '..') { continue; }
+				$parts = explode('.', $direntry);
+				$name = isset($parts[0]) ? $parts[0] : '';
+				$ext = isset($parts[1]) ? $parts[1] : '';
+				if (substr($name, 0, 9) !== 'language_' || $ext !== 'ini') { continue; }
+				$availlangs[] = substr($name, 9, 2);
+			}
+		}
+
+		$resultvals = array();
+		$resultlabels = array();
+
+		$linecount = count($lines);
+		for ($i = 0; $i < $linecount; $i++) {
+			// Skip header line of CSV
+			if ($i == 0) { continue; }
+			$cl = $lines[$i];
+			if ($cl === "") { continue; }
+
+			// SK_Language;ISO639_3;ISO639_2B;ISO639_2T;ISO639_1;LanguageName;...
+			$cols = explode(';', $cl);
+			$iso1 = isset($cols[4]) ? $cols[4] : '';
+			$langname = isset($cols[5]) ? $cols[5] : '';
+
+			if ($onlyavail && !in_array($iso1, $availlangs)) {
+				continue;
+			}
+			$resultlabels[$iso1] = $langname;
+			$resultvals[] = $iso1;
+		}
+
+		if ($selection == 'labels') {
+			return $resultlabels;
+		}
+		return $resultvals;
 	}
 
 	public static function logfile_button_html ($p)
