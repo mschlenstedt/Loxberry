@@ -766,6 +766,105 @@
 			text-shadow: none !important;
 		}
 
+	
+
+		/* ============================================================
+		   V18.54 user-theme text bridge for the actual Preview template
+		   ------------------------------------------------------------
+		   These files are loaded from:
+		   templates/system/themes/preview/index_*.html
+		   The rule is placed in the template's only/first style block,
+		   so it works in both the full Studio renderer and the Core
+		   renderer, which extracts exactly that first style block.
+		   ============================================================ */
+
+		/* Cards, headings and ordinary preview copy. */
+		body[class*="theme-user-"] .lb-content .lb-card,
+		body[class*="theme-user-"] .lb-content .lb-card h1,
+		body[class*="theme-user-"] .lb-content .lb-card h2,
+		body[class*="theme-user-"] .lb-content .lb-card h3,
+		body[class*="theme-user-"] .lb-content .lb-card h4,
+		body[class*="theme-user-"] .lb-content .lb-card h5,
+		body[class*="theme-user-"] .lb-content .lb-card h6,
+		body[class*="theme-user-"] .lb-content .lb-card p,
+		body[class*="theme-user-"] .lb-content .lb-card strong,
+		body[class*="theme-user-"] .lb-content .lb-preview-mini-content,
+		body[class*="theme-user-"] .lb-content .lb-preview-app-title,
+		body[class*="theme-user-"] .lb-content .lb-preview-app-desc {
+			color: var(--lb-text, #1f2933) !important;
+			-webkit-text-fill-color: var(--lb-text, #1f2933) !important;
+			text-shadow: none !important;
+		}
+
+		/* Form labels, checkbox/radio text and normal descriptive labels. */
+		body[class*="theme-user-"] .lb-content .lb-form-label,
+		body[class*="theme-user-"] .lb-content .lb-form-row > label,
+		body[class*="theme-user-"] .lb-content .lb-checkbox-row,
+		body[class*="theme-user-"] .lb-content .lb-checkbox-row label,
+		body[class*="theme-user-"] .lb-content .lb-checkbox-row span,
+		body[class*="theme-user-"] .lb-content .lb-radio-row,
+		body[class*="theme-user-"] .lb-content .lb-radio-row label,
+		body[class*="theme-user-"] .lb-content .lb-radio-row span {
+			color: var(--lb-text, #1f2933) !important;
+			-webkit-text-fill-color: var(--lb-text, #1f2933) !important;
+			text-shadow: none !important;
+		}
+
+		/* Theme legend and all normal table body cells. */
+		body[class*="theme-user-"] .lb-content #theme_colors.lb-card table.lb-table tbody td,
+		body[class*="theme-user-"] .lb-content #theme_colors.lb-card table.lb-table tbody td span,
+		body[class*="theme-user-"] .lb-content #theme_colors.lb-card table.lb-table tbody td code,
+		body[class*="theme-user-"] .lb-content table.lb-table tbody td.lb-table-cell,
+		body[class*="theme-user-"] .lb-content table.lb-table tbody td:not(.lb-table-status-cell) {
+			color: var(--lb-table-cell-text, var(--lb-text, #1f2933)) !important;
+			-webkit-text-fill-color: var(--lb-table-cell-text, var(--lb-text, #1f2933)) !important;
+			text-shadow: none !important;
+		}
+
+		/* Muted/help copy uses the matching semantic role. */
+		body[class*="theme-user-"] .lb-content .lb-preview-muted,
+		body[class*="theme-user-"] .lb-content .lb-preview-help-text,
+		body[class*="theme-user-"] .lb-content .lb-form-help,
+		body[class*="theme-user-"] .lb-content .lb-multiselect-help,
+		body[class*="theme-user-"] .lb-content .lb-preview-app-author,
+		body[class*="theme-user-"] .lb-content .lb-preview-app-tag {
+			color: var(--lb-text-muted, var(--lb-text-secondary, var(--lb-text, #64748b))) !important;
+			-webkit-text-fill-color: var(--lb-text-muted, var(--lb-text-secondary, var(--lb-text, #64748b))) !important;
+			text-shadow: none !important;
+		}
+
+		/* Controls and state cells retain their dedicated component colors. */
+		body[class*="theme-user-"] .lb-content button,
+		body[class*="theme-user-"] .lb-content .lb-btn,
+		body[class*="theme-user-"] .lb-content .lb-btn *,
+		body[class*="theme-user-"] .lb-content input,
+		body[class*="theme-user-"] .lb-content select,
+		body[class*="theme-user-"] .lb-content textarea,
+		body[class*="theme-user-"] .lb-content .lb-btn-group,
+		body[class*="theme-user-"] .lb-content .lb-btn-group *,
+		body[class*="theme-user-"] .lb-content .lb-toggle,
+		body[class*="theme-user-"] .lb-content .lb-toggle *,
+		body[class*="theme-user-"] .lb-content .lb-table-status-cell,
+		body[class*="theme-user-"] .lb-content .lb-section-title,
+		body[class*="theme-user-"] .lb-content table.lb-table thead th,
+		body[class*="theme-user-"] .lb-content table.lb-table tfoot td {
+			-webkit-text-fill-color: currentColor !important;
+		}
+
+		/* Mandatory legacy layout transparency regression guard. */
+		.form-group,
+		.form-group > font,
+		table.formtable,
+		table.formtable > tbody,
+		table.formtable > tbody > tr,
+		table.formtable > tbody > tr > th,
+		table.formtable > tbody > tr > td {
+			background: transparent !important;
+			background-color: transparent !important;
+			background-image: none !important;
+			box-shadow: none !important;
+		}
+
 	</style>
 </head>
 <body class="lb-layout __LB_CURRENT_THEME_CLASS__ __LB_RENDERER_CONTEXT_CLASS__">
@@ -774,7 +873,7 @@
 			<img class="lb-sidebar-logo" src="/system/images/Logo_green_transparent.png" alt="LoxBerry">
 			<div>
 				<div class="lb-sidebar-brand">LoxBerry <span>DS</span></div>
-				<div class="lb-sidebar-version">Preview V18.53</div>
+				<div class="lb-sidebar-version">Preview V18.54</div>
 			</div>
 		</a>
 		<nav class="lb-sidebar-nav">
@@ -1479,7 +1578,7 @@
 		</main>
 
 		<footer class="lb-footer">
-			<div class="lb-preview-muted">LoxBerry DS Preview V18.53</div>
+			<div class="lb-preview-muted">LoxBerry DS Preview V18.54</div>
 		</footer>
 	</div>
 

@@ -359,14 +359,14 @@ body[class*="theme-"] .ui-slider-switch .ui-slider-label {
 
 body[class*="theme-"] .ui-slider-switch .ui-slider-label-a {
 	background-color: var(--lb-switch-on-bg, var(--lb-toggle-active-bg, var(--lb-active-bg, var(--lb-primary, #007aff)))) !important;
-	color: var(--lb-jqm-toggle-label-text, #000000) !important;
-	-webkit-text-fill-color: var(--lb-jqm-toggle-label-text, #000000) !important;
+	color: var(--lb-jqm-toggle-on-text, var(--lb-switch-on-text, var(--lb-toggle-active-text, var(--lb-active-text, var(--lb-btn-primary-text, #fff))))) !important;
+	-webkit-text-fill-color: var(--lb-jqm-toggle-on-text, var(--lb-switch-on-text, var(--lb-toggle-active-text, var(--lb-active-text, var(--lb-btn-primary-text, #fff))))) !important;
 }
 
 body[class*="theme-"] .ui-slider-switch .ui-slider-label-b {
 	background-color: var(--lb-switch-off-bg, var(--lb-toggle-bg, var(--lb-btn-bg, rgba(0,0,0,.18)))) !important;
-	color: var(--lb-jqm-toggle-label-text, #000000) !important;
-	-webkit-text-fill-color: var(--lb-jqm-toggle-label-text, #000000) !important;
+	color: var(--lb-jqm-toggle-off-text, var(--lb-switch-off-text, var(--lb-toggle-text, var(--lb-btn-text, var(--lb-text, #111))))) !important;
+	-webkit-text-fill-color: var(--lb-jqm-toggle-off-text, var(--lb-switch-off-text, var(--lb-toggle-text, var(--lb-btn-text, var(--lb-text, #111))))) !important;
 }
 
 body[class*="theme-"] .ui-slider-switch .ui-slider-handle,
@@ -401,19 +401,33 @@ body[class*="theme-"] .ui-flipswitch {
 
 body[class*="theme-"] .ui-flipswitch.ui-flipswitch-active {
 	background-color: var(--lb-switch-on-bg, var(--lb-toggle-active-bg, var(--lb-active-bg, var(--lb-primary, #007aff)))) !important;
-	color: var(--lb-jqm-toggle-label-text, #000000) !important;
-	-webkit-text-fill-color: var(--lb-jqm-toggle-label-text, #000000) !important;
+	color: var(--lb-jqm-toggle-on-text, var(--lb-switch-on-text, var(--lb-toggle-active-text, var(--lb-active-text, var(--lb-btn-primary-text, #fff))))) !important;
+	-webkit-text-fill-color: var(--lb-jqm-toggle-on-text, var(--lb-switch-on-text, var(--lb-toggle-active-text, var(--lb-active-text, var(--lb-btn-primary-text, #fff))))) !important;
 }
 
-/* JQM toggle labels should stay readable on light/dark switch surfaces.
-   Default is intentionally black for legacy labelled toggle widgets. */
-body[class*="theme-"] .ui-slider-switch .ui-slider-label,
+/* JQM toggle labels follow the contrast role of their actual track state. */
 body[class*="theme-"] .ui-slider-switch .ui-slider-label-a,
+body[class*="theme-"] .ui-slider-switch .ui-slider-label-a:hover,
+body[class*="theme-"] .ui-slider-switch .ui-slider-label-a:focus {
+	color: var(--lb-jqm-toggle-on-text, var(--lb-switch-on-text, var(--lb-toggle-active-text, var(--lb-active-text, var(--lb-btn-primary-text, #fff))))) !important;
+	-webkit-text-fill-color: var(--lb-jqm-toggle-on-text, var(--lb-switch-on-text, var(--lb-toggle-active-text, var(--lb-active-text, var(--lb-btn-primary-text, #fff))))) !important;
+	text-shadow: none !important;
+}
+
 body[class*="theme-"] .ui-slider-switch .ui-slider-label-b,
-body[class*="theme-"] .ui-flipswitch .ui-flipswitch-on,
-body[class*="theme-"] .ui-flipswitch .ui-flipswitch-off {
-	color: var(--lb-jqm-toggle-label-text, #000000) !important;
-	-webkit-text-fill-color: var(--lb-jqm-toggle-label-text, #000000) !important;
+body[class*="theme-"] .ui-slider-switch .ui-slider-label-b:hover,
+body[class*="theme-"] .ui-slider-switch .ui-slider-label-b:focus,
+body[class*="theme-"] .ui-flipswitch:not(.ui-flipswitch-active) .ui-flipswitch-off {
+	color: var(--lb-jqm-toggle-off-text, var(--lb-switch-off-text, var(--lb-toggle-text, var(--lb-btn-text, var(--lb-text, #111))))) !important;
+	-webkit-text-fill-color: var(--lb-jqm-toggle-off-text, var(--lb-switch-off-text, var(--lb-toggle-text, var(--lb-btn-text, var(--lb-text, #111))))) !important;
+	text-shadow: none !important;
+}
+
+body[class*="theme-"] .ui-flipswitch.ui-flipswitch-active .ui-flipswitch-on,
+body[class*="theme-"] .ui-flipswitch.ui-flipswitch-active .ui-flipswitch-on:hover,
+body[class*="theme-"] .ui-flipswitch.ui-flipswitch-active .ui-flipswitch-on:focus {
+	color: var(--lb-jqm-toggle-on-text, var(--lb-switch-on-text, var(--lb-toggle-active-text, var(--lb-active-text, var(--lb-btn-primary-text, #fff))))) !important;
+	-webkit-text-fill-color: var(--lb-jqm-toggle-on-text, var(--lb-switch-on-text, var(--lb-toggle-active-text, var(--lb-active-text, var(--lb-btn-primary-text, #fff))))) !important;
 	text-shadow: none !important;
 }
 
