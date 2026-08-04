@@ -71,44 +71,43 @@
 	appearance: none;
 }
 
-/* Hide jQM select wrapper when native lb-select is used */
-.ui-select:has(.lb-select) {
-	display: contents;
+/* JQM-enhanced lb-select ownership contract (V500)
+   jQuery Mobile may enhance a native select.lb-select and copy the same class
+   to its generated label span. In that structure the generated .ui-btn/span
+   remains the only visible surface; the original select is the transparent
+   interaction layer. Standalone select.lb-select controls continue to use the
+   normal V4 component rules below. */
+.ui-select:has(> .ui-btn > select.lb-select) {
+	display: block;
+	position: relative;
 }
-
-/* When a jQM .ui-btn wraps a select.lb-select (Sonos-style custom widget):
-   reset all jQM button styling so only the native lb-select is visible. */
-.ui-btn:has(> select.lb-select),
-.ui-btn:has(> span + select.lb-select) {
-	background: none !important;
-	background-image: none !important;
-	border: none !important;
-	box-shadow: none !important;
-	padding: 0 !important;
-	margin: 0 !important;
-	text-shadow: none !important;
+.ui-select > .ui-btn:has(> select.lb-select) {
+	position: relative;
+}
+.ui-select > .ui-btn:has(> select.lb-select) > span.lb-select {
 	display: block !important;
+}
+.ui-select > .ui-btn:has(> select.lb-select) > select.lb-select {
+	position: absolute !important;
+	inset: 0 !important;
 	width: 100% !important;
-	max-width: none !important;
-	overflow: visible !important;
-}
-.ui-btn:has(> select.lb-select)::before,
-.ui-btn:has(> select.lb-select)::after {
-	display: none !important;
-}
-.ui-btn:has(> select.lb-select) > span.lb-select {
-	display: none !important;
-}
-.ui-btn:has(> select.lb-select) > select.lb-select {
-	opacity: 1 !important;
-	position: static !important;
-	-webkit-clip-path: none !important;
-	clip-path: none !important;
-	clip: auto !important;
-	width: 100% !important;
-	height: auto !important;
-	max-height: none !important;
+	height: 100% !important;
 	min-height: 0 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	border: 0 !important;
+	background: transparent !important;
+	background-image: none !important;
+	box-shadow: none !important;
+	opacity: 0 !important;
+	color: transparent !important;
+	-webkit-text-fill-color: transparent !important;
+	clip: auto !important;
+	clip-path: none !important;
+	z-index: 2 !important;
+	cursor: pointer;
+	-webkit-appearance: none !important;
+	appearance: none !important;
 }
 
 /* data-role="fieldcontain": horizontal label+control layout when jQM is not active.
@@ -375,7 +374,7 @@ label.lb-toggle.ui-btn::after {
 .lb-form-help,
 .lb-btn,
 .lb-input,
-.lb-select,
+select.lb-select,
 .lb-textarea {
 	font-family: var(--lb-font);
 	-webkit-font-smoothing: antialiased;
@@ -478,7 +477,7 @@ button.lb-btn-danger:hover {
 
 /* --- Inputs --- */
 .lb-input,
-.lb-select,
+select.lb-select,
 .lb-textarea {
 	width: 100%;
 	padding: 10px 14px;
@@ -491,7 +490,7 @@ button.lb-btn-danger:hover {
 	transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .lb-input:focus,
-.lb-select:focus,
+select.lb-select:focus,
 .lb-textarea:focus {
 	border-color: var(--lb-primary);
 	outline: none;
@@ -819,7 +818,7 @@ button.lb-btn-danger:hover {
 }
 
 /* --- Select --- */
-.lb-select {
+select.lb-select {
 	appearance: none;
 	-webkit-appearance: none;
 	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23737373' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
@@ -833,9 +832,9 @@ button.lb-btn-danger:hover {
    Keep option text explicitly black so theme input text colors do not make the
    opened dropdown unreadable. */
 .lb-content select option,
-.lb-select option,
+select.lb-select option,
 .lb-content select optgroup,
-.lb-select optgroup {
+select.lb-select optgroup {
 	color: #000000 !important;
 	-webkit-text-fill-color: #000000 !important;
 	background-color: #ffffff;
@@ -843,7 +842,7 @@ button.lb-btn-danger:hover {
 }
 
 .lb-content select option:checked,
-.lb-select option:checked {
+select.lb-select option:checked {
 	color: #000000 !important;
 	-webkit-text-fill-color: #000000 !important;
 	background-color: #d9d9d9;
@@ -1837,13 +1836,13 @@ span.form-error {
 
    Keep the original component base rules above intact. This section only adds
    opt-in DS features and modifiers. It intentionally avoids redefining the
-   original base selectors such as .lb-table, .lb-btn, .lb-input, .lb-select,
+   original base selectors such as .lb-table, .lb-btn, .lb-input, select.lb-select,
    .note, .form-error and .lb-disabled.
    ============================================================ */
 
 /* --- DS form state additions: opt-in via lb-* classes only --- */
 .lb-input:hover:not(:disabled),
-.lb-select:hover:not(:disabled),
+select.lb-select:hover:not(:disabled),
 .lb-textarea:hover:not(:disabled) {
 	background: var(--lb-input-hover-bg, var(--lb-input-bg));
 	color: var(--lb-input-hover-text, var(--lb-input-text));
@@ -1859,7 +1858,7 @@ span.form-error {
 }
 
 .lb-input:disabled,
-.lb-select:disabled,
+select.lb-select:disabled,
 .lb-textarea:disabled {
 	background: var(--lb-input-disabled-bg, var(--lb-input-bg));
 	background-color: var(--lb-input-disabled-bg, var(--lb-input-bg));
@@ -1874,7 +1873,7 @@ span.form-error {
 }
 
 .lb-input:disabled:focus,
-.lb-select:disabled:focus,
+select.lb-select:disabled:focus,
 .lb-textarea:disabled:focus {
 	border-color: var(--lb-input-disabled-border, var(--lb-input-border));
 	box-shadow: none;
@@ -1889,7 +1888,7 @@ span.form-error {
 	text-shadow: none;
 }
 
-.lb-select[multiple],
+select.lb-select[multiple],
 .lb-content select.lb-select[multiple] {
 	appearance: auto;
 	-webkit-appearance: auto;
@@ -1898,7 +1897,7 @@ span.form-error {
 	min-height: 7.5rem;
 }
 
-.lb-select[multiple] option,
+select.lb-select[multiple] option,
 .lb-content select.lb-select[multiple] option {
 	padding: 6px 8px;
 }
@@ -2156,7 +2155,7 @@ table.lb-table {
 .lb-table.lb-table-compact .lb-textarea {
 	padding: var(--lb-table-control-padding-compact, 4px 8px);
 }
-.lb-table.lb-table-compact .lb-select {
+.lb-table.lb-table-compact select.lb-select {
 	padding: var(--lb-table-select-padding-compact, 4px 28px 4px 8px);
 }
 

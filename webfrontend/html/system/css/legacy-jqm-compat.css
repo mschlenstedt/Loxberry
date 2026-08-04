@@ -574,3 +574,84 @@ body[class*="theme-"] input[type="submit"]:disabled {
 	text-shadow: none !important;
 	box-shadow: none !important;
 }
+
+/* JQM_SELECT_SURFACE_CONTRACT_V500
+   Keep jQM and native V4 selects strictly separated. This targets only the
+   actual jQM structure shown by legacy plugins: .ui-select > .ui-btn >
+   span + select. The generated button is the visible field; the native select
+   remains a transparent overlay. No standalone select.lb-select is changed. */
+body[class*="theme-"] .ui-select:has(> .ui-btn > select) {
+	display: block !important;
+	position: relative !important;
+	min-height: 40px !important;
+	height: auto !important;
+	box-sizing: border-box !important;
+}
+
+body[class*="theme-"] .ui-select > .ui-btn:has(> select) {
+	display: flex !important;
+	align-items: center !important;
+	position: relative !important;
+	width: 100% !important;
+	min-height: 40px !important;
+	height: auto !important;
+	margin: 0 !important;
+	padding: 9px 38px 9px 12px !important;
+	line-height: 20px !important;
+	box-sizing: border-box !important;
+	overflow: hidden !important;
+}
+
+body[class*="theme-"] .ui-select > .ui-btn:has(> select) > span,
+body[class*="theme-"] .ui-select > .ui-btn:has(> select) > .ui-selectmenu-text {
+	display: block !important;
+	min-width: 0 !important;
+	line-height: 20px !important;
+	color: inherit !important;
+	-webkit-text-fill-color: currentColor !important;
+	white-space: nowrap !important;
+	overflow: hidden !important;
+	text-overflow: ellipsis !important;
+}
+
+body[class*="theme-"] .ui-select > .ui-btn:has(> select) > select {
+	position: absolute !important;
+	inset: 0 !important;
+	width: 100% !important;
+	height: 100% !important;
+	min-height: 0 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	border: 0 !important;
+	background: transparent !important;
+	background-image: none !important;
+	box-shadow: none !important;
+	opacity: 0 !important;
+	color: transparent !important;
+	-webkit-text-fill-color: transparent !important;
+	clip: auto !important;
+	clip-path: none !important;
+	z-index: 2 !important;
+	cursor: pointer !important;
+	-webkit-appearance: none !important;
+	appearance: none !important;
+}
+
+/* SELECT_HOST_SURFACE_TRANSPARENCY_V502
+   The white surface behind log-level dropdowns is usually not a table cell.
+   Legacy plugins wrap both native V4 and jQuery-Mobile selects in a
+   fieldcontain/controlgroup surface. Keep only those select-host wrappers
+   transparent; the visible select/button keeps its theme surface. */
+body[class*="theme-"] .ui-field-contain:has(select.lb-select),
+body[class*="theme-"] div[data-role="fieldcontain"]:has(select.lb-select),
+body[class*="theme-"] fieldset.ui-controlgroup:has(.ui-select > .ui-btn > select),
+body[class*="theme-"] fieldset[data-role="controlgroup"]:has(select.lb-select),
+body[class*="theme-"] fieldset[data-role="controlgroup"]:has(.ui-select > .ui-btn > select),
+body[class*="theme-"] fieldset.ui-controlgroup:has(.ui-select > .ui-btn > select) > .ui-controlgroup-controls,
+body[class*="theme-"] fieldset[data-role="controlgroup"]:has(select.lb-select) > .ui-controlgroup-controls,
+body[class*="theme-"] fieldset[data-role="controlgroup"]:has(.ui-select > .ui-btn > select) > .ui-controlgroup-controls {
+	background: transparent !important;
+	background-color: transparent !important;
+	background-image: none !important;
+	box-shadow: none !important;
+}
