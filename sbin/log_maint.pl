@@ -95,6 +95,32 @@ sub reduce_logfiles
 }
 
 #############################################################
+# truncate_logfile
+#
+# Truncates a logfile in place (copytruncate) and returns 1 on success,
+# 0 on failure. Failing to truncate is not fatal for the maintenance run,
+# but it MUST be logged: log_maint runs as user loxberry, and a logfile
+# owned by a different user without group write permission cannot be
+# truncated by it. Until this check existed the failure was completely
+# silent - the file was gzip'd every single hour, the archive rewritten
+# and the original kept growing without limit.
+#############################################################
+
+sub truncate_logfile
+{
+	my ($file, $stub) = @_;
+
+	my $fh;
+	if ( ! open( $fh, '>', $file ) ) {
+		LOGERR "--> Could not truncate $file: $! - the file will keep growing. Check owner and permissions (log_maint runs as user " . getpwuid($<) . ").";
+		return 0;
+	}
+	print $fh $stub if defined $stub;
+	close($fh);
+	return 1;
+}
+
+#############################################################
 # logfiles_cleanup for all logfiles
 #############################################################
 
@@ -138,11 +164,19 @@ sub logfiles_cleanup
         		->in($_);
 
 		for my $file (@files){
+			# Check writability BEFORE gzipping: without write permission
+			# the truncate below cannot work, and gzipping a file we are
+			# unable to shrink afterwards would only burn CPU every hour
+			# and destroy the existing archive for nothing.
+			if ( ! -w $file ) {
+				LOGERR "--> Skipping $file (Size is: " . sprintf("%.1f",(-s "$file")/1000/1000) . " MB): not writable by user " . getpwuid($<) . " - cannot truncate it after gzipping. Check owner and permissions.";
+				next;
+			}
 			LOGDEB "--> $file (Size is: " . sprintf("%.1f",(-s "$file")/1000/1000) . " MB) will be GZIP'd.";
 			my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize,$blocks) = stat("$file");
 			unlink ("$file.gz") if (-e "$file.gz");
 			qx{yes | $bins->\{GZIP\} --keep --best "$file"};
-			open( my $fh, '>', $file); print $fh "<INFO> Loxberry Log Maintenance cleaned up logfile " . currtime(); close($fh);
+			truncate_logfile( $file, "<INFO> Loxberry Log Maintenance cleaned up logfile " . currtime() );
 			# unlink($file);
 			chown $uid, $gid, "$file\.gz";
 			chmod $mode, "$file\.gz";
@@ -157,6 +191,11 @@ sub logfiles_cleanup
         		->in($_);
 
 		for my $file (@files){
+			# See the size branch above - no write permission, no truncate.
+			if ( ! -w $file ) {
+				LOGERR "--> Skipping $file (Age is: " . sprintf("%.1f",(-M "$file")) . " days): not writable by user " . getpwuid($<) . " - cannot truncate it after gzipping. Check owner and permissions.";
+				next;
+			}
 			LOGDEB "--> $file (Age is: " . sprintf("%.1f",(-M "$file")) . " days) will be GZIP'd.";
 			my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize,$blocks) = stat("$file");
 			unlink ("$file.gz") if (-e "$file.gz");
@@ -166,7 +205,7 @@ sub logfiles_cleanup
 			# would not free the space and the daemon would log into the
 			# void. The empty stub is skipped by ->nonempty above, so the
 			# archive is not overwritten by a re-gzip of the stub later.
-			open( my $fh, '>', $file); close($fh);
+			truncate_logfile( $file );
 			chown $uid, $gid, "$file\.gz";
 			chmod $mode, "$file\.gz";
 		}

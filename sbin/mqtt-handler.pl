@@ -357,7 +357,11 @@ sub ensure_mosquitto_dropin
 		. "ExecStartPre=/bin/chown mosquitto /var/log/mosquitto\n"
 		. "ExecStartPre=/bin/touch \${LBSTMPFSLOG}/mosquitto.log\n"
 		. "ExecStartPre=/bin/chown mosquitto:loxberry \${LBSTMPFSLOG}/mosquitto.log\n"
-		. "ExecStartPre=/bin/chmod 640 \${LBSTMPFSLOG}/mosquitto.log\n"
+		# Group loxberry needs WRITE permission (660, not 640): log_maint.pl
+		# runs as user loxberry and truncates oversized logfiles in place
+		# (copytruncate). With 640 that truncate silently failed and
+		# mosquitto.log grew without limit while being re-gzipped hourly.
+		. "ExecStartPre=/bin/chmod 660 \${LBSTMPFSLOG}/mosquitto.log\n"
 		. "ExecStartPre=/bin/ln -sf \${LBSTMPFSLOG}/mosquitto.log /var/log/mosquitto/mosquitto.log\n";
 
 	# Current content (if any)
