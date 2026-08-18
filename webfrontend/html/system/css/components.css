@@ -240,6 +240,38 @@ label.lb-toggle.ui-btn::after {
 	outline: none;
 	box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.15);
 }
+
+/* Exempt jQuery-Mobile-enhanced fields from the rules above (issue #1548).
+   jQM draws border and background on the wrapper (.ui-input-text /
+   .ui-input-search) and expects the field inside it to stay transparent -
+   the rules above turn it into a second, opaque box on top of the first one.
+   On a search field that is fatal: the text starts at 12px instead of 1.75em
+   and runs across the magnifier, which jQM paints as .ui-input-search:after.
+
+   A type selector does not help here: $.mobile.degradeInputs replaces the
+   element with a copy carrying type="text" and data-type="<original>", so in
+   the DOM there is no input[type="search"] left - and head.html degrades
+   date, time, number and friends the same way.
+
+   :not(.lb-input) keeps migrated fields out of it - a .lb-input that jQM
+   happens to wrap is supposed to keep the design system styling, which is what
+   the .ui-input-text:has(.lb-input) rule above already takes care of.
+   Specificity is (0,3,1) against the (0,2,1) of the rules above, so this wins
+   without !important. */
+.lb-content .ui-input-text input:not(.lb-input),
+.lb-content .ui-input-search input:not(.lb-input) {
+	border: 0;
+	background: transparent none;
+	padding: .4em;
+}
+.lb-content .ui-input-search input:not(.lb-input) {
+	padding-left: 1.75em;
+}
+.lb-content .ui-input-text input:not(.lb-input):focus,
+.lb-content .ui-input-search input:not(.lb-input):focus {
+	box-shadow: none;
+}
+
 .lb-content select {
 	padding: 8px 36px 8px 12px;
 	border: 1px solid var(--lb-input-border);
