@@ -808,8 +808,17 @@ button.lb-btn-danger:hover {
 	background: var(--lb-primary);
 	color: white;
 }
+/* Hide the native radio/checkbox. For the design-system class .lb-btn-group
+   and for the jQuery Mobile wrappers .ui-radio/.ui-checkbox alike (issue
+   #1541): jQM only ever positions the native element (structure CSS) and
+   relied on the button background covering it - LoxBerry 4's flatter buttons
+   no longer do, so it shows up below a controlgroup. .ui-radio/.ui-checkbox
+   are jQM-generated only, and the label carries a matching "for", so the
+   control stays operable exactly as .lb-btn-group already is. */
 .lb-btn-group input[type="radio"],
-.lb-btn-group input[type="checkbox"] {
+.lb-btn-group input[type="checkbox"],
+.ui-radio input,
+.ui-checkbox input {
 	position: absolute;
 	opacity: 0;
 	width: 0;
