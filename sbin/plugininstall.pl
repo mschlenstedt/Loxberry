@@ -488,7 +488,12 @@ sub install {
 		$pautoupdates = "True";
 	}
 
-	if ( is_disabled($parch) || $parch eq "" ) {
+	# Normalise the architecture restriction. Anything that is a disable OR an
+	# enable keyword (true/yes/on/1/...) is NOT an architecture and means "no
+	# restriction" - fold it to "False" so a stray keyword can never turn into a
+	# fatal ERR_ARCH below (issue #1540). A real arch string like
+	# "aarch64,x86_64" is neither, and passes through unchanged.
+	if ( is_disabled($parch) || is_enabled($parch) || $parch eq "" ) {
 		$parch = "False";
 	}
 
@@ -558,7 +563,11 @@ sub install {
 	}
 
 	# Arch check
-	if ( is_enabled($parch) ) {
+	# is_enabled() only ever returns true for keywords, never for an
+	# architecture string, so this must test "set and not False" instead
+	# (issue #1540). Keywords were already folded to "False" above, so what
+	# reaches here is a real architecture restriction.
+	if ( $parch ne "False" ) {
 		my $archcheck = 0;
 		foreach (split(/,/,$parch)){
 			if (-e "$lbsconfigdir/is_$_.cfg" || -e "$lbsconfigdir/is_arch_$_.cfg" ) {
@@ -568,7 +577,11 @@ sub install {
 			}
 		}
 		if (!$archcheck) {
-			$message = "$LL{'ERR_ARCH'}";
+			# Name the required and the detected architecture - a bare "wrong
+			# architecture" leaves the author guessing (issue #1540).
+			my (undef, $sysarch) = execute( command => "uname -m" );
+			$sysarch =~ s/^\s+|\s+$//g;
+			$message = "$LL{'ERR_ARCH'} " . sprintf($LL{'ERR_ARCH_DETAIL'}, $parch, $sysarch);
 			LOGCRIT $message;
 			&fail($message);
 		}
@@ -1989,6 +2002,7 @@ sub localphrases {
 	ERR_PIDNOTEXIST => "The PID does not exist.",
 	INF_START_UNINSTALL_EXE => "Executing uninstall script.",
 	ERR_ARCH => "This system has the wrong architecture.",
+	ERR_ARCH_DETAIL => "The plugin requires: %s. This system is: %s.",
 	OK_ARCH => "The system's architecture is supported.",
 	INF_LBVERSION => "Current LoxBerry version: ",
 	INF_MINVERSION => "Installation limited from: ",
