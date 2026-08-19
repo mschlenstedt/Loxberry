@@ -32,9 +32,6 @@
 		</div>
 	</dialog>
 
-	<!-- Status Bar -->
-	<div id="footerLBStatusbar" style="display:none;z-index:1000;overflow:hidden;background-color:#6dac20;position:fixed;bottom:0;height:30px;width:100%;padding:6px;text-align:center;color:white;"></div>
-
 <script>
 function lb_updateTabbarHeight() {
 	var tb = document.getElementById('lb-tab-bar');
@@ -97,4 +94,10 @@ $( document ).ready(function() {
 
 <div id="lang" style="display: none"><TMPL_VAR LANG></div>
 </div><!-- /data-role page -->
+<!-- Status Bar: direct child of <body>, OUTSIDE the jQM page, so its
+     stacking is deterministic and independent of any stacking context a
+     plugin page introduces. z-index 1000 keeps it below jQM popups
+     (container 1100 / overlay 1099) so a popup is not covered, and above
+     normal page content (issue #1544). -->
+<div id="footerLBStatusbar" style="display:none;z-index:1000;overflow:hidden;background-color:#6dac20;position:fixed;bottom:0;height:30px;width:100%;padding:6px;text-align:center;color:white;"></div>
 <!-- pageend.html END -->
