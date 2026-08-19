@@ -79,6 +79,10 @@ if( $q->{action} eq "saveconfig" ) {
 	$cfg->{'Backup'}->{'Schedule'}->{'Fre'} = $q->{'fre'};
 	$cfg->{'Backup'}->{'Schedule'}->{'Sat'} = $q->{'sat'};
 	$cfg->{'Backup'}->{'Schedule'}->{'Sun'} = $q->{'sun'};
+	# Anchor date for the "every n weeks" schedule (issue #1543). The week
+	# decision was moved out of the crontab into clone_sd_cron.pl, which counts
+	# whole weeks from this date - set to today whenever the schedule is saved.
+	$cfg->{'Backup'}->{'Schedule'}->{'Since'} = localtime->ymd;
 	$jsonobj->write();
 
 	# Create cronjob
@@ -99,16 +103,13 @@ if( $q->{action} eq "saveconfig" ) {
 		my ($hour, $minute) = split (/:/, $q->{'timef'});
 		$hour = "0" if (!$hour || $hour eq "00");
 		$minute = "0" if (!$minute || $minute eq "00");
-		# Run on every x week only: 
-		# https://cronexpressiontogo.com/every-4-weeks-on-wednesday
-		# https://stackoverflow.com/questions/350047/how-to-instruct-cron-to-execute-a-job-every-second-week/350061
-		# I love Linux for it's simplicity :-)
-		my $prefix ="";
-		if ($q->{'repeat'} > 1) {
-			my $divider = $q->{'repeat'} * 7;
-			my $t = localtime;
-			$prefix = '[[ $(("( $(date +%s) - $(date +%s --date=' . $t->ymd("") . ') ) / 86400 % ' . $divider . '")) -eq 0 ]] && ';
-		}
+		# "Every n weeks" is decided in clone_sd_cron.pl, not here. The old
+		# approach prefixed the crontab command with a shell test - that could
+		# never work: an unescaped % ends the command in a crontab, and the
+		# prefix was bash syntax ([[ ]], quotes inside $(( ))) while cron runs
+		# /bin/sh (dash). It also only matched a single weekday. The crontab now
+		# just carries the weekday(s) and time; the script counts whole weeks
+		# from Schedule.Since and exits early on a week that is not due (#1543).
 		my $dow = join(",",@dow);
 		my $block = new Config::Crontab::Block;
 		$block->last( new Config::Crontab::Comment( -data => '## LoxBerry Backup - do not change manually. You changes will be overwritten!' ) );
@@ -116,7 +117,7 @@ if( $q->{action} eq "saveconfig" ) {
 		$block->last( new Config::Crontab::Event( -minute  => $minute,
                 		                          -hour    => $hour,
                 		                          -dow     => $dow,
-                                		          -command => "loxberry " . $prefix . $lbssbindir . "/clone_sd_cron.pl > /dev/null 2>&1" ) );
+                                		          -command => "loxberry " . $lbssbindir . "/clone_sd_cron.pl > /dev/null 2>&1" ) );
 		$ct->last($block);
 		$ct->write;
 	} else {
