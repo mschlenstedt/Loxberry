@@ -24,6 +24,7 @@ use strict;
 use CGI;
 use LoxBerry::System;
 use File::Basename;
+use Cwd ();
 
 ##########################################################################
 # Read Settings
@@ -163,6 +164,31 @@ else {
 		print $maintemplate->output();
 		LoxBerry::Web::foot();
 	   
+	} elsif ($iscgi) {
+		print $cgi->header(-type => 'text/plain;charset=utf-8');
+		print $SL{'LOGVIEWER.ERR_NOLOG_TXT'};
+	} else {
+		print $SL{'LOGVIEWER.ERR_NOLOG_TXT'};
+	}
+	exit (1);
+}
+
+# Reject path traversal / symlinks that escape the allowed bases (issue #1549).
+# The existence chain above only strips a known prefix; $R::logfile may still
+# contain "../", so the composed path can point outside ~/log, ~/data,
+# ~/webfrontend/html/tmp or /tmp. Canonicalize it (abs_path also resolves
+# symlinks) and require the real path to stay inside one of those bases. On
+# rejection behave exactly like "file not found" so nothing is leaked about what
+# exists outside.
+my $real = Cwd::abs_path("$R::logfilepath/$R::logfile");
+my @allowed_bases = map { Cwd::abs_path($_) // $_ }
+	("/tmp", "$lbhomedir/log", "$lbhomedir/webfrontend/html/tmp", "$lbhomedir/data");
+unless ( defined($real) && grep { $real eq $_ || index($real, "$_/") == 0 } @allowed_bases ) {
+	if ($iscgi && $maintemplate) {
+		$maintemplate->param('NOLOGFILE', 1);
+		LoxBerry::Web::head();
+		print $maintemplate->output();
+		LoxBerry::Web::foot();
 	} elsif ($iscgi) {
 		print $cgi->header(-type => 'text/plain;charset=utf-8');
 		print $SL{'LOGVIEWER.ERR_NOLOG_TXT'};
