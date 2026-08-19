@@ -510,18 +510,31 @@ sub exec_plugincheck
 		$json = from_json( $output );
 	}; 
 	if ($@) {
-		# Is plain
-		($result{desc}, $result{status}, $result{result}) = split( /\n/, $output );
+		# Is plain — desc/status/result on lines 1-3, optional url/logfile on 4-5.
+		# Only set url/logfile when actually given: healthcheck.html keys off
+		# "!== undefined", so an empty/undef value would render a broken link.
+		my ($desc, $status, $res, $url, $logfile) = split( /\n/, $output );
+		$result{desc}   = $desc;
+		$result{status} = $status;
+		$result{result} = $res;
+		$result{url}     = $url     if( defined $url     && $url     ne '' );
+		$result{logfile} = $logfile if( defined $logfile && $logfile ne '' );
 	} else {
-		# Is json
+		# Is json — url/logfile are documented optional fields the display
+		# (healthcheck.html) already handles; pass them through. Set them only
+		# when present so a plugin that omits them keeps rendering no link.
 		$result{desc} = $json->{desc};
 		$result{status} = $json->{status};
 		$result{result} = $json->{result};
+		$result{url}     = $json->{url}     if( defined $json->{url}     && $json->{url}     ne '' );
+		$result{logfile} = $json->{logfile} if( defined $json->{logfile} && $json->{logfile} ne '' );
 	}
 	
 	if( $action eq 'title' ) {
 		delete $result{status};
 		delete $result{result};
+		delete $result{url};
+		delete $result{logfile};
 	} else {
 		my @allowed = ( '0', '3', '4', '5', '6' );
 		if ( ! grep { /$result{status}/ } @allowed ) {
