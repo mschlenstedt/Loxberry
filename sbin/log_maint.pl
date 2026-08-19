@@ -19,6 +19,20 @@ my $maxlogfiles;
 my $keeplogfiles;
 my $bins = LoxBerry::System::get_binaries();
 
+# Directories that must persist permanently and be exempt from ALL log
+# maintenance - no gzip, truncate, delete or count-trim (issue #1539). The
+# plugin install/uninstall logs live here and are an install audit trail; they
+# sit on the persistent log/system disk (not a tmpfs), and only log_maint ever
+# removed them.
+my @protected_dirs = ( "$lbhomedir/log/system/plugininstall" );
+sub is_protected {
+	my ($path) = @_;
+	foreach my $p (@protected_dirs) {
+		return 1 if ( $path eq $p || index($path, "$p/") == 0 );
+	}
+	return 0;
+}
+
 my $log = LoxBerry::Log->new (
     package => 'core',
 	name => 'Log Maintenance',
@@ -162,6 +176,8 @@ sub logfiles_cleanup
 			->size( ">=$size" . "M" )
 			->nonempty
         		->in($_);
+		# Keep permanently-protected dirs untouched (issue #1539).
+		@files = grep { !is_protected($_) } @files;
 
 		for my $file (@files){
 			# Check writability BEFORE gzipping: without write permission
@@ -189,6 +205,8 @@ sub logfiles_cleanup
 			->mtime( "<=$logmtime")
 			->nonempty
         		->in($_);
+		# Keep permanently-protected dirs untouched (issue #1539).
+		@files = grep { !is_protected($_) } @files;
 
 		for my $file (@files){
 			# See the size branch above - no write permission, no truncate.
@@ -217,6 +235,8 @@ sub logfiles_cleanup
 			->mtime( "<=$gzmtime")
 			->nonempty
         		->in($_);
+		# Keep permanently-protected dirs untouched (issue #1539).
+		@files = grep { !is_protected($_) } @files;
 
 		for my $file (@files){
 			LOGDEB "--> $file (Age is: " . sprintf("%.1f",(-M "$file")) . " days) will be DELETED.";
@@ -259,6 +279,8 @@ sub logfiles_cleanup
 			->size( ">=$size" . "M" )
 			->nonempty
         		->in($_);
+		# Keep permanently-protected dirs untouched (issue #1539).
+		@files = grep { !is_protected($_) } @files;
 
 		for my $file (@files){
 			LOGDEB "--> $file (Size is: " . sprintf("%.1f",(-s "$file")/1000/1000) . " MB) will be DELETED.";
@@ -294,6 +316,8 @@ sub logfiles_cleanup
 			->name( '*.log.gz' )
 			->nonempty
         		->in($_);
+		# Keep permanently-protected dirs untouched (issue #1539).
+		@files = grep { !is_protected($_) } @files;
 
 		for my $file (@files){
 			LOGDEB "--> $file will be DELETED.";
@@ -335,6 +359,8 @@ sub logfiles_cleanup
 			->mtime( "<=$freshmtime" )
 			->nonempty
         		->in($_);
+		# Keep permanently-protected dirs untouched (issue #1539).
+		@files = grep { !is_protected($_) } @files;
 
 		for my $file (@files){
 			LOGDEB "--> $file will be TRUNCATED.";
@@ -401,6 +427,8 @@ sub trim_logcount {
 		my @countdirs = grep { -d $_ } glob("$disk/*");
 		push @countdirs, $disk;
 		foreach my $dir (@countdirs) {
+			# Never trim a permanently-protected dir (issue #1539).
+			next if ( is_protected($dir) );
 			my $rule = File::Find::Rule->file()->name('*.log', '*.log.gz');
 			$rule = $rule->maxdepth(1) if ($dir eq $disk); # subfolders are checked separately
 			my @logfiles = $rule->in($dir);
