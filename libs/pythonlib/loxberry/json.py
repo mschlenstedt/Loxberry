@@ -25,8 +25,11 @@ library (absolute imports), so this module name does not shadow it.
 
 from __future__ import annotations
 
+import errno
 import json as _json
 import os
+import sys
+import time
 
 __version__ = "2.2.1.4"
 
@@ -103,14 +106,29 @@ class LoxBerryJSON(object):
             # Nothing changed - do not touch the file (spare the SD card)
             return None
 
+        # Open read-write without truncating (O_RDWR|O_CREAT), NOT mode "w":
+        # "w" empties the file the moment it is opened - before the lock is
+        # held. While a competing writer holds the lock the file therefore
+        # sits at 0 bytes, and it stays empty for good if this process dies
+        # in that window. Truncate after writing instead. Mode 0o666 lets the
+        # umask decide, exactly as open(..., "w") did.
         try:
-            with open(self.filename, "w", encoding="utf-8") as fh:
-                if _HAVE_FCNTL:
-                    try:
-                        fcntl.flock(fh, fcntl.LOCK_EX)
-                    except OSError:
-                        pass
+            fd = os.open(self.filename, os.O_RDWR | os.O_CREAT, 0o666)
+        except OSError:
+            return None
+        try:
+            fh = os.fdopen(fd, "r+", encoding="utf-8")
+        except OSError:
+            os.close(fd)
+            return None
+
+        try:
+            with fh:
+                if not self._lock_exclusive(fh):
+                    return None
+                fh.seek(0)
                 fh.write(new_content)
+                fh.truncate()
         except OSError:
             return None
 
@@ -207,6 +225,34 @@ class LoxBerryJSON(object):
         return "// LoxBerryJSON.jsblock: JSON Encoder failed.\n"
 
     # ------------------------------------------------------------------
+    def _lock_exclusive(self, fh):
+        """Take LOCK_EX with a timeout, mirroring LoxBerry::JSON->write().
+
+        Retries non-blocking every 50ms until self.locktimeout (default 30s)
+        expires, instead of blocking forever on a stuck lock holder. Returns
+        True if the lock is held (or if the filesystem cannot lock at all -
+        writing unlocked is what this library did before).
+        """
+        if not _HAVE_FCNTL:
+            return True
+        timeout = self.locktimeout if self.locktimeout is not None else 30
+        deadline = time.monotonic() + timeout
+        while True:
+            try:
+                fcntl.flock(fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                return True
+            except OSError as e:
+                if e.errno not in (errno.EACCES, errno.EAGAIN):
+                    # Locking unsupported on this filesystem - carry on unlocked.
+                    return True
+            if time.monotonic() >= deadline:
+                sys.stderr.write(
+                    "LoxBerryJSON.write: ERROR Could not get exclusive lock "
+                    "after %s seconds: %s\n" % (timeout, self.filename)
+                )
+                return False
+            time.sleep(0.05)
+
     def _chown_loxberry(self):
         try:
             import pwd
