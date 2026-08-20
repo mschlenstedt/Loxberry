@@ -89,9 +89,25 @@ sub backup_form
 	my $storages = LoxBerry::Storage::get_storage_html(formid => 'storagepath', type_usb => 1, type_net => 1, type_custom => 1, custom_folder => 1, readwriteonly => 1, show_browse => 1, data_mini => 1);
 	$template->param('STORAGES_HTML', $storages);
 
-	# Check: /boot/firmware/config.txt must exist (Raspberry Pi Bookworm/Trixie)
+	# Decide whether to warn "this is not a Raspberry Pi". A single check is
+	# unreliable because none of the signals holds on every system - real Pis
+	# were getting the warning. Several independent signals may clear it, and
+	# only if all of them fail do we warn:
+	#   1. /boot/firmware/config.txt - fresh DietPi Bookworm/Trixie images
+	#      mount the boot partition there. (Upgraded systems still use /boot,
+	#      so this alone misses them.)
+	#   2. config/system/is_raspberry.cfg - the installer's hardware flag.
+	#      Present when DietPi still named the model "Raspberry Pi ..."; newer
+	#      DietPi names it "RPi ...", so on some installs the flag is absent.
+	#   3. bin/showpitype - reports type_<n> for any Pi (4 and 5 included,
+	#      32- and 64-bit), independent of the boot-partition layout.
 	my $warn_not_raspberry = 1;
-	$warn_not_raspberry = 0 if ( -f "/boot/firmware/config.txt" );
+	if ( -f "/boot/firmware/config.txt" || -e "$lbsconfigdir/is_raspberry.cfg" ) {
+		$warn_not_raspberry = 0;
+	} else {
+		my $pitype = qx{$lbsbindir/showpitype 2>/dev/null};
+		$warn_not_raspberry = 0 if ( defined $pitype && $pitype =~ /^type_/ );
+	}
 	$template->param('WARN_NOT_RASPBERRY', $warn_not_raspberry);
 
 }
