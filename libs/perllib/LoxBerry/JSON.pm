@@ -212,7 +212,11 @@ sub write
 			print STDERR "LoxBerry::JSON->write: ERROR Could not open $self->{filename}: $!\n";
 			return undef;
 		}
-		my $locktimeout = defined $self->{locktimeout} ? $self->{locktimeout} : 5;
+		# Default 30s: long enough to ride out a competing writer (a CGI saving
+		# general.json, plugininstall touching plugindatabase.json), short enough
+		# not to wedge a web request behind a stuck lock holder. Retries yield
+		# every 50ms, so waiting costs no CPU.
+		my $locktimeout = defined $self->{locktimeout} ? $self->{locktimeout} : 30;
 		my $locktime = time();
 		my $is_locked=0;
 		do {
