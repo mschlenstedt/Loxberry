@@ -44,9 +44,15 @@ if ($command eq "start") {
 
 	# Connect
 	LOGINF "Connect to Cloudflare Service...";
+	my $cloudflared = &cloudflaredbin;
+	if (!$cloudflared) {
+		LOGERR "Cloudflare daemon (cloudflared) not found. Install it with: apt-get install cloudflared";
+		exit (1);
+	}
+	LOGINF "Using Cloudflare daemon: $cloudflared";
 	&killcfd;
 	unlink('/tmp/remoteconnect.log');
-	my ($exitcode) = execute { command => "/usr/local/bin/cloudflared --url http://" . LoxBerry::System::get_localip() . ":" . LoxBerry::System::lbwebserverport() . " > /tmp/remoteconnect.log 2>&1 &" };
+	my ($exitcode) = execute { command => "$cloudflared --url http://" . LoxBerry::System::get_localip() . ":" . LoxBerry::System::lbwebserverport() . " > /tmp/remoteconnect.log 2>&1 &" };
 	if ($exitcode != 0) {
 		LOGERR "Could not start Cloudflare Daemon. Exitcode: $exitcode";
 		&killcfd;
@@ -144,6 +150,21 @@ sub remoteurl {
 		}
 	}
 	return ($remoteurl);
+}
+
+# Locate the cloudflared binary.
+# The daemon comes from Cloudflare's apt repository and is installed to
+# /usr/bin. Before that switch it was downloaded on demand to $lbsbindir, and
+# some installations carry a manually placed binary in /usr/local/bin - so all
+# known locations are probed instead of hardcoding a single path.
+sub cloudflaredbin {
+	foreach my $bin ("/usr/bin/cloudflared", "/usr/local/bin/cloudflared", "$lbsbindir/cloudflared") {
+		return ($bin) if (-x $bin);
+	}
+	my $bin = `command -v cloudflared 2>/dev/null`;
+	chomp ($bin);
+	return ($bin) if ($bin && -x $bin);
+	return;
 }
 
 sub killcfd {

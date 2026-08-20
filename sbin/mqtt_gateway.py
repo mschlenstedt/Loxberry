@@ -54,6 +54,23 @@ _udp_in_port: int = 11884
 _udp_out_sock: socket.socket | None = None
 _queue: "asyncio.Queue | None" = None   # set in main(); lets UDP IN enqueue resend jobs
 
+# Runtime statistics, published every 60s by _stats_publisher() (issue #1547).
+# Plain module counters: incrementing an int in the hot paths costs nothing,
+# and the publisher resets them when it has taken a copy.
+_lb_version: str = ""            # LoxBerry version from general.json (Base.Version)
+_stats_start_mono: float = 0.0   # loop.time() at startup  -> uptime
+_stats_start_epoch: int = 0      # wall clock at startup   -> startepoch
+_stat_msgin: int = 0             # MQTT messages received
+_stat_udpin: int = 0             # UDP IN datagrams received
+_stat_failed: int = 0            # failed HTTP sends
+_stat_proc_sum: float = 0.0      # sum of delivery times (ms)
+_stat_proc_cnt: int = 0          # number of delivery times in the sum
+_stat_proc_max: float = 0.0      # slowest delivery of the interval (ms)
+_stat_queue_max: int = 0         # deepest queue backlog seen this interval
+_stat_cpu_last: float = 0.0      # os.times() user+system at last publish
+_stat_wall_last: float = 0.0     # loop.time() at last publish
+_STATS_INTERVAL: float = 60.0    # publish interval in seconds (V1 used 60s too)
+
 UDP_PREFIX = "MQTT: "
 UDP_MAX = 220
 
@@ -397,7 +414,7 @@ async def _keepalive_publisher(client: aiomqtt.Client, base: str) -> None:
 
 async def mqtt_listener(queue: asyncio.Queue, mqtt_config: dict) -> None:
     """Async task: connect to MQTT broker, subscribe to all topics, feed queue."""
-    global _mqtt_client
+    global _mqtt_client, _stat_msgin
     host        = mqtt_config.get("host", "localhost")
     port        = int(mqtt_config.get("port", 1883))
     username    = mqtt_config.get("username")
@@ -444,6 +461,7 @@ async def mqtt_listener(queue: asyncio.Queue, mqtt_config: dict) -> None:
                         topic       = str(message.topic)
                         payload     = message.payload.decode("utf-8", errors="replace")
                         recv_mono   = loop.time()
+                        _stat_msgin += 1
                         # recv_ts is only used for DEBUG logging — build it lazily so
                         # strftime + payload repr don't run per message at lower levels.
                         recv_ts     = ""
@@ -474,8 +492,11 @@ async def dispatcher(queue: asyncio.Queue, status_event: asyncio.Event) -> None:
     The actual HTTP/UDP sending happens in the per-miniserver workers
     (ms_worker), so miniservers are served in parallel while each single
     miniserver still receives its requests strictly sequentially."""
+    global _stat_queue_max
     while True:
         item = await queue.get()
+        if queue.qsize() > _stat_queue_max:
+            _stat_queue_max = queue.qsize()
         if item["type"] == "mqtt":
             await _process_mqtt(item, status_event)
         elif item["type"] == "resend":
@@ -610,8 +631,11 @@ async def ms_worker(ms_id: str, queue: asyncio.Queue,
     (FIFO — two values for the same VI can never overtake each other). Each
     configured miniserver gets its own queue + worker, so a slow or dead
     miniserver only stalls its own sends while the others keep running."""
+    global _stat_queue_max
     while True:
         job = await queue.get()
+        if queue.qsize() > _stat_queue_max:
+            _stat_queue_max = queue.qsize()
         if job["type"] == "sends":
             await _process_sends(session, ms_id, queue, job, status_event)
         elif job["type"] == "reset":
@@ -623,7 +647,7 @@ async def _process_sends(session, ms_id: str, queue: asyncio.Queue,
     """Process one 'sends' job for one miniserver: dedup check, sequential
     HTTP sends with a 10 ms pause between requests, then one bundled UDP
     packet for all UDP pairs of the job."""
-    global _sent_since_summary
+    global _sent_since_summary, _stat_failed, _stat_proc_sum, _stat_proc_cnt, _stat_proc_max
     loop        = asyncio.get_event_loop()
     received_at = job.get("received_at", 0.0)
     received_ts = job.get("received_ts", "?")
@@ -643,6 +667,13 @@ async def _process_sends(session, ms_id: str, queue: asyncio.Queue,
             return
 
         elapsed_ms = (loop.time() - received_at) * 1000
+        # Feeds procmsavg/procmsmax. Counted here, after the dedup check, so
+        # the average covers exactly the values that really go out to a
+        # miniserver - the same number the WebUI shows as last_processing_ms.
+        _stat_proc_sum += elapsed_ms
+        _stat_proc_cnt += 1
+        if elapsed_ms > _stat_proc_max:
+            _stat_proc_max = elapsed_ms
         send_dt    = datetime.now()
         # send_ts is logging-only; send_dt itself feeds real cache fields below.
         send_ts    = (send_dt.strftime("%H:%M:%S.") + f"{send_dt.microsecond // 1000:03d}"
@@ -665,6 +696,8 @@ async def _process_sends(session, ms_id: str, queue: asyncio.Queue,
             ok, http_status = await send_http(session, ms, vi_name, value)
             pm["http"] = make_http_result(ok, http_status)
             status_event.set()
+            if not ok:
+                _stat_failed += 1
             if ok:
                 _sent_since_summary += 1
                 if force:
@@ -927,6 +960,8 @@ async def handle_udp_in(msg: str, addr: tuple) -> None:
       retain  topic message          explicit retain with retain-flag
       topic message                  legacy publish (2+ words; 1st word = topic)
     """
+    global _stat_udpin
+    _stat_udpin += 1
     LOGOK(f"UDP IN from {addr[0]}:{addr[1]}: {msg}")
 
     # ── 1. Internal save trigger ─────────────────────────────────────────────
@@ -1152,16 +1187,95 @@ def make_udp_result() -> dict:
     }
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
-async def _send_summary_logger() -> None:
-    """Periodic INFO summary of sent values. Per-send success is logged at
-    DEBUG only (level 7) to avoid one tmpfs log line per datapoint at the
-    default level; this keeps a coarse heartbeat visible at INFO instead."""
-    global _sent_since_summary
+def _read_rss_mb() -> "float | None":
+    """Resident set size of this process in MB, from /proc/self/statm."""
+    try:
+        pages = int(Path("/proc/self/statm").read_text().split()[1])
+        return round(pages * os.sysconf("SC_PAGE_SIZE") / (1024 * 1024), 1)
+    except Exception:
+        return None
+
+
+async def _stats_publisher() -> None:
+    """Publish the gateway's own telemetry to <host>/mqttgateway/ every 60s,
+    and log the INFO send summary while at it (issue #1547).
+
+    V1 published the metrics of its PID-controlled poll loop here (pollms,
+    pollcpucurpct, pollpidvalpct, pollproccnt). V2 is event driven and has no
+    poll loop, so those numbers have no counterpart; what is measured instead
+    is throughput, delivery time, size and load. Everything is retained, so
+    the Finder and a Loxone subscription see a value immediately after
+    subscribing - a gateway that died is signalled by the last will on
+    'status', not by stale numbers.
+
+    Per-send success stays at DEBUG (level 7): one tmpfs log line per
+    datapoint would be far too much at the default level."""
+    global _sent_since_summary, _stat_msgin, _stat_udpin, _stat_failed
+    global _stat_proc_sum, _stat_proc_cnt, _stat_proc_max, _stat_queue_max
+    global _stat_cpu_last, _stat_wall_last
+
+    base = _gw_topic_base()
+    loop = asyncio.get_event_loop()
+
     while True:
-        await asyncio.sleep(60)
-        if _sent_since_summary:
-            LOGINF(f"{_sent_since_summary} value(s) sent to Miniserver(s) in last 60s")
-            _sent_since_summary = 0
+        await asyncio.sleep(_STATS_INTERVAL)
+
+        # Copy and reset first: whatever happens while publishing belongs to
+        # the next interval, and a broker outage must not let the counters
+        # pile up into one huge spike afterwards.
+        msgin, udpin = _stat_msgin, _stat_udpin
+        sent, failed = _sent_since_summary, _stat_failed
+        psum, pcnt   = _stat_proc_sum, _stat_proc_cnt
+        pmax, qmax   = _stat_proc_max, _stat_queue_max
+        _stat_msgin = _stat_udpin = _stat_failed = 0
+        _sent_since_summary = 0
+        _stat_proc_sum  = 0.0
+        _stat_proc_cnt  = 0
+        _stat_proc_max  = 0.0
+        _stat_queue_max = 0
+
+        if sent:
+            LOGINF(f"{sent} value(s) sent to Miniserver(s) in last 60s")
+
+        # CPU time this process burnt since the last publish, in % of one core.
+        t = os.times()
+        cpu_now, wall_now = t.user + t.system, loop.time()
+        cpupct = 0.0
+        if _stat_wall_last:
+            dwall = wall_now - _stat_wall_last
+            if dwall > 0:
+                cpupct = round((cpu_now - _stat_cpu_last) / dwall * 100, 1)
+        _stat_cpu_last, _stat_wall_last = cpu_now, wall_now
+
+        if _mqtt_client is None:
+            LOGDEB("Stats: MQTT not connected - interval skipped")
+            continue
+
+        stats = {
+            "msgin":         msgin,                                   # MQTT messages received
+            "udpin":         udpin,                                   # UDP IN datagrams
+            "msgsent":       sent,                                    # values sent to miniservers
+            "msgfailed":     failed,                                  # failed HTTP sends
+            "procmsavg":     round(psum / pcnt, 1) if pcnt else 0,     # avg delivery time (ms)
+            "procmsmax":     round(pmax, 1),                          # slowest delivery (ms)
+            "queuemax":      qmax,                                    # deepest backlog
+            "subscriptions": len(_subscriptions),
+            "vicount":       len(_cache),                             # known virtual inputs
+            "miniservers":   len(_ms_queues),
+            "cpupct":        cpupct,
+            "memmb":         _read_rss_mb(),
+            "uptime":        int(wall_now - _stats_start_mono),       # seconds
+            "startepoch":    _stats_start_epoch,
+            "version":       _lb_version,
+        }
+        try:
+            for key, val in stats.items():
+                if val is None or val == "":
+                    continue
+                await _mqtt_client.publish(base + key, str(val), retain=True)
+            LOGDEB(f"Stats published: {stats}")
+        except Exception as exc:
+            LOGWARN(f"Stats publish failed: {exc}")
 
 async def _supervise(name: str, coro_factory) -> None:
     """Run a task coroutine forever; on an unexpected exception log the full
@@ -1185,6 +1299,7 @@ async def main() -> None:
     global _loglevel, _miniservers, _subscriptions, _reset_delay_ms, \
            _convert_booleans, _conversions, _use_http, _use_udp, \
            _udp_out_port, _udp_in_port
+    global _lb_version, _stats_start_mono, _stats_start_epoch
 
     try:
         (_miniservers, _subscriptions, _loglevel, _reset_delay_ms,
@@ -1201,6 +1316,9 @@ async def main() -> None:
     LOGINF(f"Subscriptions: {[s['id'] for s in _subscriptions]}")
     LOGINF(f"use_http={_use_http}  use_udp={_use_udp}  udp_out_port={_udp_out_port}")
 
+    _stats_start_mono  = asyncio.get_running_loop().time()
+    _stats_start_epoch = int(datetime.now().timestamp())
+
     queue        = asyncio.Queue()
     status_event = asyncio.Event()
     global _queue, _http_session, _status_event
@@ -1208,6 +1326,9 @@ async def main() -> None:
 
     try:
         raw = json.loads(CONFIG_GENERAL.read_text(encoding="utf-8"))
+        # Published as the 'version' stat: the gateway ships with the core and
+        # has no version of its own.
+        _lb_version = str(raw.get("Base", {}).get("Version", ""))
         user   = raw["Mqtt"].get("Brokeruser", "")
         passwd = raw["Mqtt"].get("Brokerpass", "")
         mqtt_cfg = {
@@ -1273,7 +1394,7 @@ async def main() -> None:
                     _supervise("dispatcher",  lambda: dispatcher(queue, status_event)),
                     _supervise("config_watcher", config_watcher),
                     _supervise("status_writer", lambda: status_writer(status_event, _cache)),
-                    _supervise("send_summary", _send_summary_logger),
+                    _supervise("stats_publisher", _stats_publisher),
                     _supervise("udp_listener", lambda: udp_listener(_udp_in_port)),
                 )
             finally:
