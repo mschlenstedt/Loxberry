@@ -1,0 +1,110 @@
+name: Mark and close stale issues
+
+# Markiert Issues ohne Aktivitaet nach 3 Monaten als "stale" und schliesst sie,
+# wenn danach ein volles Jahr lang nichts mehr passiert (15 Monate Inaktivitaet
+# insgesamt). Ein neuer Kommentar entfernt die Markierung automatisch wieder.
+#
+# Der Workflow muss im Default-Branch (master) liegen, sonst laeuft der
+# schedule-Trigger nicht.
+#
+# Doku: https://github.com/actions/stale
+
+on:
+  schedule:
+    # Taeglich 03:17 UTC. Ungerade Minute absichtlich: zur vollen Stunde ist die
+    # Action-Queue bei GitHub am vollsten und Laeufe verzoegern sich.
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+    inputs:
+      debugOnly:
+        description: "Trockenlauf - nur protokollieren, nichts aendern"
+        type: boolean
+        default: true
+
+permissions:
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stale
+  cancel-in-progress: false
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v11
+        with:
+          # ---------------------------------------------------------------
+          # Fristen
+          # ---------------------------------------------------------------
+          days-before-issue-stale: 90     # 3 Monate ohne Aktivitaet -> markieren
+          days-before-issue-close: 365    # + 1 Jahr nach der Markierung -> schliessen
+
+          # Pull Requests bleiben komplett unangetastet.
+          days-before-pr-stale: -1
+          days-before-pr-close: -1
+
+          # ---------------------------------------------------------------
+          # Markierung und Texte
+          # ---------------------------------------------------------------
+          stale-issue-label: "stale"
+          close-issue-reason: not_planned
+          remove-issue-stale-when-updated: true
+
+          stale-issue-message: >
+            This issue has been automatically marked as **stale** because it has
+            not had any activity for 90 days. It will be closed if no further
+            activity occurs within the next 365 days. A new comment removes the
+            label and resets the timer. If this is still relevant, please let us
+            know - thank you for contributing to LoxBerry!
+
+
+            Dieses Issue wurde automatisch als **stale** markiert, weil es seit
+            90 Tagen keine Aktivitaet mehr gab. Ohne weitere Rueckmeldung wird es
+            in 365 Tagen geschlossen. Ein neuer Kommentar entfernt die Markierung
+            und setzt die Frist zurueck. Falls das Thema noch aktuell ist, gebt
+            uns bitte kurz Bescheid.
+
+          close-issue-message: >
+            This issue was closed automatically because there was no further
+            activity for a whole year after it had been marked as stale. If the
+            problem still exists with a current LoxBerry version, please comment
+            here - it will be reopened.
+
+
+            Dieses Issue wurde automatisch geschlossen, weil nach der
+            Stale-Markierung ein volles Jahr lang keine Aktivitaet mehr erfolgt
+            ist. Falls das Problem mit einer aktuellen LoxBerry-Version
+            weiterhin besteht, bitte hier kommentieren - es wird dann wieder
+            geoeffnet.
+
+          # ---------------------------------------------------------------
+          # Ausnahmen - was der Bot nie anfasst
+          # ---------------------------------------------------------------
+          # Backlog-Milestone: alles, was bewusst auf spaeter geschoben wurde.
+          # (Nach einer Umstellung auf ein Label kann diese Zeile entfallen,
+          # das Label steht unten bereits in exempt-issue-labels.)
+          exempt-issue-milestones: "Later Feature"
+
+          exempt-issue-labels: >-
+            Later Feature,
+            pinned,
+            SECURITY,
+            CRITICAL,
+            must have,
+            Announcement
+
+          # Issues mit Bearbeiter gelten als "in Arbeit".
+          exempt-all-issue-assignees: true
+
+          # ---------------------------------------------------------------
+          # Durchsatz
+          # ---------------------------------------------------------------
+          # Obergrenze an API-Operationen pro Lauf (Default waere 30).
+          operations-per-run: 100
+          # Aelteste zuerst abarbeiten, falls das Limit greift.
+          ascending: true
+
+          # Trockenlauf nur bei manuellem Start ueber "Run workflow".
+          debug-only: ${{ inputs.debugOnly || false }}
