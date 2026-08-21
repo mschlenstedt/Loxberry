@@ -4,12 +4,11 @@ use warnings;
 use CGI qw/:standard/;
 use Scalar::Util qw(looks_like_number);
 use LoxBerry::System;
-use File::Basename qw(basename);
 
 # use LoxBerry::JSON;
 use JSON;
 			
-my $version = "3.0.0.0"; # Version of this script
+my $version = "3.0.0.1"; # Version of this script
 			
 ## ABOUT %response
 ## The END block sends the %response as json automatically
@@ -464,25 +463,9 @@ sub change_generalcfg
 # change general.json (internal function)
 ###################################################################
 
-################################
-# CSS Framework theme helpers
-################################
-sub user_theme_dirs
-{
-	return (
-		{
-			# CSS themes are data, not public html files.
-			# They are delivered to the browser by theme-file.cgi.
-			dir    => "$LoxBerry::System::lbhomedir/data/plugins/cssframework/themes",
-			source => 'data',
-		},
-		{
-			# Transitional fallback for very old bundled user themes.
-			dir    => "$LoxBerry::System::lbshtmldir/css/themes/user-themes",
-			source => 'legacy',
-		},
-	);
-}
+############################
+# Core user-theme helpers
+############################
 
 sub normalize_theme_id
 {
@@ -500,11 +483,8 @@ sub user_theme_path
 	$theme = normalize_theme_id($theme);
 	return undef if (!defined $theme || $theme !~ /^user-[a-z0-9][a-z0-9_-]*$/);
 
-	foreach my $theme_dir (user_theme_dirs()) {
-		my $path = "$theme_dir->{dir}/theme-$theme.css";
-		return $path if (-f $path);
-	}
-
+	my $path = "$LoxBerry::System::lbsthemedir/theme-$theme.css";
+	return $path if (-f $path && !-l $path);
 	return undef;
 }
 
@@ -520,26 +500,22 @@ sub is_valid_theme
 sub listthemes
 {
 	my @themes;
-	my %seen;
+	my $dir = $LoxBerry::System::lbsthemedir;
 
-	foreach my $theme_dir (user_theme_dirs()) {
-		my $dir = $theme_dir->{dir};
-		next if (!opendir(my $dh, $dir));
-
+	if (opendir(my $dh, $dir)) {
 		foreach my $file (sort readdir($dh)) {
 			next if ($file !~ /\Atheme-(user-[a-z0-9][a-z0-9_-]*)\.css\z/);
 			my $id = $1;
-			next if ($seen{$id}++);
-
 			my $path = "$dir/$file";
+			next if (!-f $path || -l $path);
+
 			push @themes, {
 				id     => $id,
 				name   => css_theme_display_name($path, $id),
 				file   => $file,
-				source => $theme_dir->{source},
+				source => 'core',
 			};
 		}
-
 		closedir($dh);
 	}
 

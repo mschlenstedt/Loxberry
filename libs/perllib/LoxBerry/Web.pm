@@ -15,7 +15,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "3.0.0.4";
+our $VERSION = "3.0.0.5";
 our $DEBUG;
 
 use base 'Exporter';
@@ -140,42 +140,50 @@ sub head
 	# Theme support
 	my $theme = $LoxBerry::System::lbtheme // 'soft-rounded';
 	my $theme_file;
+	my $theme_url;
 
 	# User themes may appear in two notations during the transition:
 	# - stored LoxBerry theme id: user-<slug>
-	# - CSS/Studio id and body class: theme-user-<slug>
+	# - CSS id and body class: theme-user-<slug>
 	# Normalize to the stored id here. This prevents false fallback to Core themes
-	# when an older/Studio value already contains the theme- prefix.
+	# when a value already contains the theme- prefix.
 	$theme =~ s/^theme-user-/user-/ if defined $theme;
 
 	if ($theme =~ /^user-[a-z0-9][a-z0-9_-]*$/) {
-		# Generated user themes are managed by the CSS Framework plugin.
-		my $plugin_theme_fs = "$LoxBerry::System::lbhomedir/data/plugins/cssframework/themes/theme-$theme.css";
-		my $legacy_theme_file = "themes/user-themes/theme-$theme.css";
+		# Published user themes are Core-owned data and are delivered by a Core CGI.
+		my $user_theme_fs = "$LoxBerry::System::lbsthemedir/theme-$theme.css";
 
-		if (-f $plugin_theme_fs) {
-			# THEME_FILE is appended to /system/css/ in the head template.
-			# Do not use a query string here, because some head templates append their
-			# own cache buster. PATH_INFO keeps the file name stable.
-			$theme_file = "../../admin/plugins/cssframework/theme-file.cgi/theme-$theme.css";
-		} elsif (-f "$LoxBerry::System::lbshtmldir/css/$legacy_theme_file") {
-			# Transitional fallback for bundled example themes from earlier preview packages.
-			$theme_file = $legacy_theme_file;
+		if (-f $user_theme_fs && !-l $user_theme_fs) {
+			$theme_url = "/admin/system/theme-file.cgi/theme-$theme.css";
+			# Compatibility for custom/older head templates that still prepend
+			# /system/css/ to THEME_FILE.
+			$theme_file = "../../admin/system/theme-file.cgi/theme-$theme.css";
+		} else {
+			$theme = 'soft-rounded';
+		}
+	}
+
+	if (!defined $theme_url) {
+		$theme = 'soft-rounded' unless $theme =~ /^(soft-rounded|clean-admin|glass|classic-lb)$/;
+		# Core themes live below /system/css/themes/. Keep the historic flat path
+		# as a compatibility fallback for transitional installations.
+		my $core_theme_file = "themes/theme-$theme.css";
+		if (-f "$LoxBerry::System::lbshtmldir/css/$core_theme_file") {
+			$theme_file = $core_theme_file;
+			$theme_url = "/system/css/$core_theme_file";
+		} elsif (-f "$LoxBerry::System::lbshtmldir/css/theme-$theme.css") {
+			$theme_file = "theme-$theme.css";
+			$theme_url = "/system/css/theme-$theme.css";
 		} else {
 			$theme = 'soft-rounded';
 			$theme_file = 'themes/theme-soft-rounded.css';
-		}
-	} else {
-		$theme = 'soft-rounded' unless $theme =~ /^(soft-rounded|clean-admin|glass|classic-lb)$/;
-		# Core themes live below /system/css/themes/. Keep a fallback to the old flat path.
-		$theme_file = "themes/theme-$theme.css";
-		if (! -f "$LoxBerry::System::lbshtmldir/css/$theme_file" && -f "$LoxBerry::System::lbshtmldir/css/theme-$theme.css") {
-			$theme_file = "theme-$theme.css";
+			$theme_url = '/system/css/themes/theme-soft-rounded.css';
 		}
 	}
 
 	$headobj->param( THEME_CLASS => "theme-$theme" );
 	$headobj->param( THEME_FILE => $theme_file );
+	$headobj->param( THEME_URL => $theme_url );
 
 	print "Content-Type: text/html; charset=utf-8\n\n";
 

@@ -11,8 +11,8 @@
 	<link rel="stylesheet" href="/system/css/utilities.css">
 <!-- Core themes. Filled by cssframework.cgi from /webfrontend/html/system/css/themes/theme-*.css. -->
 __LB_CORE_THEME_LINKS__
-<!-- Plugin-managed user themes. Filled by cssframework.cgi via theme-file.cgi from data/plugins/cssframework/themes/theme-user-*.css. -->
-__LB_PLUGIN_THEME_LINKS__
+<!-- Core-managed user themes. Filled via the Core theme-file.cgi from data/system/themes/. -->
+__LB_USER_THEME_LINKS__
 	<style>
 
 		/* Preview/Help pages use the LoxBerry/Core system font stack.
@@ -331,8 +331,8 @@ __LB_PLUGIN_THEME_LINKS__
 					background-color: var(--lb-primary, #8fc7ff) !important;
 				}
 
-		/* V18.42 shared Core/Studio renderer chrome
-		   Core renderer: no preview sidebar. Studio/plugin renderer: sidebar stays visible. */
+		/* V18.42 shared Core/embedded renderer chrome
+		   Core renderer: no preview sidebar. Embedded renderer: sidebar stays visible. */
 		body.lb-renderer-core {
 			display: block !important;
 		}

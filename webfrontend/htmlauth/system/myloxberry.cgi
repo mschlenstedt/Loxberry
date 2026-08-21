@@ -44,7 +44,7 @@ my $error;
 ##########################################################################
 
 # Version of this script
-my $version = "2.0.2.4";
+my $version = "2.0.2.5";
 my $sversion = LoxBerry::System::lbversion();
 my $jsonobj = LoxBerry::System::General->new();
 my $cfg = $jsonobj->open();
@@ -217,7 +217,9 @@ sub form {
 	
 	$maintemplate->param('NETWORK.FRIENDLYNAME', $cfg->{Network}->{Friendlyname});
 
-	my $currenttheme = $cfg->{Base}->{Theme} // 'classic';
+	# Use the normalized and validated Core theme value. This maps legacy names
+	# and prevents a missing user theme from leaving the dropdown unselected.
+	my $currenttheme = $LoxBerry::System::lbtheme // 'soft-rounded';
 	$maintemplate->param( CURRENTTHEME => $currenttheme );
 
 	# Print Template

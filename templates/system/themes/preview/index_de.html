@@ -14,11 +14,8 @@
 	<!-- Core themes. Filled by cssframework.cgi from /webfrontend/html/system/css/themes/theme-*.css. -->
 	__LB_CORE_THEME_LINKS__
 
-	<!-- Plugin-managed user themes. Filled by cssframework.cgi via theme-file.cgi from data/plugins/cssframework/themes/theme-user-*.css. -->
-	__LB_PLUGIN_THEME_LINKS__
-
-	<!-- Optional progressive enhancement. Replaced only when CSS Framework Studio is installed. -->
-	<!-- __LB_OPTIONAL_LIQUID_GLASS_RUNTIME__ -->
+	<!-- Core-managed user themes. Filled via the Core theme-file.cgi from data/system/themes/. -->
+	__LB_USER_THEME_LINKS__
 
 	<style>
 
@@ -320,7 +317,7 @@
 
 
 		/* V18.50 Liquid Glass Preview controls and popup separation.
-		   Without the optional Studio runtime all dropdown controls remain reliable
+		   Without an optional preview enhancement all dropdown controls remain reliable
 		   light browser surfaces with dark text. When the runtime is available,
 		   only the closed single-line select/multiselect shells receive the real
 		   Liquid Glass layers. Native option popups, open multiselect menus and
@@ -437,7 +434,7 @@
 			background-color: var(--lb-preview-dropdown-selected-bg) !important;
 		}
 
-		/* Optional Studio runtime: closed native single selects become real glass.
+		/* Optional preview enhancement: closed native single selects become real glass.
 		   Their browser popup options remain governed by the light rules above. */
 		:is(body.theme-user-liquid-glass, body.theme-liquid-glass)[data-lb-liquid-glass-preview-runtime="active"] .lb-content .lb-form-field .lb-lg-native-glass.lb-lg-native-select:has(> select.lb-select:not([multiple])) {
 			background: transparent !important;
@@ -463,7 +460,7 @@
 			color-scheme: light !important;
 		}
 
-		/* Optional Studio runtime: only the closed multiselect summary is glass.
+		/* Optional preview enhancement: only the closed multiselect summary is glass.
 		   The menu itself stays a white popup with dark option text. */
 		:is(body.theme-user-liquid-glass, body.theme-liquid-glass)[data-lb-liquid-glass-preview-runtime="active"] .lb-content .lb-form-field .lb-multiselect > summary.lb-lg-real-glass {
 			background: transparent !important;
@@ -650,8 +647,8 @@
 		}
 
 
-		/* V18.42 shared Core/Studio renderer chrome
-		   Core renderer: no preview sidebar. Studio/plugin renderer: sidebar stays visible. */
+		/* V18.42 shared Core/embedded renderer chrome
+		   Core renderer: no preview sidebar. Embedded renderer: sidebar stays visible. */
 		body.lb-renderer-core {
 			display: block !important;
 		}
@@ -774,7 +771,7 @@
 		   These files are loaded from:
 		   templates/system/themes/preview/index_*.html
 		   The rule is placed in the template's only/first style block,
-		   so it works in both the full Studio renderer and the Core
+		   so it works in both the full embedded renderer and the Core
 		   renderer, which extracts exactly that first style block.
 		   ============================================================ */
 
@@ -906,7 +903,7 @@
 		<main class="lb-content">
 			<div class="lb-card" id="theme_colors">
 				<h4>Farb-Legende des aktiven Themes</h4>
-				<div class="lb-preview-muted">Die Werte werden live aus den aktuell wirksamen CSS-Tokens gelesen. Dadurch zeigt die Legende auch pluginverwaltete User-Themes korrekt an.</div>
+				<div class="lb-preview-muted">Die Werte werden live aus den aktuell wirksamen CSS-Tokens gelesen. Dadurch zeigt die Legende auch Core-verwaltete User-Themes korrekt an.</div>
 				<table class="lb-table lb-table-compact lb-preview-color-table">
 					<thead>
 						<tr>
