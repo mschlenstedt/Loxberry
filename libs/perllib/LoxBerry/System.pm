@@ -9,7 +9,7 @@ use Carp;
 use Encode;
 
 package LoxBerry::System;
-our $VERSION = "4.0.0.15";
+our $VERSION = "4.0.0.16";
 our $DEBUG;
 
 use base 'Exporter';
@@ -43,7 +43,6 @@ our @EXPORT = qw (
 	$lbshtmlauthdir
 	$lbstemplatedir
 	$lbsdatadir
-	$lbsthemedir
 	$lbslogdir
 	$lbstmpfslogdir
 	$lbsconfigdir
@@ -152,7 +151,6 @@ our $lbshtmldir = "$lbhomedir/webfrontend/html/system";
 our $lbshtmlauthdir = "$lbhomedir/webfrontend/htmlauth/system";
 our $lbstemplatedir = "$lbhomedir/templates/system";
 our $lbsdatadir = "$lbhomedir/data/system";
-our $lbsthemedir = "$lbsdatadir/themes";
 our $lbslogdir = "$lbhomedir/log/system";
 our $lbstmpfslogdir = "$lbhomedir/log/system_tmpfs";
 our $lbsconfigdir = "$lbhomedir/config/system";
@@ -569,16 +567,17 @@ sub read_generaljson
 	$mqttcfg 	    = $cfg->{Mqtt};
 	$lbtheme        = $cfg->{Base}->{Theme} // 'soft-rounded';
 	$lbtheme        = lc($lbtheme);
+	$lbtheme        =~ s/^\s+|\s+$//g;
 	# Map legacy theme names to new themes
 	my %_theme_map = ('classic' => 'classic-lb', 'modern' => 'soft-rounded', 'dark' => 'glass');
 	$lbtheme = $_theme_map{$lbtheme} if exists $_theme_map{$lbtheme};
 	# Accept both stored notation (user-<slug>) and CSS notation
-	# (theme-user-<slug>). User theme files are Core-owned data below
-	# data/system/themes; an optional editor plugin is never required here.
+	# (theme-user-<slug>). User theme files remain plugin-managed below
+	# data/plugins/cssframework/themes; Core only validates and loads them.
 	$lbtheme =~ s/^theme-user-/user-/ if defined $lbtheme;
 	if ($lbtheme =~ /^user-[a-z0-9][a-z0-9_-]*$/) {
-		my $_user_theme_file = "$lbsthemedir/theme-$lbtheme.css";
-		$lbtheme = 'soft-rounded' unless (-f $_user_theme_file && !-l $_user_theme_file);
+		my $_user_theme_file = "$lbhomedir/data/plugins/cssframework/themes/theme-$lbtheme.css";
+		$lbtheme = 'soft-rounded' unless (-f $_user_theme_file && -r $_user_theme_file && !-l $_user_theme_file);
 	} else {
 		$lbtheme = 'soft-rounded' unless $lbtheme =~ /^(soft-rounded|clean-admin|glass|classic-lb)$/;
 	}

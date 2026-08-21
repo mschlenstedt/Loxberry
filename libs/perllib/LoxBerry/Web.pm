@@ -15,7 +15,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "3.0.0.5";
+our $VERSION = "3.0.0.6";
 our $DEBUG;
 
 use base 'Exporter';
@@ -150,10 +150,10 @@ sub head
 	$theme =~ s/^theme-user-/user-/ if defined $theme;
 
 	if ($theme =~ /^user-[a-z0-9][a-z0-9_-]*$/) {
-		# Published user themes are Core-owned data and are delivered by a Core CGI.
-		my $user_theme_fs = "$LoxBerry::System::lbsthemedir/theme-$theme.css";
+		# User themes remain plugin-managed; Core validates and delivers them.
+		my $user_theme_fs = "$LoxBerry::System::lbhomedir/data/plugins/cssframework/themes/theme-$theme.css";
 
-		if (-f $user_theme_fs && !-l $user_theme_fs) {
+		if (-f $user_theme_fs && -r $user_theme_fs && !-l $user_theme_fs) {
 			$theme_url = "/admin/system/theme-file.cgi/theme-$theme.css";
 			# Compatibility for custom/older head templates that still prepend
 			# /system/css/ to THEME_FILE.
@@ -168,10 +168,10 @@ sub head
 		# Core themes live below /system/css/themes/. Keep the historic flat path
 		# as a compatibility fallback for transitional installations.
 		my $core_theme_file = "themes/theme-$theme.css";
-		if (-f "$LoxBerry::System::lbshtmldir/css/$core_theme_file") {
+		if (-f "$LoxBerry::System::lbshtmldir/css/$core_theme_file" && -r "$LoxBerry::System::lbshtmldir/css/$core_theme_file") {
 			$theme_file = $core_theme_file;
 			$theme_url = "/system/css/$core_theme_file";
-		} elsif (-f "$LoxBerry::System::lbshtmldir/css/theme-$theme.css") {
+		} elsif (-f "$LoxBerry::System::lbshtmldir/css/theme-$theme.css" && -r "$LoxBerry::System::lbshtmldir/css/theme-$theme.css") {
 			$theme_file = "theme-$theme.css";
 			$theme_url = "/system/css/theme-$theme.css";
 		} else {

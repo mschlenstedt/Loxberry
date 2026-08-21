@@ -59,7 +59,9 @@ elsif ($action eq 'listthemes') { listthemes(); }
 elsif ($action eq 'changetheme') {
 	my $normalized_theme = normalize_theme_id($value);
 	if (is_valid_theme($normalized_theme)) {
-		change_generaljson("Base->Theme", $normalized_theme);
+		if (change_generaljson("Base->Theme", $normalized_theme)) {
+			regenerate_legacy_templates();
+		}
 	} else {
 		$response{error} = 1;
 		$response{message} = "Theme not supported.";
@@ -483,8 +485,8 @@ sub user_theme_path
 	$theme = normalize_theme_id($theme);
 	return undef if (!defined $theme || $theme !~ /^user-[a-z0-9][a-z0-9_-]*$/);
 
-	my $path = "$LoxBerry::System::lbsthemedir/theme-$theme.css";
-	return $path if (-f $path && !-l $path);
+	my $path = "$LoxBerry::System::lbhomedir/data/plugins/cssframework/themes/theme-$theme.css";
+	return $path if (-f $path && -r $path && !-l $path);
 	return undef;
 }
 
@@ -500,20 +502,20 @@ sub is_valid_theme
 sub listthemes
 {
 	my @themes;
-	my $dir = $LoxBerry::System::lbsthemedir;
+	my $dir = "$LoxBerry::System::lbhomedir/data/plugins/cssframework/themes";
 
 	if (opendir(my $dh, $dir)) {
 		foreach my $file (sort readdir($dh)) {
 			next if ($file !~ /\Atheme-(user-[a-z0-9][a-z0-9_-]*)\.css\z/);
 			my $id = $1;
 			my $path = "$dir/$file";
-			next if (!-f $path || -l $path);
+			next if (!-f $path || !-r $path || -l $path);
 
 			push @themes, {
 				id     => $id,
 				name   => css_theme_display_name($path, $id),
 				file   => $file,
-				source => 'core',
+				source => 'plugin',
 			};
 		}
 		closedir($dh);
@@ -537,6 +539,7 @@ sub css_theme_display_name
 				my $name = $1;
 				$name =~ s/\s*\*\/\s*$//;
 				$name =~ s/^\s+|\s+$//g;
+				$name = substr($name, 0, 120);
 				close($fh);
 				return $name if ($name ne '');
 			}
@@ -549,6 +552,36 @@ sub css_theme_display_name
 	$name =~ s/-/ /g;
 	$name =~ s/\b(\w)/uc($1)/eg;
 	return $name;
+}
+
+sub regenerate_legacy_templates
+{
+	my $generator = "$LoxBerry::System::lbshtmlauthdir/tools/generatelegacytemplates.pl";
+
+	if (!-f $generator || !-r $generator) {
+		$response{error} = 1;
+		$response{message} = "Theme changed, but legacy plugin templates could not be regenerated.";
+		print STDERR "ajax-config-handler.cgi: Legacy template generator not found or unreadable: $generator\n";
+		return undef;
+	}
+
+	# Use list-form system with the current Perl interpreter. No shell is involved
+	# and therefore no request value can become part of a command line.
+	my $status = system($^X, $generator, '--force');
+	if ($status != 0) {
+		my $details = ($status == -1)
+			? "could not be started: $!"
+			: (($status & 127)
+				? "terminated by signal " . ($status & 127)
+				: "exited with status " . ($status >> 8));
+
+		$response{error} = 1;
+		$response{message} = "Theme changed, but legacy plugin templates could not be regenerated.";
+		print STDERR "ajax-config-handler.cgi: Legacy template regeneration failed ($details).\n";
+		return undef;
+	}
+
+	return 1;
 }
 
 sub change_generaljson
@@ -577,15 +610,24 @@ sub change_generaljson
 		}
 	}
 	
+	my $value_changed;
 	if (!$val) {
 		# print STDERR "Deleting value\n";
 		# $currelem->{$keytree[-1]} = undef;
+		$value_changed = exists $currelem->{$keytree[-1]};
 		delete $currelem->{$keytree[-1]};
 	} else {
+		$value_changed = !exists $currelem->{$keytree[-1]}
+			|| !defined $currelem->{$keytree[-1]}
+			|| $currelem->{$keytree[-1]} ne $val;
 		$currelem->{$keytree[-1]} = $val;
 	}
 	
-	$jsonobj->write();
+	if ($value_changed && !$jsonobj->write()) {
+		$response{error} = -1;
+		$response{message} = "Could not write general.json.";
+		return undef;
+	}
 	$response{error} = 0;
 	$response{message} = "OK";
 	return 1;

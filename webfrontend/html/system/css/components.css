@@ -232,19 +232,14 @@ label.lb-toggle.ui-btn::after {
 	box-shadow: 0 0 0 3px rgba(109, 172, 32, 0.15);
 }
 .lb-content select {
-	padding: 8px 36px 8px 12px;
+	padding: 8px 12px;
 	border: 1px solid var(--lb-input-border);
 	border-radius: var(--lb-radius);
 	font-size: var(--lb-font-base);
 	font-family: var(--lb-font);
 	background-color: var(--lb-input-bg);
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23737373' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-	background-repeat: no-repeat;
-	background-position: right 12px center;
 	color: var(--lb-input-text);
 	box-sizing: border-box;
-	appearance: none;
-	-webkit-appearance: none;
 }
 .lb-content input[type="checkbox"],
 .lb-content input[type="radio"] {
@@ -818,9 +813,10 @@ select.lb-select:focus,
 }
 
 /* --- Select --- */
-select.lb-select {
-	appearance: none;
-	-webkit-appearance: none;
+select.lb-select,
+body .lb-content select.lb-select {
+	appearance: none !important;
+	-webkit-appearance: none !important;
 	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23737373' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
 	background-repeat: no-repeat;
 	background-position: right 12px center;
@@ -1834,17 +1830,17 @@ span.form-error {
    11. Compatibility-safe DS Extensions
    DS_EXTENSION_COMPONENTS_COMPAT_V01
 
-   Keep the original component base rules above intact. This section only adds
-   opt-in DS features and modifiers. It intentionally avoids redefining the
-   original base selectors such as .lb-table, .lb-btn, .lb-input, select.lb-select,
-   .note, .form-error and .lb-disabled.
+   Keep the original component base rules above intact. This section adds
+   opt-in DS states and modifiers without replacing the original base blocks.
    ============================================================ */
 
 /* --- DS form state additions: opt-in via lb-* classes only --- */
 .lb-input:hover:not(:disabled),
 select.lb-select:hover:not(:disabled),
 .lb-textarea:hover:not(:disabled) {
-	background: var(--lb-input-hover-bg, var(--lb-input-bg));
+	/* Do not use the background shorthand here: it would reset the custom
+	   background-image used as the arrow on select.lb-select. */
+	background-color: var(--lb-input-hover-bg, var(--lb-input-bg));
 	color: var(--lb-input-hover-text, var(--lb-input-text));
 	border-color: var(--lb-input-hover-border, var(--lb-input-border));
 }
@@ -1890,9 +1886,9 @@ select.lb-select:disabled:focus,
 
 select.lb-select[multiple],
 .lb-content select.lb-select[multiple] {
-	appearance: auto;
-	-webkit-appearance: auto;
-	background-image: none;
+	appearance: auto !important;
+	-webkit-appearance: auto !important;
+	background-image: none !important;
 	padding: 8px 12px;
 	min-height: 7.5rem;
 }

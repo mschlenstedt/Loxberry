@@ -56,7 +56,12 @@ sub cssframework_normalize_theme_class {
 	$theme = lc($theme);
 	$theme =~ s/^\s+|\s+$//g;
 	return '' if $theme !~ /^[a-z0-9_-]+$/;
-	$theme = 'classic-lb' if $theme eq 'classic';
+	my %legacy_theme_map = (
+		'classic' => 'classic-lb',
+		'modern'  => 'soft-rounded',
+		'dark'    => 'glass',
+	);
+	$theme = $legacy_theme_map{$theme} if exists $legacy_theme_map{$theme};
 	return ($theme =~ /^theme-/) ? $theme : "theme-$theme";
 }
 
@@ -98,7 +103,7 @@ sub cssframework_core_themes {
 
 	foreach my $entry (@registry) {
 		my ($file, $class) = @$entry;
-		next if !-f "$theme_dir/$file";
+		next if !-f "$theme_dir/$file" || !-r "$theme_dir/$file";
 		push @themes, {
 			file  => $file,
 			class => $class,
@@ -109,14 +114,14 @@ sub cssframework_core_themes {
 }
 
 sub cssframework_user_themes {
-	my $theme_dir = $LoxBerry::System::lbsthemedir;
+	my $theme_dir = "$LoxBerry::System::lbhomedir/data/plugins/cssframework/themes";
 	my @themes;
 
 	if (opendir(my $dh, $theme_dir)) {
 		while (my $file = readdir($dh)) {
 			next if $file =~ /^\./;
 			next if $file !~ /^(theme-user-[a-z0-9][a-z0-9_-]*)\.css$/;
-			next if !-f "$theme_dir/$file" || -l "$theme_dir/$file";
+			next if !-f "$theme_dir/$file" || !-r "$theme_dir/$file" || -l "$theme_dir/$file";
 
 			my $class = $1;
 			push @themes, {
@@ -243,6 +248,26 @@ sub cssframework_render_inside_loxberry_chrome {
 	LoxBerry::Web::lbfooter();
 }
 
+sub cssframework_render_error {
+	my ($message, $is_embedded) = @_;
+	$message = 'Unknown renderer error.' if !defined $message || $message eq '';
+
+	if ($is_embedded) {
+		print "<!doctype html>\n";
+		print "<html lang=\"en\"><head><meta charset=\"utf-8\"><title>LoxBerry CSS Framework</title></head><body>\n";
+		print "<h1>LoxBerry CSS Framework</h1>\n";
+		print '<p>' . cssframework_escape_html($message) . "</p>\n";
+		print "</body></html>\n";
+	} else {
+		LoxBerry::Web::lbheader('LoxBerry CSS Framework', '', '', 1);
+		print '<div class="lb-content"><h1>LoxBerry CSS Framework</h1><p>'
+			. cssframework_escape_html($message)
+			. "</p></div>\n";
+		LoxBerry::Web::lbfooter();
+	}
+	exit;
+}
+
 my @core_themes = cssframework_core_themes();
 my @user_themes = cssframework_user_themes();
 my @all_themes = (@core_themes, @user_themes);
@@ -269,21 +294,11 @@ if ($is_embedded) {
 binmode STDOUT, ':encoding(UTF-8)';
 
 if (! -e $template_file) {
-	print "<!doctype html>\n";
-	print "<html lang=\"en\"><head><meta charset=\"utf-8\"><title>LoxBerry CSS Framework</title></head><body>\n";
-	print "<h1>LoxBerry CSS Framework</h1>\n";
-	print "<p>Template not found.</p>\n";
-	print "</body></html>\n";
-	exit;
+	cssframework_render_error('Template not found.', $is_embedded);
 }
 
 open(my $fh, '<:encoding(UTF-8)', $template_file) or do {
-	print "<!doctype html>\n";
-	print "<html lang=\"en\"><head><meta charset=\"utf-8\"><title>LoxBerry CSS Framework</title></head><body>\n";
-	print "<h1>LoxBerry CSS Framework</h1>\n";
-	print "<p>Could not open template.</p>\n";
-	print "</body></html>\n";
-	exit;
+	cssframework_render_error('Could not open template.', $is_embedded);
 };
 
 my $content = '';
