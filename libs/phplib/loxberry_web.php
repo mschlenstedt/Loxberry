@@ -4,7 +4,7 @@ require_once "loxberry_system.php";
 
 class LBWeb
 {
-	public static $LBWEBVERSION = "3.0.0.3";
+	public static $LBWEBVERSION = "3.0.0.6";
 	
 	public static $lbpluginpage = "/admin/system/index.cgi";
 	public static $lbsystempage = "/admin/system/index.cgi?form=system";
@@ -57,19 +57,59 @@ class LBWeb
 		$headobj->param('IS_CORE_PAGE', $is_plugin ? 0 : 1);
 		$headobj->param('LOAD_JQM',     ($is_plugin && !$nojqm) ? 1 : 0);
 
-		// Theme support — read Base.Theme from general.json (mirrors Web.pm logic)
+		// Theme support — read Base.Theme from general.json. Keep PHP aligned
+		// with Perl Web.pm: user themes remain plugin-managed and are validated
+		// and delivered through the Core theme-file.cgi.
 		LBSystem::read_generaljson();
 		global $cfg;
-		$theme = isset($cfg->Base->Theme) ? $cfg->Base->Theme : 'soft-rounded';
+		$theme = isset($cfg->Base->Theme) ? strtolower(trim((string)$cfg->Base->Theme)) : 'soft-rounded';
 		$_theme_map = array('classic' => 'classic-lb', 'modern' => 'soft-rounded', 'dark' => 'glass');
 		if (isset($_theme_map[$theme])) {
 			$theme = $_theme_map[$theme];
 		}
-		if (!preg_match('/^(soft-rounded|clean-admin|glass|classic-lb)$/', $theme)) {
-			$theme = 'soft-rounded';
+
+		// During the transition a user theme may be stored either as
+		// user-<slug> or theme-user-<slug>. Internally the LoxBerry theme id
+		// is user-<slug>; the body class remains theme-user-<slug>.
+		if (preg_match('/^theme-user-/', $theme)) {
+			$theme = preg_replace('/^theme-user-/', 'user-', $theme);
 		}
+
+		$theme_file = null;
+		$theme_url = null;
+		if (preg_match('/^user-[a-z0-9][a-z0-9_-]*$/i', $theme)) {
+			$user_theme_fs = LBHOMEDIR . "/data/plugins/cssframework/themes/theme-$theme.css";
+			if (is_file($user_theme_fs) && is_readable($user_theme_fs) && !is_link($user_theme_fs)) {
+				$theme_url = "/admin/system/theme-file.cgi/theme-$theme.css";
+				// Compatibility for custom/older head templates that still prepend
+				// /system/css/ to THEME_FILE.
+				$theme_file = "../../admin/system/theme-file.cgi/theme-$theme.css";
+			} else {
+				$theme = 'soft-rounded';
+			}
+		}
+
+		if ($theme_url === null) {
+			if (!preg_match('/^(soft-rounded|clean-admin|glass|classic-lb)$/', $theme)) {
+				$theme = 'soft-rounded';
+			}
+			$core_theme_file = "themes/theme-$theme.css";
+			if (is_file(LBSHTMLDIR . "/css/$core_theme_file") && is_readable(LBSHTMLDIR . "/css/$core_theme_file")) {
+				$theme_file = $core_theme_file;
+				$theme_url = "/system/css/$core_theme_file";
+			} elseif (is_file(LBSHTMLDIR . "/css/theme-$theme.css") && is_readable(LBSHTMLDIR . "/css/theme-$theme.css")) {
+				$theme_file = "theme-$theme.css";
+				$theme_url = "/system/css/theme-$theme.css";
+			} else {
+				$theme = 'soft-rounded';
+				$theme_file = 'themes/theme-soft-rounded.css';
+				$theme_url = '/system/css/themes/theme-soft-rounded.css';
+			}
+		}
+
 		$headobj->param('THEME_CLASS', "theme-$theme");
-		$headobj->param('THEME_FILE', "theme-$theme.css");
+		$headobj->param('THEME_FILE', $theme_file);
+		$headobj->param('THEME_URL', $theme_url);
 
 		LBSystem::readlanguage($headobj, "language.ini", True);
 		return $headobj->outputString();

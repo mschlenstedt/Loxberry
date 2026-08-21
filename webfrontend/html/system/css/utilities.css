@@ -1,0 +1,259 @@
+/* LoxBerry CSS Framework - Utilities V04
+   Small layout helpers. Keep generic, token-based and optional. */
+
+.lb-m-0 { margin: 0 !important; }
+.lb-mt-sm { margin-top: var(--lb-space-sm) !important; }
+.lb-mt-md { margin-top: var(--lb-space-md) !important; }
+.lb-mt-lg { margin-top: var(--lb-space-lg) !important; }
+.lb-mb-sm { margin-bottom: var(--lb-space-sm) !important; }
+.lb-mb-md { margin-bottom: var(--lb-space-md) !important; }
+.lb-mb-lg { margin-bottom: var(--lb-space-lg) !important; }
+.lb-p-sm { padding: var(--lb-space-sm) !important; }
+.lb-p-md { padding: var(--lb-space-md) !important; }
+.lb-p-lg { padding: var(--lb-space-lg) !important; }
+.lb-flex { display: flex !important; }
+.lb-flex-center { display: flex !important; align-items: center !important; }
+.lb-flex-between { display: flex !important; align-items: center !important; justify-content: space-between !important; }
+.lb-gap-sm { gap: var(--lb-space-sm) !important; }
+.lb-gap-md { gap: var(--lb-space-md) !important; }
+.lb-muted { color: var(--lb-text-muted) !important; }
+.lb-text-secondary { color: var(--lb-text-secondary) !important; }
+.lb-text-danger { color: var(--lb-danger) !important; }
+.lb-text-warning { color: var(--lb-warning) !important; }
+.lb-text-success { color: var(--lb-success) !important; }
+.lb-w-100 { width: 100% !important; }
+
+
+/* ============================================================
+   Optional DS layout/layer helpers
+   DS_EXTENSION_UTILITIES_COMPAT_V02
+
+   These helpers were intentionally moved out of components.css.
+   They are optional layout/modifier helpers and only affect markup that
+   explicitly uses the helper classes below.
+   ============================================================ */
+/* --- Optional dropdown layering helpers ---
+   These helpers are opt-in. They intentionally do not auto-reopen every table
+   that happens to contain a select. Add the helper class in markup when needed. */
+.lb-dropdown-layer,
+.lb-select-layer,
+.lb-multiselect {
+	position: relative !important;
+	z-index: var(--lb-dropdown-z-index, 20) !important;
+}
+
+.lb-dropdown-layer:hover,
+.lb-dropdown-layer:focus-within,
+.lb-select-layer:hover,
+.lb-select-layer:focus-within,
+.lb-multiselect[open] {
+	z-index: var(--lb-dropdown-open-z-index, 1200) !important;
+}
+
+.lb-table-dropdowns-visible {
+	overflow: var(--lb-table-dropdown-overflow, visible) !important;
+}
+
+.lb-table-dropdowns-visible th,
+.lb-table-dropdowns-visible td {
+	position: relative !important;
+	overflow: var(--lb-table-cell-overflow, visible) !important;
+}
+
+/* --- Optional table frame for dropdown-visible tables --- */
+.lb-table-frame {
+	position: relative !important;
+	display: block !important;
+	width: 100% !important;
+	max-width: 100% !important;
+	border-radius: var(--lb-table-radius, var(--lb-radius)) !important;
+	background: var(--lb-table-bg, transparent) !important;
+	box-shadow: var(--lb-table-shadow, none) !important;
+	overflow: visible !important;
+	box-sizing: border-box !important;
+}
+.lb-table-frame-fit {
+	display: inline-block !important;
+	width: fit-content !important;
+	min-width: 0 !important;
+	max-width: 100% !important;
+}
+.lb-table-frame::after {
+	content: "" !important;
+	position: absolute !important;
+	inset: 0 !important;
+	border: var(--lb-table-border, 1px solid var(--lb-border-color)) !important;
+	border-radius: inherit !important;
+	pointer-events: none !important;
+	z-index: var(--lb-table-frame-border-z-index, 5) !important;
+	box-sizing: border-box !important;
+}
+.lb-table-frame > .lb-table {
+	margin: 0 !important;
+	border: none !important;
+	box-shadow: none !important;
+	background: transparent !important;
+}
+.lb-table-frame-dropdowns > .lb-table {
+	overflow: visible !important;
+}
+.lb-table-frame > .lb-table > thead > tr:first-child > :first-child,
+.lb-table-frame > .lb-table > tbody:first-child > tr:first-child > :first-child {
+	border-top-left-radius: calc(var(--lb-table-radius, var(--lb-radius)) - 1px) !important;
+}
+.lb-table-frame > .lb-table > thead > tr:first-child > :last-child,
+.lb-table-frame > .lb-table > tbody:first-child > tr:first-child > :last-child {
+	border-top-right-radius: calc(var(--lb-table-radius, var(--lb-radius)) - 1px) !important;
+}
+.lb-table-frame > .lb-table > tbody:last-child > tr:last-child > :first-child,
+.lb-table-frame > .lb-table > tfoot:last-child > tr:last-child > :first-child {
+	border-bottom-left-radius: calc(var(--lb-table-radius, var(--lb-radius)) - 1px) !important;
+}
+.lb-table-frame > .lb-table > tbody:last-child > tr:last-child > :last-child,
+.lb-table-frame > .lb-table > tfoot:last-child > tr:last-child > :last-child {
+	border-bottom-right-radius: calc(var(--lb-table-radius, var(--lb-radius)) - 1px) !important;
+}
+
+.lb-table-frame-mask-corners > .lb-table > thead:first-child > tr:first-child > :first-child,
+.lb-table-frame-mask-corners > .lb-table > tbody:first-child > tr:first-child > :first-child,
+.lb-table-frame-mask-corners > .lb-table > tbody:last-child > tr:last-child > :first-child,
+.lb-table-frame-mask-corners > .lb-table > tfoot:last-child > tr:last-child > :first-child,
+.lb-table-frame-mask-corners > .lb-table > thead:first-child > tr:first-child > :last-child,
+.lb-table-frame-mask-corners > .lb-table > tbody:first-child > tr:first-child > :last-child,
+.lb-table-frame-mask-corners > .lb-table > tbody:last-child > tr:last-child > :last-child,
+.lb-table-frame-mask-corners > .lb-table > tfoot:last-child > tr:last-child > :last-child {
+	overflow: hidden !important;
+	background-clip: padding-box !important;
+}
+
+/* ============================================================
+   Optional table frame dropdown/tooltip layer helpers
+   DS_EXTENSION_UTILITIES_TABLE_TOOLTIP_LAYER_V04
+
+   Tooltip and dropdown components remain in components.css.
+   This opt-in utility block only affects tables/frames that explicitly
+   use the table dropdown helpers. It keeps Core dropdowns, selects and
+   tooltips visible above framed tables, including frames that also use
+   rounded-corner masking.
+   ============================================================ */
+.lb-table-frame-dropdowns,
+.lb-table-frame-dropdowns.lb-table-frame-mask-corners {
+	position: relative !important;
+	overflow: visible !important;
+}
+
+.lb-table-frame-dropdowns > .lb-table,
+.lb-table-frame-dropdowns > .lb-table > thead,
+.lb-table-frame-dropdowns > .lb-table > tbody,
+.lb-table-frame-dropdowns > .lb-table > tfoot,
+.lb-table-frame-dropdowns > .lb-table tr,
+.lb-table-frame-dropdowns > .lb-table th,
+.lb-table-frame-dropdowns > .lb-table td,
+.lb-table-dropdowns-visible,
+.lb-table-dropdowns-visible > thead,
+.lb-table-dropdowns-visible > tbody,
+.lb-table-dropdowns-visible > tfoot,
+.lb-table-dropdowns-visible tr,
+.lb-table-dropdowns-visible th,
+.lb-table-dropdowns-visible td {
+	overflow: visible !important;
+}
+
+/* If rounded-corner masking is combined with dropdown-visible table frames,
+   do not clip corner cells. The frame border still owns the visible rounded
+   outline; dropdowns/tooltips must be allowed to leave the cell box. */
+.lb-table-frame-dropdowns.lb-table-frame-mask-corners > .lb-table > thead:first-child > tr:first-child > :first-child,
+.lb-table-frame-dropdowns.lb-table-frame-mask-corners > .lb-table > tbody:first-child > tr:first-child > :first-child,
+.lb-table-frame-dropdowns.lb-table-frame-mask-corners > .lb-table > tbody:last-child > tr:last-child > :first-child,
+.lb-table-frame-dropdowns.lb-table-frame-mask-corners > .lb-table > tfoot:last-child > tr:last-child > :first-child,
+.lb-table-frame-dropdowns.lb-table-frame-mask-corners > .lb-table > thead:first-child > tr:first-child > :last-child,
+.lb-table-frame-dropdowns.lb-table-frame-mask-corners > .lb-table > tbody:first-child > tr:first-child > :last-child,
+.lb-table-frame-dropdowns.lb-table-frame-mask-corners > .lb-table > tbody:last-child > tr:last-child > :last-child,
+.lb-table-frame-dropdowns.lb-table-frame-mask-corners > .lb-table > tfoot:last-child > tr:last-child > :last-child {
+	overflow: visible !important;
+}
+
+.lb-table-frame-dropdowns .lb-dropdown-layer,
+.lb-table-frame-dropdowns .lb-select-layer,
+.lb-table-frame-dropdowns .lb-tooltip-anchor,
+.lb-table-dropdowns-visible .lb-dropdown-layer,
+.lb-table-dropdowns-visible .lb-select-layer,
+.lb-table-dropdowns-visible .lb-tooltip-anchor {
+	position: relative !important;
+	z-index: var(--lb-dropdown-z-index, 20) !important;
+}
+
+.lb-table-frame-dropdowns .lb-dropdown-layer:hover,
+.lb-table-frame-dropdowns .lb-dropdown-layer:focus-within,
+.lb-table-frame-dropdowns .lb-select-layer:hover,
+.lb-table-frame-dropdowns .lb-select-layer:focus-within,
+.lb-table-frame-dropdowns .lb-multiselect[open],
+.lb-table-frame-dropdowns .lb-tooltip-anchor:hover,
+.lb-table-frame-dropdowns .lb-tooltip-anchor:focus-within,
+.lb-table-frame-dropdowns .lb-tooltip-anchor.is-open,
+.lb-table-dropdowns-visible .lb-dropdown-layer:hover,
+.lb-table-dropdowns-visible .lb-dropdown-layer:focus-within,
+.lb-table-dropdowns-visible .lb-select-layer:hover,
+.lb-table-dropdowns-visible .lb-select-layer:focus-within,
+.lb-table-dropdowns-visible .lb-multiselect[open],
+.lb-table-dropdowns-visible .lb-tooltip-anchor:hover,
+.lb-table-dropdowns-visible .lb-tooltip-anchor:focus-within,
+.lb-table-dropdowns-visible .lb-tooltip-anchor.is-open {
+	z-index: var(--lb-dropdown-open-z-index, 1200) !important;
+}
+
+.lb-table-frame-dropdowns .lb-tooltip,
+.lb-table-dropdowns-visible .lb-tooltip {
+	z-index: var(--lb-tooltip-z-index, var(--lb-dropdown-open-z-index, 1200)) !important;
+}
+
+@supports selector(:has(*)) {
+	.lb-table-frame-dropdowns:has(.lb-dropdown-layer:hover),
+	.lb-table-frame-dropdowns:has(.lb-dropdown-layer:focus-within),
+	.lb-table-frame-dropdowns:has(.lb-select-layer:hover),
+	.lb-table-frame-dropdowns:has(.lb-select-layer:focus-within),
+	.lb-table-frame-dropdowns:has(.lb-multiselect[open]),
+	.lb-table-frame-dropdowns:has(.lb-tooltip-anchor:hover),
+	.lb-table-frame-dropdowns:has(.lb-tooltip-anchor:focus-within),
+	.lb-table-frame-dropdowns:has(.lb-tooltip-anchor.is-open) {
+		z-index: var(--lb-dropdown-open-z-index, 1200) !important;
+	}
+
+	.lb-table-frame-dropdowns th:has(.lb-dropdown-layer:hover),
+	.lb-table-frame-dropdowns td:has(.lb-dropdown-layer:hover),
+	.lb-table-frame-dropdowns th:has(.lb-dropdown-layer:focus-within),
+	.lb-table-frame-dropdowns td:has(.lb-dropdown-layer:focus-within),
+	.lb-table-frame-dropdowns th:has(.lb-select-layer:hover),
+	.lb-table-frame-dropdowns td:has(.lb-select-layer:hover),
+	.lb-table-frame-dropdowns th:has(.lb-select-layer:focus-within),
+	.lb-table-frame-dropdowns td:has(.lb-select-layer:focus-within),
+	.lb-table-frame-dropdowns th:has(.lb-multiselect[open]),
+	.lb-table-frame-dropdowns td:has(.lb-multiselect[open]),
+	.lb-table-frame-dropdowns th:has(.lb-tooltip-anchor:hover),
+	.lb-table-frame-dropdowns td:has(.lb-tooltip-anchor:hover),
+	.lb-table-frame-dropdowns th:has(.lb-tooltip-anchor:focus-within),
+	.lb-table-frame-dropdowns td:has(.lb-tooltip-anchor:focus-within),
+	.lb-table-frame-dropdowns th:has(.lb-tooltip-anchor.is-open),
+	.lb-table-frame-dropdowns td:has(.lb-tooltip-anchor.is-open),
+	.lb-table-dropdowns-visible th:has(.lb-dropdown-layer:hover),
+	.lb-table-dropdowns-visible td:has(.lb-dropdown-layer:hover),
+	.lb-table-dropdowns-visible th:has(.lb-dropdown-layer:focus-within),
+	.lb-table-dropdowns-visible td:has(.lb-dropdown-layer:focus-within),
+	.lb-table-dropdowns-visible th:has(.lb-select-layer:hover),
+	.lb-table-dropdowns-visible td:has(.lb-select-layer:hover),
+	.lb-table-dropdowns-visible th:has(.lb-select-layer:focus-within),
+	.lb-table-dropdowns-visible td:has(.lb-select-layer:focus-within),
+	.lb-table-dropdowns-visible th:has(.lb-multiselect[open]),
+	.lb-table-dropdowns-visible td:has(.lb-multiselect[open]),
+	.lb-table-dropdowns-visible th:has(.lb-tooltip-anchor:hover),
+	.lb-table-dropdowns-visible td:has(.lb-tooltip-anchor:hover),
+	.lb-table-dropdowns-visible th:has(.lb-tooltip-anchor:focus-within),
+	.lb-table-dropdowns-visible td:has(.lb-tooltip-anchor:focus-within),
+	.lb-table-dropdowns-visible th:has(.lb-tooltip-anchor.is-open),
+	.lb-table-dropdowns-visible td:has(.lb-tooltip-anchor.is-open) {
+		position: relative !important;
+		overflow: visible !important;
+		z-index: var(--lb-dropdown-open-z-index, 1200) !important;
+	}
+}
+

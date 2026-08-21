@@ -15,7 +15,7 @@ use CGI::Carp qw(fatalsToBrowser set_message);
 set_message('Depending of what you have done, report this error to the plugin developer or the LoxBerry-Core team.<br>Further information you may find in the error logs.');
 
 package LoxBerry::Web;
-our $VERSION = "3.0.0.3";
+our $VERSION = "3.0.0.6";
 our $DEBUG;
 
 use base 'Exporter';
@@ -139,12 +139,66 @@ sub head
 
 	# Theme support
 	my $theme = $LoxBerry::System::lbtheme // 'soft-rounded';
-	$theme = 'soft-rounded' unless $theme =~ /^(soft-rounded|clean-admin|glass|classic-lb)$/;
+	my $theme_file;
+	my $theme_url;
+
+	# User themes may appear in two notations during the transition:
+	# - stored LoxBerry theme id: user-<slug>
+	# - CSS id and body class: theme-user-<slug>
+	# Normalize to the stored id here. This prevents false fallback to Core themes
+	# when a value already contains the theme- prefix.
+	$theme =~ s/^theme-user-/user-/ if defined $theme;
+
+	if ($theme =~ /^user-[a-z0-9][a-z0-9_-]*$/) {
+		# User themes remain plugin-managed; Core validates and delivers them.
+		my $user_theme_fs = "$LoxBerry::System::lbhomedir/data/plugins/cssframework/themes/theme-$theme.css";
+
+		if (-f $user_theme_fs && -r $user_theme_fs && !-l $user_theme_fs) {
+			$theme_url = "/admin/system/theme-file.cgi/theme-$theme.css";
+			# Compatibility for custom/older head templates that still prepend
+			# /system/css/ to THEME_FILE.
+			$theme_file = "../../admin/system/theme-file.cgi/theme-$theme.css";
+		} else {
+			$theme = 'soft-rounded';
+		}
+	}
+
+	if (!defined $theme_url) {
+		$theme = 'soft-rounded' unless $theme =~ /^(soft-rounded|clean-admin|glass|classic-lb)$/;
+		# Core themes live below /system/css/themes/. Keep the historic flat path
+		# as a compatibility fallback for transitional installations.
+		my $core_theme_file = "themes/theme-$theme.css";
+		if (-f "$LoxBerry::System::lbshtmldir/css/$core_theme_file" && -r "$LoxBerry::System::lbshtmldir/css/$core_theme_file") {
+			$theme_file = $core_theme_file;
+			$theme_url = "/system/css/$core_theme_file";
+		} elsif (-f "$LoxBerry::System::lbshtmldir/css/theme-$theme.css" && -r "$LoxBerry::System::lbshtmldir/css/theme-$theme.css") {
+			$theme_file = "theme-$theme.css";
+			$theme_url = "/system/css/theme-$theme.css";
+		} else {
+			$theme = 'soft-rounded';
+			$theme_file = 'themes/theme-soft-rounded.css';
+			$theme_url = '/system/css/themes/theme-soft-rounded.css';
+		}
+	}
+
 	$headobj->param( THEME_CLASS => "theme-$theme" );
-	$headobj->param( THEME_FILE => "theme-$theme.css" );
+	$headobj->param( THEME_FILE => $theme_file );
+	$headobj->param( THEME_URL => $theme_url );
 
 	print "Content-Type: text/html; charset=utf-8\n\n";
-	print $headobj->output();
+
+	# CSS Framework utilities must be loaded together with components.css.
+	# The helpers in utilities.css are optional/opt-in classes (e.g. table
+	# frames, visible overflow and dropdown layers). Injecting the link here
+	# keeps existing plugin pages working without requiring every plugin to
+	# include utilities.css manually. Do not use @import in components.css:
+	# utilities.css must be loaded after components.css.
+	my $head_html = $headobj->output();
+	if ($head_html !~ m{href=["'][^"']*/system/css/utilities\.css(?:\?[^"']*)?["']}i) {
+		$head_html =~ s{(<link\s+[^>]*href=["'][^"']*/system/css/components\.css(?:\?[^"']*)?["'][^>]*>\s*)}{$1\t<link rel="stylesheet" href="/system/css/utilities.css">\n}i;
+	}
+
+	print $head_html;
 	undef $headobj;
 }
 

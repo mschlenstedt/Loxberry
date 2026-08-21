@@ -1,0 +1,593 @@
+/* LoxBerry CSS Framework - legacy-jqm-compat.css V296
+
+   Central token-based jQuery Mobile compatibility layer for legacy LoxBerry/v3
+   markup. This file intentionally contains no theme-specific optics. Themes
+   provide the variables; this file maps common jQM widget wrappers to them.
+
+   Origin:
+   - Keep plugin-specific fixes out of this file.
+
+   Scope:
+   - Active only after jQuery Mobile has initialized the document:
+     html.ui-mobile body[class*="theme-"] ...
+   - Pure Design System pages are intentionally excluded.
+   - Uses !important where jQuery Mobile's own CSS otherwise wins.
+*/
+
+/* ============================================================
+   1. Page / body wrappers
+   ============================================================ */
+
+html.ui-mobile body[class*="theme-"] .ui-page,
+html.ui-mobile body[class*="theme-"] .ui-content,
+html.ui-mobile body[class*="theme-"] .ui-panel,
+html.ui-mobile body[class*="theme-"] .ui-panel-wrapper,
+html.ui-mobile body[class*="theme-"] .ui-body-a,
+html.ui-mobile body[class*="theme-"] .ui-body-b,
+html.ui-mobile body[class*="theme-"] .ui-body-c,
+html.ui-mobile body[class*="theme-"] .ui-body-d,
+html.ui-mobile body[class*="theme-"] .ui-body-e,
+html.ui-mobile body[class*="theme-"] .ui-overlay-a,
+html.ui-mobile body[class*="theme-"] .ui-overlay-b,
+html.ui-mobile body[class*="theme-"] .ui-overlay-c,
+html.ui-mobile body[class*="theme-"] .ui-overlay-d,
+html.ui-mobile body[class*="theme-"] .ui-overlay-e {
+	background-image: none !important;
+	background-color: var(--lb-bg, transparent) !important;
+	color: var(--lb-text, inherit) !important;
+	text-shadow: none !important;
+}
+
+/* ============================================================
+   2. Standalone jQuery Mobile buttons
+   ============================================================ */
+
+html.ui-mobile body[class*="theme-"] .ui-btn,
+html.ui-mobile body[class*="theme-"] .ui-btn:visited,
+html.ui-mobile body[class*="theme-"] .ui-btn:link,
+html.ui-mobile body[class*="theme-"] a.ui-btn,
+html.ui-mobile body[class*="theme-"] button.ui-btn,
+html.ui-mobile body[class*="theme-"] input[type="button"].ui-btn,
+html.ui-mobile body[class*="theme-"] input[type="submit"].ui-btn {
+	background-image: none !important;
+	background-color: var(--lb-btn-bg, var(--lb-card-bg, #fff)) !important;
+	color: var(--lb-btn-text, var(--lb-text, inherit)) !important;
+	-webkit-text-fill-color: var(--lb-btn-text, var(--lb-text, inherit)) !important;
+	border-color: var(--lb-btn-border, var(--lb-border-color, rgba(0,0,0,.18))) !important;
+	border-style: solid !important;
+	border-width: 1px !important;
+	border-radius: var(--lb-btn-radius, var(--lb-radius, 4px)) !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-btn:hover,
+html.ui-mobile body[class*="theme-"] a.ui-btn:hover,
+html.ui-mobile body[class*="theme-"] button.ui-btn:hover,
+html.ui-mobile body[class*="theme-"] input[type="button"].ui-btn:hover,
+html.ui-mobile body[class*="theme-"] input[type="submit"].ui-btn:hover,
+html.ui-mobile body[class*="theme-"] .ui-btn.ui-btn-hover-a,
+html.ui-mobile body[class*="theme-"] .ui-btn.ui-btn-hover-b,
+html.ui-mobile body[class*="theme-"] .ui-btn.ui-btn-hover-c,
+html.ui-mobile body[class*="theme-"] .ui-btn.ui-btn-hover-d,
+html.ui-mobile body[class*="theme-"] .ui-btn.ui-btn-hover-e {
+	background-image: none !important;
+	background-color: var(--lb-btn-hover-bg, var(--lb-btn-bg, var(--lb-card-bg, #fff))) !important;
+	color: var(--lb-btn-hover-text, var(--lb-hover-text, var(--lb-btn-text, var(--lb-text, inherit)))) !important;
+	-webkit-text-fill-color: var(--lb-btn-hover-text, var(--lb-hover-text, var(--lb-btn-text, var(--lb-text, inherit)))) !important;
+	border-color: var(--lb-btn-hover-border, var(--lb-btn-border, var(--lb-border-color, rgba(0,0,0,.18)))) !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-btn.ui-btn-active,
+html.ui-mobile body[class*="theme-"] .ui-btn.ui-state-persist,
+html.ui-mobile body[class*="theme-"] .ui-btn-active {
+	background-image: none !important;
+	background-color: var(--lb-active-bg, var(--lb-btn-primary-bg, var(--lb-primary, #007aff))) !important;
+	color: var(--lb-active-text, var(--lb-btn-primary-text, #fff)) !important;
+	-webkit-text-fill-color: var(--lb-active-text, var(--lb-btn-primary-text, #fff)) !important;
+	border-color: var(--lb-active-border, var(--lb-btn-primary-border, var(--lb-primary, #007aff))) !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+}
+
+/* ============================================================
+   3. Inputs, search fields, selects and wrappers
+   ============================================================ */
+
+html.ui-mobile body[class*="theme-"] .ui-input-text,
+html.ui-mobile body[class*="theme-"] .ui-input-search,
+html.ui-mobile body[class*="theme-"] .ui-textinput,
+html.ui-mobile body[class*="theme-"] .ui-select,
+html.ui-mobile body[class*="theme-"] .ui-select .ui-btn {
+	background-image: none !important;
+	background-color: var(--lb-input-bg, var(--lb-card-bg, #fff)) !important;
+	color: var(--lb-input-text, var(--lb-text, inherit)) !important;
+	-webkit-text-fill-color: var(--lb-input-text, var(--lb-text, inherit)) !important;
+	border-color: var(--lb-input-border, var(--lb-border-color, rgba(0,0,0,.18))) !important;
+	border-style: solid !important;
+	border-width: 1px !important;
+	border-radius: var(--lb-input-radius, var(--lb-radius, var(--lb-btn-radius, 4px))) !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-input-text input,
+html.ui-mobile body[class*="theme-"] .ui-input-search input,
+html.ui-mobile body[class*="theme-"] .ui-textinput input,
+html.ui-mobile body[class*="theme-"] .ui-select .ui-btn span,
+html.ui-mobile body[class*="theme-"] .ui-select .ui-selectmenu-text,
+html.ui-mobile body[class*="theme-"] textarea.ui-input-text,
+html.ui-mobile body[class*="theme-"] .ui-select select {
+	color: var(--lb-input-text, var(--lb-text, inherit)) !important;
+	-webkit-text-fill-color: var(--lb-input-text, var(--lb-text, inherit)) !important;
+	text-shadow: none !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-input-text:focus-within,
+html.ui-mobile body[class*="theme-"] .ui-input-search:focus-within,
+html.ui-mobile body[class*="theme-"] .ui-select .ui-btn:focus {
+	border-color: var(--lb-focus-border, var(--lb-input-focus-border, var(--lb-primary, #007aff))) !important;
+	box-shadow: 0 0 0 3px var(--lb-focus-ring, rgba(0,122,255,.18)) !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-select select option {
+	color: var(--lb-select-option-text, #172033) !important;
+	background: var(--lb-select-option-bg, #ffffff) !important;
+}
+
+
+/* JQM_SELECTMENU_NESTED_SELECT_RESET_V313
+   jQuery Mobile nests the original <select> inside its generated .ui-btn,
+   not directly below .ui-select. Keep the native select as the interaction
+   layer but hide its own text, surface and arrow so only jQM renders visibly. */
+html.ui-mobile body[class*="theme-"] .lb-content .ui-select {
+	position: relative;
+}
+
+html.ui-mobile body[class*="theme-"] .lb-content .ui-select select {
+	position: absolute !important;
+	inset: 0 !important;
+	width: 100% !important;
+	height: 100% !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	border: 0 !important;
+	background: transparent !important;
+	background-image: none !important;
+	box-shadow: none !important;
+	opacity: 0 !important;
+	color: transparent !important;
+	-webkit-text-fill-color: transparent !important;
+	z-index: 2 !important;
+	cursor: pointer;
+	-webkit-appearance: none !important;
+	appearance: none !important;
+}
+
+html.ui-mobile body[class*="theme-"] .lb-content .ui-select .ui-btn {
+	position: relative;
+	z-index: 1;
+}
+
+/* ============================================================
+   4. Checkbox / radio button labels and icons
+   ============================================================ */
+
+/* JQM_NATIVE_INPUT_RESET_V311 */
+/* jQM renders checkbox/radio controls through the generated label icon.
+   Restore the native input to jQM's visually-hidden state so components.css
+   cannot draw a second checkbox/radio underneath the jQM control. */
+html.ui-mobile body[class*="theme-"] .lb-content .ui-checkbox > input[type="checkbox"],
+html.ui-mobile body[class*="theme-"] .lb-content .ui-radio > input[type="radio"] {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	margin: -1px !important;
+	padding: 0 !important;
+	border: 0 !important;
+	background: none !important;
+	background-image: none !important;
+	box-shadow: none !important;
+	opacity: 0 !important;
+	overflow: hidden !important;
+	clip: rect(0 0 0 0) !important;
+	clip-path: inset(50%) !important;
+	white-space: nowrap !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-checkbox .ui-btn,
+html.ui-mobile body[class*="theme-"] .ui-radio .ui-btn {
+	background-image: none !important;
+	background-color: var(--lb-input-bg, var(--lb-btn-bg, var(--lb-card-bg, #fff))) !important;
+	color: var(--lb-input-text, var(--lb-btn-text, var(--lb-text, inherit))) !important;
+	-webkit-text-fill-color: var(--lb-input-text, var(--lb-btn-text, var(--lb-text, inherit))) !important;
+	border-color: var(--lb-input-border, var(--lb-btn-border, var(--lb-border-color, rgba(0,0,0,.18)))) !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-checkbox .ui-btn.ui-checkbox-on,
+html.ui-mobile body[class*="theme-"] .ui-radio .ui-btn.ui-radio-on {
+	background-color: var(--lb-active-bg, var(--lb-btn-primary-bg, var(--lb-primary, #007aff))) !important;
+	color: var(--lb-active-text, var(--lb-btn-primary-text, #fff)) !important;
+	-webkit-text-fill-color: var(--lb-active-text, var(--lb-btn-primary-text, #fff)) !important;
+	border-color: var(--lb-active-border, var(--lb-btn-primary-border, var(--lb-primary, #007aff))) !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-checkbox .ui-btn::after,
+html.ui-mobile body[class*="theme-"] .ui-radio .ui-btn::after {
+	background-color: var(--lb-checkbox-bg, var(--lb-radio-bg, var(--lb-input-bg, #fff))) !important;
+	border: 2px solid var(--lb-checkbox-border, var(--lb-radio-border, var(--lb-input-border, var(--lb-border-color, rgba(0,0,0,.25))))) !important;
+	box-shadow: none !important;
+	text-shadow: none !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-checkbox .ui-btn::after {
+	border-radius: var(--lb-checkbox-radius, 3px) !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-radio .ui-btn::after {
+	border-radius: 999px !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-checkbox .ui-btn.ui-checkbox-on::after,
+html.ui-mobile body[class*="theme-"] .ui-radio .ui-btn.ui-radio-on::after {
+	background-color: var(--lb-checkbox-checked-bg, var(--lb-radio-checked-bg, var(--lb-active-text, var(--lb-btn-primary-text, #fff)))) !important;
+	border-color: var(--lb-checkbox-checked-border, var(--lb-radio-checked-border, var(--lb-active-text, var(--lb-btn-primary-text, #fff)))) !important;
+	box-shadow: none !important;
+	text-shadow: none !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-checkbox .ui-btn.ui-checkbox-on::after {
+	background-image: var(--lb-checkbox-check-icon, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23007aff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' d='M2 6.2l2.5 2.6L10 3.2'/%3E%3C/svg%3E")) !important;
+	background-repeat: no-repeat !important;
+	background-position: center !important;
+	background-size: 12px 12px !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-radio .ui-btn.ui-radio-on::after {
+	background-image: none !important;
+	box-shadow: inset 0 0 0 4px var(--lb-active-bg, var(--lb-btn-primary-bg, var(--lb-primary, #007aff))) !important;
+}
+
+/* ============================================================
+   5. Controlgroups and legacy navbars
+   ============================================================ */
+
+html.ui-mobile body[class*="theme-"] .ui-controlgroup,
+html.ui-mobile body[class*="theme-"] .ui-controlgroup-controls,
+html.ui-mobile body[class*="theme-"] .ui-navbar {
+	background-image: none !important;
+	background-color: var(--lb-card-bg, transparent) !important;
+	border-color: var(--lb-border-color, rgba(0,0,0,.18)) !important;
+	text-shadow: none !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-controlgroup .ui-btn,
+html.ui-mobile body[class*="theme-"] .ui-controlgroup-controls .ui-btn,
+html.ui-mobile body[class*="theme-"] .ui-navbar .ui-btn,
+html.ui-mobile body[class*="theme-"] .ui-navbar a {
+	background-image: none !important;
+	background-color: var(--lb-btn-bg, var(--lb-card-bg, #fff)) !important;
+	color: var(--lb-btn-text, var(--lb-text, inherit)) !important;
+	-webkit-text-fill-color: var(--lb-btn-text, var(--lb-text, inherit)) !important;
+	border-color: var(--lb-btn-border, var(--lb-border-color, rgba(0,0,0,.18))) !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-controlgroup .ui-btn:hover,
+html.ui-mobile body[class*="theme-"] .ui-controlgroup-controls .ui-btn:hover,
+html.ui-mobile body[class*="theme-"] .ui-navbar .ui-btn:hover,
+html.ui-mobile body[class*="theme-"] .ui-navbar a:hover {
+	background-color: var(--lb-btn-hover-bg, var(--lb-hover-bg, var(--lb-btn-bg, #fff))) !important;
+	color: var(--lb-btn-hover-text, var(--lb-hover-text, var(--lb-btn-text, inherit))) !important;
+	-webkit-text-fill-color: var(--lb-btn-hover-text, var(--lb-hover-text, var(--lb-btn-text, inherit))) !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-controlgroup .ui-btn.ui-btn-active,
+html.ui-mobile body[class*="theme-"] .ui-controlgroup-controls .ui-btn.ui-btn-active,
+html.ui-mobile body[class*="theme-"] .ui-navbar .ui-btn-active,
+html.ui-mobile body[class*="theme-"] .ui-navbar .ui-state-persist {
+	background-color: var(--lb-active-bg, var(--lb-btn-primary-bg, var(--lb-primary, #007aff))) !important;
+	color: var(--lb-active-text, var(--lb-btn-primary-text, #fff)) !important;
+	-webkit-text-fill-color: var(--lb-active-text, var(--lb-btn-primary-text, #fff)) !important;
+	border-color: var(--lb-active-border, var(--lb-btn-primary-border, var(--lb-primary, #007aff))) !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-controlgroup-controls .ui-btn {
+	border-radius: 0 !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-controlgroup-controls .ui-btn:first-child {
+	border-top-left-radius: var(--lb-btn-radius, var(--lb-radius, 4px)) !important;
+	border-bottom-left-radius: var(--lb-btn-radius, var(--lb-radius, 4px)) !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-controlgroup-controls .ui-btn:last-child {
+	border-top-right-radius: var(--lb-btn-radius, var(--lb-radius, 4px)) !important;
+	border-bottom-right-radius: var(--lb-btn-radius, var(--lb-radius, 4px)) !important;
+}
+
+/* ============================================================
+   6. jQuery Mobile range sliders
+   ============================================================ */
+
+html.ui-mobile body[class*="theme-"] .ui-slider-track {
+	background-image: none !important;
+	background-color: var(--lb-slider-track-bg, var(--lb-border-color, rgba(0,0,0,.18))) !important;
+	border-color: var(--lb-slider-border, var(--lb-border-color, rgba(0,0,0,.18))) !important;
+	box-shadow: none !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-slider-bg {
+	background-image: none !important;
+	background-color: var(--lb-slider-fill-bg, var(--lb-slider-active-bg, var(--lb-active-bg, var(--lb-primary, #007aff)))) !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-slider-handle,
+html.ui-mobile body[class*="theme-"] .ui-slider-track .ui-btn.ui-slider-handle {
+	background-image: none !important;
+	background-color: var(--lb-slider-thumb-bg, var(--lb-slider-fill-bg, var(--lb-slider-active-bg, var(--lb-active-bg, var(--lb-primary, #007aff))))) !important;
+	border-color: var(--lb-slider-thumb-border-color, var(--lb-slider-thumb-border, #fff)) !important;
+	box-shadow: var(--lb-slider-thumb-shadow, 0 1px 5px rgba(0,0,0,.25)) !important;
+	text-shadow: none !important;
+}
+
+/* ============================================================
+   7. jQuery Mobile slider switches / flipswitches
+   ============================================================ */
+
+html.ui-mobile body[class*="theme-"] .ui-slider-switch.ui-slider-track,
+html.ui-mobile body[class*="theme-"] .ui-slider-switch {
+	background-image: none !important;
+	background-color: var(--lb-switch-off-bg, var(--lb-toggle-bg, var(--lb-btn-bg, rgba(0,0,0,.18)))) !important;
+	border-color: var(--lb-switch-border, var(--lb-toggle-border, var(--lb-btn-border, var(--lb-border-color, rgba(0,0,0,.18))))) !important;
+	border-style: solid !important;
+	border-width: 1px !important;
+	border-radius: var(--lb-switch-radius, var(--lb-toggle-radius, var(--lb-btn-radius, var(--lb-radius, 999px)))) !important;
+	box-shadow: none !important;
+	text-shadow: none !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-slider-switch .ui-slider-label {
+	background-image: none !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+	font-family: var(--lb-font) !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-slider-switch .ui-slider-label-a {
+	background-color: var(--lb-switch-on-bg, var(--lb-toggle-active-bg, var(--lb-active-bg, var(--lb-primary, #007aff)))) !important;
+	color: var(--lb-jqm-toggle-on-text, var(--lb-switch-on-text, var(--lb-toggle-active-text, var(--lb-active-text, var(--lb-btn-primary-text, #fff))))) !important;
+	-webkit-text-fill-color: var(--lb-jqm-toggle-on-text, var(--lb-switch-on-text, var(--lb-toggle-active-text, var(--lb-active-text, var(--lb-btn-primary-text, #fff))))) !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-slider-switch .ui-slider-label-b {
+	background-color: var(--lb-switch-off-bg, var(--lb-toggle-bg, var(--lb-btn-bg, rgba(0,0,0,.18)))) !important;
+	color: var(--lb-jqm-toggle-off-text, var(--lb-switch-off-text, var(--lb-toggle-text, var(--lb-btn-text, var(--lb-text, #111))))) !important;
+	-webkit-text-fill-color: var(--lb-jqm-toggle-off-text, var(--lb-switch-off-text, var(--lb-toggle-text, var(--lb-btn-text, var(--lb-text, #111))))) !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-slider-switch .ui-slider-handle,
+html.ui-mobile body[class*="theme-"] .ui-slider-switch .ui-btn.ui-slider-handle {
+	background-image: none !important;
+	background-color: var(--lb-switch-thumb-bg, var(--lb-toggle-thumb-bg, var(--lb-toggle-knob-bg, var(--lb-slider-thumb-bg, #fff)))) !important;
+	border-color: var(--lb-switch-thumb-border, var(--lb-toggle-thumb-border, var(--lb-slider-thumb-border-color, rgba(0,0,0,.18)))) !important;
+	border-radius: var(--lb-toggle-thumb-radius, var(--lb-toggle-knob-radius, 999px)) !important;
+	box-shadow: var(--lb-switch-thumb-shadow, var(--lb-toggle-thumb-shadow, 0 1px 4px rgba(0,0,0,.22))) !important;
+	text-shadow: none !important;
+}
+
+/* jQM flipswitch OFF state
+   ------------------------------------------------------------
+   Legacy jQuery Mobile marks the OFF track with .ui-bar-inherit,
+   which classic theme-a may paint as the same brand/active color as ON.
+   Keep this neutral and token-based here; concrete theme optics stay in
+   the active theme CSS. */
+html.ui-mobile body[class*="theme-"] .lb-content .ui-flipswitch:not(.ui-flipswitch-active) {
+	background-image: none !important;
+	background-color: var(--lb-jqm-flipswitch-off-bg, var(--lb-jqm-toggle-off-bg, var(--lb-switch-off-bg, var(--lb-toggle-bg, var(--lb-gray-200, #e5e7eb))))) !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-flipswitch {
+	background-image: none !important;
+	background-color: var(--lb-switch-off-bg, var(--lb-toggle-bg, var(--lb-btn-bg, rgba(0,0,0,.18)))) !important;
+	border-color: var(--lb-switch-border, var(--lb-toggle-border, var(--lb-btn-border, var(--lb-border-color, rgba(0,0,0,.18))))) !important;
+	border-radius: var(--lb-switch-radius, var(--lb-toggle-radius, var(--lb-btn-radius, var(--lb-radius, 999px)))) !important;
+	box-shadow: none !important;
+	text-shadow: none !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-flipswitch.ui-flipswitch-active {
+	background-color: var(--lb-switch-on-bg, var(--lb-toggle-active-bg, var(--lb-active-bg, var(--lb-primary, #007aff)))) !important;
+	color: var(--lb-jqm-toggle-on-text, var(--lb-switch-on-text, var(--lb-toggle-active-text, var(--lb-active-text, var(--lb-btn-primary-text, #fff))))) !important;
+	-webkit-text-fill-color: var(--lb-jqm-toggle-on-text, var(--lb-switch-on-text, var(--lb-toggle-active-text, var(--lb-active-text, var(--lb-btn-primary-text, #fff))))) !important;
+}
+
+/* JQM toggle labels follow the contrast role of their actual track state. */
+html.ui-mobile body[class*="theme-"] .ui-slider-switch .ui-slider-label-a,
+html.ui-mobile body[class*="theme-"] .ui-slider-switch .ui-slider-label-a:hover,
+html.ui-mobile body[class*="theme-"] .ui-slider-switch .ui-slider-label-a:focus {
+	color: var(--lb-jqm-toggle-on-text, var(--lb-switch-on-text, var(--lb-toggle-active-text, var(--lb-active-text, var(--lb-btn-primary-text, #fff))))) !important;
+	-webkit-text-fill-color: var(--lb-jqm-toggle-on-text, var(--lb-switch-on-text, var(--lb-toggle-active-text, var(--lb-active-text, var(--lb-btn-primary-text, #fff))))) !important;
+	text-shadow: none !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-slider-switch .ui-slider-label-b,
+html.ui-mobile body[class*="theme-"] .ui-slider-switch .ui-slider-label-b:hover,
+html.ui-mobile body[class*="theme-"] .ui-slider-switch .ui-slider-label-b:focus,
+html.ui-mobile body[class*="theme-"] .ui-flipswitch:not(.ui-flipswitch-active) .ui-flipswitch-off {
+	color: var(--lb-jqm-toggle-off-text, var(--lb-switch-off-text, var(--lb-toggle-text, var(--lb-btn-text, var(--lb-text, #111))))) !important;
+	-webkit-text-fill-color: var(--lb-jqm-toggle-off-text, var(--lb-switch-off-text, var(--lb-toggle-text, var(--lb-btn-text, var(--lb-text, #111))))) !important;
+	text-shadow: none !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-flipswitch.ui-flipswitch-active .ui-flipswitch-on,
+html.ui-mobile body[class*="theme-"] .ui-flipswitch.ui-flipswitch-active .ui-flipswitch-on:hover,
+html.ui-mobile body[class*="theme-"] .ui-flipswitch.ui-flipswitch-active .ui-flipswitch-on:focus {
+	color: var(--lb-jqm-toggle-on-text, var(--lb-switch-on-text, var(--lb-toggle-active-text, var(--lb-active-text, var(--lb-btn-primary-text, #fff))))) !important;
+	-webkit-text-fill-color: var(--lb-jqm-toggle-on-text, var(--lb-switch-on-text, var(--lb-toggle-active-text, var(--lb-active-text, var(--lb-btn-primary-text, #fff))))) !important;
+	text-shadow: none !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-flipswitch .ui-flipswitch-on,
+html.ui-mobile body[class*="theme-"] .ui-flipswitch .ui-btn {
+	background-image: none !important;
+	background-color: var(--lb-switch-thumb-bg, var(--lb-toggle-thumb-bg, var(--lb-toggle-knob-bg, #fff))) !important;
+	border-color: var(--lb-switch-thumb-border, var(--lb-toggle-thumb-border, rgba(0,0,0,.18))) !important;
+	border-radius: var(--lb-toggle-thumb-radius, var(--lb-toggle-knob-radius, 999px)) !important;
+	box-shadow: var(--lb-switch-thumb-shadow, var(--lb-toggle-thumb-shadow, 0 1px 4px rgba(0,0,0,.22))) !important;
+	text-shadow: none !important;
+}
+
+/* ============================================================
+   8. Collapsibles, tables, footers and disabled states
+   ============================================================ */
+
+html.ui-mobile body[class*="theme-"] .ui-collapsible-heading .ui-btn,
+html.ui-mobile body[class*="theme-"] .ui-collapsible-content {
+	background-image: none !important;
+	background-color: var(--lb-card-bg, var(--lb-bg, transparent)) !important;
+	color: var(--lb-text, inherit) !important;
+	-webkit-text-fill-color: var(--lb-text, inherit) !important;
+	border-color: var(--lb-border-color, rgba(0,0,0,.18)) !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-table,
+html.ui-mobile body[class*="theme-"] table.ui-table,
+html.ui-mobile body[class*="theme-"] table.tables,
+html.ui-mobile body[class*="theme-"] .formtable {
+	background-image: none !important;
+	background-color: var(--lb-table-bg, var(--lb-card-bg, transparent)) !important;
+	color: var(--lb-table-text, var(--lb-text, inherit)) !important;
+	border-color: var(--lb-table-border-color, var(--lb-border-color, rgba(0,0,0,.18))) !important;
+	text-shadow: none !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-table th,
+html.ui-mobile body[class*="theme-"] .ui-table td,
+html.ui-mobile body[class*="theme-"] table.tables th,
+html.ui-mobile body[class*="theme-"] table.tables td,
+html.ui-mobile body[class*="theme-"] .formtable th,
+html.ui-mobile body[class*="theme-"] .formtable td {
+	background-image: none !important;
+	color: inherit !important;
+	text-shadow: none !important;
+}
+
+/* Bare plugin tables and unenhanced form controls deliberately remain under
+   plugin ownership. Only explicit jQM/LoxBerry classes are themed here. */
+
+html.ui-mobile body[class*="theme-"] .ui-footer,
+html.ui-mobile body[class*="theme-"] [data-role="footer"] {
+	background-image: none !important;
+	background-color: var(--lb-card-bg, transparent) !important;
+	color: var(--lb-text-muted, var(--lb-text, inherit)) !important;
+	border-color: var(--lb-border-color, rgba(0,0,0,.18)) !important;
+	text-shadow: none !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-state-disabled,
+html.ui-mobile body[class*="theme-"] .ui-disabled {
+	opacity: var(--lb-disabled-opacity, .62) !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-state-disabled .ui-btn,
+html.ui-mobile body[class*="theme-"] .ui-disabled .ui-btn,
+html.ui-mobile body[class*="theme-"] button.ui-btn:disabled,
+html.ui-mobile body[class*="theme-"] input.ui-btn[type="button"]:disabled,
+html.ui-mobile body[class*="theme-"] input.ui-btn[type="submit"]:disabled {
+	background-image: none !important;
+	background-color: var(--lb-disabled-bg, var(--lb-btn-bg, var(--lb-card-bg, #fff))) !important;
+	color: var(--lb-disabled-text, var(--lb-text-muted, var(--lb-text, inherit))) !important;
+	-webkit-text-fill-color: var(--lb-disabled-text, var(--lb-text-muted, var(--lb-text, inherit))) !important;
+	border-color: var(--lb-disabled-border, var(--lb-btn-border, var(--lb-border-color, rgba(0,0,0,.18)))) !important;
+	text-shadow: none !important;
+	box-shadow: none !important;
+}
+
+/* JQM_SELECT_SURFACE_CONTRACT_V500
+   Keep jQM and native V4 selects strictly separated. This targets only the
+   actual jQM structure shown by legacy plugins: .ui-select > .ui-btn >
+   span + select. The generated button is the visible field; the native select
+   remains a transparent overlay. No standalone select.lb-select is changed. */
+html.ui-mobile body[class*="theme-"] .ui-select {
+	display: block !important;
+	position: relative !important;
+	min-height: 40px !important;
+	height: auto !important;
+	box-sizing: border-box !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-select > .ui-btn {
+	display: flex !important;
+	align-items: center !important;
+	position: relative !important;
+	width: 100% !important;
+	min-height: 40px !important;
+	height: auto !important;
+	margin: 0 !important;
+	padding: 9px 38px 9px 12px !important;
+	line-height: 20px !important;
+	box-sizing: border-box !important;
+	overflow: hidden !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-select > .ui-btn > span,
+html.ui-mobile body[class*="theme-"] .ui-select > .ui-btn > .ui-selectmenu-text {
+	display: block !important;
+	min-width: 0 !important;
+	line-height: 20px !important;
+	color: inherit !important;
+	-webkit-text-fill-color: currentColor !important;
+	white-space: nowrap !important;
+	overflow: hidden !important;
+	text-overflow: ellipsis !important;
+}
+
+html.ui-mobile body[class*="theme-"] .ui-select > .ui-btn > select {
+	position: absolute !important;
+	inset: 0 !important;
+	width: 100% !important;
+	height: 100% !important;
+	min-height: 0 !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	border: 0 !important;
+	background: transparent !important;
+	background-image: none !important;
+	box-shadow: none !important;
+	opacity: 0 !important;
+	color: transparent !important;
+	-webkit-text-fill-color: transparent !important;
+	clip: auto !important;
+	clip-path: none !important;
+	z-index: 2 !important;
+	cursor: pointer !important;
+	-webkit-appearance: none !important;
+	appearance: none !important;
+}
+
+/* SELECT_HOST_SURFACE_TRANSPARENCY_V502
+   The white surface behind log-level dropdowns is usually not a table cell.
+   Legacy plugins wrap both native V4 and jQuery-Mobile selects in a
+   fieldcontain/controlgroup surface. Keep only those select-host wrappers
+   transparent; the visible select/button keeps its theme surface. */
+html.ui-mobile body[class*="theme-"] .ui-field-contain:has(select.lb-select),
+html.ui-mobile body[class*="theme-"] div[data-role="fieldcontain"]:has(select.lb-select),
+html.ui-mobile body[class*="theme-"] fieldset.ui-controlgroup:has(.ui-select > .ui-btn > select),
+html.ui-mobile body[class*="theme-"] fieldset[data-role="controlgroup"]:has(select.lb-select),
+html.ui-mobile body[class*="theme-"] fieldset[data-role="controlgroup"]:has(.ui-select > .ui-btn > select),
+html.ui-mobile body[class*="theme-"] fieldset.ui-controlgroup:has(.ui-select > .ui-btn > select) > .ui-controlgroup-controls,
+html.ui-mobile body[class*="theme-"] fieldset[data-role="controlgroup"]:has(select.lb-select) > .ui-controlgroup-controls,
+html.ui-mobile body[class*="theme-"] fieldset[data-role="controlgroup"]:has(.ui-select > .ui-btn > select) > .ui-controlgroup-controls {
+	background: transparent !important;
+	background-color: transparent !important;
+	background-image: none !important;
+	box-shadow: none !important;
+}
