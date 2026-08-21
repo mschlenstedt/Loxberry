@@ -26,6 +26,16 @@ my $cfgfile = $lbsconfigdir."/general.json";
 my $jsonobj = LoxBerry::JSON->new();
 my $cfg = $jsonobj->open(filename => $cfgfile);
 
+# "Every n weeks": skip this run unless the current week is due (issue #1543).
+# The crontab only carries the weekday(s) and time now; counting whole weeks
+# is done here so that every selected weekday of a due week fires - the old
+# day-modulo prefix in the crontab could never work (see ajax-backup.cgi).
+if ( !week_is_due( $cfg->{'Backup'}->{'Schedule'}->{'Since'},
+                   $cfg->{'Backup'}->{'Schedule'}->{'Repeat'} ) ) {
+	LOGINF "This week is not due for the 'every n weeks' schedule - skipping.";
+	exit(0);
+}
+
 if (!$cfg->{'Backup'}->{'Storagepath'}) {
 	LOGCRIT "Could not find storage path.";
 	exit(1);
@@ -81,6 +91,45 @@ if ($cfg->{'Backup'}->{'Keep_archives'}) {
 }
 
 exit(0);
+
+# "Every n weeks", counted in whole weeks, not in days (issue #1543).
+#
+# The obvious "days since anchor modulo n*7" only hits a single day every n*7
+# days - with two selected weekdays one of them would never fire. Counted in
+# whole weeks, every selected weekday of a due week is due.
+sub week_is_due
+{
+	my ($since, $repeat) = @_;
+	return 1 if( !$repeat or $repeat < 2 );
+	my ($y, $m, $d) = ( $since // '' ) =~ /^(\d{4})-(\d{2})-(\d{2})$/;
+	return 1 if( !$y );
+
+	require Time::Local;
+
+	# Day number of a date, anchored at 12:00 so that the DST switch - it moves
+	# the clock by an hour - cannot shift a date into the neighbouring day.
+	my $daynum = sub {
+		my ($yy, $mm, $dd) = @_;
+		my $t = eval { Time::Local::timelocal( 0, 0, 12, $dd, $mm - 1, $yy ) };
+		return defined $t ? int( $t / 86400 ) : undef;
+	};
+
+	my $refday = $daynum->( $y, $m, $d );
+	my @now = localtime( time() );
+	my $today = $daynum->( $now[5] + 1900, $now[4] + 1, $now[3] );
+	return 1 if( !defined $refday or !defined $today );
+
+	# Pull both days back to the Monday of their week, then the difference is a
+	# whole number of weeks regardless of which weekday they fall on. 1970-01-01
+	# was a Thursday, hence +3.
+	my $back = sub {
+		my ($dayno) = @_;
+		return $dayno - ( ( $dayno + 3 ) % 7 );
+	};
+
+	my $weeks = ( $back->($today) - $back->($refday) ) / 7;
+	return ( $weeks % $repeat == 0 ) ? 1 : 0;
+}
 
 END {
 	LOGEND if($log);

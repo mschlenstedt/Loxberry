@@ -1,69 +1,52 @@
 #!/bin/sh
-# Most parts taken from raspi-config https://github.com/RPi-Distro/raspi-config
+# Show the Raspberry Pi model as type_<n>, or "nopi" on non-Pi hardware.
 #
-# See LICENSE file for copyright and license details
+# Detection works on 32-bit AND 64-bit kernels. The previous version grepped
+# /proc/cpuinfo for "model name : ARMv...", a line that does NOT exist on
+# aarch64 (Pi 3/4/5 running a 64-bit OS) - so it wrongly reported "nopi" on
+# every modern 64-bit Raspberry. It also had no entry for the Pi 5.
 #
-# Different revisions: see https://www.raspberrypi-spy.co.uk/2012/09/checking-your-raspberry-pi-board-version/
-#                          https://elinux.org/RPi_HardwareHistory
+# We now detect the Pi via /proc/device-tree/model (present on all Pi models,
+# upstream and downstream kernels) with a /proc/cpuinfo fallback, and derive
+# the board type from the new-style revision code: bit 23 is the "new format"
+# flag, bits 4-11 are the board type.
+# https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-revision-codes
 
-is_pi () {
-	grep -q "^model name\s*:\s*ARMv" /proc/cpuinfo
-	return $?
-}
+# --- Is this a Raspberry Pi at all? ---
+model=""
+[ -r /proc/device-tree/model ] && model="$(tr -d '\000' < /proc/device-tree/model)"
+case "$model" in
+	*[Rr]aspberry\ [Pp]i*) : ;;
+	*)
+		if ! grep -qi "raspberry pi" /proc/cpuinfo 2>/dev/null; then
+			echo nopi
+			exit
+		fi
+		;;
+esac
 
-if ! is_pi ; then
-   echo nopi
-   exit
+# --- Board type from the revision code ---
+rev="$(awk '/^Revision/ {print $NF; exit}' /proc/cpuinfo)"
+if [ -z "$rev" ]; then
+	echo unknown
+	exit
 fi
+revnum=$(( 0x$rev ))
 
-is_pione() {
-   if grep -q "^Revision\s*:\s*00[0-9a-fA-F][0-9a-fA-F]$" /proc/cpuinfo; then
-      return 0
-   elif grep -q "^Revision\s*:\s*[ 123][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]0[0-36][0-9a-fA-F]$" /proc/cpuinfo ; then
-      return 0
-   else
-      return 1
-   fi
-}
-
-is_pitwo() {
-   grep -q "^Revision\s*:\s*[ 123][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]04[0-9a-fA-F]$" /proc/cpuinfo
-   return $?
-}
-
-is_pithree() {
-   grep -q "^Revision\s*:\s*[a,9][0,2]20[8,d,e][0,2,3]$" /proc/cpuinfo
-   return $?
-}
-
-is_pifour() {
-   grep -q "^Revision\s*:\s*[ 123][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]11[0-9a-fA-F]$" /proc/cpuinfo
-   return $?
-}
-
-is_pizero() {
-   grep -q "^Revision\s*:\s*[ 123][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]0[9cC][0-9a-fA-F]$" /proc/cpuinfo
-   return $?
-}
-
-is_pizero2() {
-   grep -q "^Revision\s*:\s*902120$" /proc/cpuinfo
-   return $?
-}
-
-# Show Raspi Type
-if is_pione; then
-   echo type_1
-elif is_pitwo; then
-   echo type_2
-elif is_pithree; then
-   echo type_3
-elif is_pifour; then
-   echo type_4
-elif is_pizero; then
-   echo type_0
-elif is_pizero2; then
-   echo type_0-2
+if [ $(( (revnum >> 23) & 1 )) -eq 1 ]; then
+	# New-style revision code
+	type=$(( (revnum >> 4) & 0xFF ))
+	case "$type" in
+		0|1|2|3|6)      echo type_1 ;;    # A, B, A+, B+, CM1
+		4)              echo type_2 ;;    # 2B
+		9|12)           echo type_0 ;;    # Zero, Zero W
+		18)             echo type_0-2 ;;  # Zero 2 W
+		8|10|13|14|16)  echo type_3 ;;    # 3B, CM3, 3B+, 3A+, CM3+
+		17|19|20|21)    echo type_4 ;;    # 4B, 400, CM4, CM4S
+		23|24|25|26)    echo type_5 ;;    # 5, CM5, 500/500+, CM5 Lite
+		*)              echo unknown ;;
+	esac
 else
-   echo unknown
+	# Old-style revision code (original Pi 1 / early boards)
+	echo type_1
 fi
