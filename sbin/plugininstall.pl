@@ -493,6 +493,7 @@ sub install {
 	# restriction" - fold it to "False" so a stray keyword can never turn into a
 	# fatal ERR_ARCH below (issue #1540). A real arch string like
 	# "aarch64,x86_64" is neither, and passes through unchanged.
+	$parch =~ s/^\s+|\s+$//g if ( defined $parch );
 	if ( is_disabled($parch) || is_enabled($parch) || $parch eq "" ) {
 		$parch = "False";
 	}
@@ -569,8 +570,21 @@ sub install {
 	# reaches here is a real architecture restriction.
 	if ( $parch ne "False" ) {
 		my $archcheck = 0;
-		foreach (split(/,/,$parch)){
-			if (-e "$lbsconfigdir/is_$_.cfg" || -e "$lbsconfigdir/is_arch_$_.cfg" ) {
+		my (undef, $sysarch) = execute( command => "uname -m" );
+		$sysarch =~ s/^\s+|\s+$//g;
+		foreach my $arch (split(/,/,$parch)) {
+			# A comma separated list is usually written with blanks
+			# ("aarch64, x86_64") and sometimes in mixed case. Without
+			# normalising each element the lookup below silently misses and
+			# the install fails on a system that IS supported - regression from the
+			# fix for issue #1540, reported for Audioserver4Home 3.3.0.
+			$arch =~ s/^\s+|\s+$//g;
+			$arch = lc($arch);
+			next if ( $arch eq "" );
+			# Compare against uname first: that is the architecture itself,
+			# the is_*.cfg files are only its cached representation and may
+			# be missing or named differently on older installations.
+			if ( $arch eq lc($sysarch) || -e "$lbsconfigdir/is_$arch.cfg" || -e "$lbsconfigdir/is_arch_$arch.cfg" ) {
 				$archcheck = 1;
 				LOGOK "$LL{'OK_ARCH'}";
 				last;
@@ -579,8 +593,6 @@ sub install {
 		if (!$archcheck) {
 			# Name the required and the detected architecture - a bare "wrong
 			# architecture" leaves the author guessing (issue #1540).
-			my (undef, $sysarch) = execute( command => "uname -m" );
-			$sysarch =~ s/^\s+|\s+$//g;
 			$message = "$LL{'ERR_ARCH'} " . sprintf($LL{'ERR_ARCH_DETAIL'}, $parch, $sysarch);
 			LOGCRIT $message;
 			&fail($message);
