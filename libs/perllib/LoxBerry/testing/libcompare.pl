@@ -153,4 +153,62 @@ emit('systemloglevel', { value => LoxBerry::System::systemloglevel() });
 	emit('lock_unlock', { lock => $rlock, unlock => $runlock });
 }
 
+#############################################
+# Auth (pure functions)
+#############################################
+{
+	require LoxBerry::Auth;
+
+	my $auth_key  = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+	my $auth_apiv = "{'snr': 'AB:CD:EF:01:02:03', 'version':'17.1.7.3', 'hasEventSlots':true, "
+	              . "'isInTrust':false, 'local':true,'certTLD':'com'}";
+
+	emit('auth_norm_alg', [ map { LoxBerry::Auth::_norm_alg($_) }
+	                        ('SHA256', 'sha-256', 'SHA1', '', 'MD5') ]);
+
+	my $auth_pw256 = LoxBerry::Auth::_pw_hash('Test1234', '41B0A8F1', 'SHA256');
+	my $auth_pw1   = LoxBerry::Auth::_pw_hash('Test1234', '41B0A8F1', 'SHA1');
+	emit('auth_hashes', {
+		pw_sha256    => $auth_pw256,
+		pw_sha1      => $auth_pw1,
+		auth_sha256  => LoxBerry::Auth::_auth_hash('loxberry', $auth_pw256, $auth_key, 'SHA256'),
+		auth_sha1    => LoxBerry::Auth::_auth_hash('loxberry', $auth_pw1, $auth_key, 'SHA1'),
+		token_sha256 => LoxBerry::Auth::_token_hash('a1b2c3d4e5f60718293a4b5c6d7e8f90', $auth_key, 'SHA256'),
+		token_sha1   => LoxBerry::Auth::_token_hash('a1b2c3d4e5f60718293a4b5c6d7e8f90', $auth_key, 'SHA1'),
+	});
+
+	emit('auth_parse_api_value', LoxBerry::Auth::_parse_api_value($auth_apiv));
+
+	emit('auth_fw_supported', [ map { LoxBerry::Auth::_fw_supported($_) }
+	                            ('17.1.7.3', '11.2.10.22', '11.2.10.21', '11.2.9.99', '12.0', '') ]);
+
+	emit('auth_rights_granted', [
+		LoxBerry::Auth::_rights_granted(1924, 0x100),
+		LoxBerry::Auth::_rights_granted(1924, 0x04),
+		LoxBerry::Auth::_rights_granted(4,    0x100),
+		LoxBerry::Auth::_rights_granted(1924, 0x104),
+	]);
+
+	emit('auth_ll_codes', [
+		LoxBerry::Auth::_ll_code('{"LL":{"value":{},"code":"401"}}'),
+		LoxBerry::Auth::_ll_code('{"LL":{"value":"x","Code":"200"}}'),
+		LoxBerry::Auth::_ll_code('<html>401</html>'),
+		LoxBerry::Auth::_effective_code(200, '{"LL":{"value":{},"code":"401"}}'),
+		LoxBerry::Auth::_effective_code(200, '{"LL":{"value":"x","Code":"200"}}'),
+		LoxBerry::Auth::_effective_code(401, '<html>401</html>'),
+	]);
+
+	emit('auth_constants', {
+		default_perm      => $LoxBerry::Auth::DEFAULT_PERM,
+		refresh_threshold => $LoxBerry::Auth::REFRESH_THRESHOLD,
+		min_firmware      => $LoxBerry::Auth::MIN_FIRMWARE,
+		perm_app          => $LoxBerry::Auth::PERM_APP,
+		perm_sysws        => $LoxBerry::Auth::PERM_SYSWS,
+	});
+
+	my %auth_ms = LoxBerry::System::get_miniservers();
+	emit('auth_ms_baseurl', $auth_ms{1} ? LoxBerry::Auth::_ms_baseurl($auth_ms{1}) : undef);
+	emit('auth_auth_method_ms1', LoxBerry::Auth::auth_method(1));
+}
+
 exit 0;
