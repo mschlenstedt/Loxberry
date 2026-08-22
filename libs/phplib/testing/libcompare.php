@@ -116,3 +116,64 @@ LBSystem::unlock(array('lockfile' => 'libcompare_test'));
 $rlock   = LBSystem::lock(array('lockfile' => 'libcompare_test', 'wait' => 0));
 $runlock = LBSystem::unlock(array('lockfile' => 'libcompare_test'));
 emit('lock_unlock', array('lock' => $rlock, 'unlock' => $runlock));
+
+/////////////////////////////////////////////
+// Auth (pure functions)
+/////////////////////////////////////////////
+set_include_path(get_include_path() . PATH_SEPARATOR . dirname(__DIR__));
+require_once dirname(__DIR__) . "/loxberry_auth.php";
+
+$auth_key  = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+$auth_apiv = "{'snr': 'AB:CD:EF:01:02:03', 'version':'17.1.7.3', 'hasEventSlots':true, "
+           . "'isInTrust':false, 'local':true,'certTLD':'com'}";
+
+$auth_algs = array();
+foreach (array('SHA256', 'sha-256', 'SHA1', '', 'MD5') as $a) { $auth_algs[] = LBAuth::_norm_alg($a); }
+emit('auth_norm_alg', $auth_algs);
+
+$auth_pw256 = LBAuth::_pw_hash('Test1234', '41B0A8F1', 'SHA256');
+$auth_pw1   = LBAuth::_pw_hash('Test1234', '41B0A8F1', 'SHA1');
+emit('auth_hashes', array(
+	'pw_sha256'    => $auth_pw256,
+	'pw_sha1'      => $auth_pw1,
+	'auth_sha256'  => LBAuth::_auth_hash('loxberry', $auth_pw256, $auth_key, 'SHA256'),
+	'auth_sha1'    => LBAuth::_auth_hash('loxberry', $auth_pw1, $auth_key, 'SHA1'),
+	'token_sha256' => LBAuth::_token_hash('a1b2c3d4e5f60718293a4b5c6d7e8f90', $auth_key, 'SHA256'),
+	'token_sha1'   => LBAuth::_token_hash('a1b2c3d4e5f60718293a4b5c6d7e8f90', $auth_key, 'SHA1'),
+));
+
+emit('auth_parse_api_value', LBAuth::_parse_api_value($auth_apiv));
+
+$auth_fw = array();
+foreach (array('17.1.7.3', '11.2.10.22', '11.2.10.21', '11.2.9.99', '12.0', '') as $f) {
+	$auth_fw[] = LBAuth::_fw_supported($f);
+}
+emit('auth_fw_supported', $auth_fw);
+
+emit('auth_rights_granted', array(
+	LBAuth::_rights_granted(1924, 0x100),
+	LBAuth::_rights_granted(1924, 0x04),
+	LBAuth::_rights_granted(4,    0x100),
+	LBAuth::_rights_granted(1924, 0x104),
+));
+
+emit('auth_ll_codes', array(
+	LBAuth::_ll_code('{"LL":{"value":{},"code":"401"}}'),
+	LBAuth::_ll_code('{"LL":{"value":"x","Code":"200"}}'),
+	LBAuth::_ll_code('<html>401</html>'),
+	LBAuth::_effective_code(200, '{"LL":{"value":{},"code":"401"}}'),
+	LBAuth::_effective_code(200, '{"LL":{"value":"x","Code":"200"}}'),
+	LBAuth::_effective_code(401, '<html>401</html>'),
+));
+
+emit('auth_constants', array(
+	'default_perm'      => LBAuth::$DEFAULT_PERM,
+	'refresh_threshold' => LBAuth::$REFRESH_THRESHOLD,
+	'min_firmware'      => LBAuth::$MIN_FIRMWARE,
+	'perm_app'          => LBAuth::PERM_APP,
+	'perm_sysws'        => LBAuth::PERM_SYSWS,
+));
+
+$auth_ms = LBSystem::get_miniservers();
+emit('auth_ms_baseurl', isset($auth_ms[1]) ? LBAuth::_ms_baseurl($auth_ms[1]) : null);
+emit('auth_auth_method_ms1', LBAuth::auth_method(1));
