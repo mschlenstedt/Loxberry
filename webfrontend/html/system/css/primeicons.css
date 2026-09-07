@@ -21,7 +21,7 @@
 }
 
 .pi:before {
-    --webkit-backface-visibility:hidden;
+    -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
 }
 

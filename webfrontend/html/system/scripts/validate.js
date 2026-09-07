@@ -1,5 +1,5 @@
 /* Loxberry webfrontend/html/system/scripts/validate.js */
-/* Version: 2.2.0.1 */
+/* Version: 2.2.0.2 */
 
 function validate_enable ( object )
 {
@@ -16,9 +16,14 @@ function validate_enable ( object )
 	// Prevent return key
 	$(object).keypress(function(e){ return e.which != 13; });
 
-	// Save original background-color
-	originalbackgroundcolor = ( typeof $(object).attr("background-color") != 'undefined') ? $(object).attr("background-color") : "transparent";
-	$(object).attr("original-background-color", originalbackgroundcolor );
+	// Save the original inline styles. Empty values deliberately allow the
+	// active Core/theme stylesheet to take over again after validation.
+	var validation_node = $(object).get(0);
+	var validation_style = validation_node && validation_node.style ? validation_node.style : {};
+	$(object).attr("original-background-color", validation_style.backgroundColor || "");
+	$(object).attr("original-color", validation_style.color || "");
+	$(object).attr("original-webkit-text-fill-color", validation_style.webkitTextFillColor || "");
+	$(object).attr("original-border-radius", validation_style.borderRadius || "");
 
 	// The global variable window.obj_to_validate holds all objects which prevent submitting the form,
 	// if the content doesn't match the rule in parameter data-validation-rule of the INPUT
@@ -56,6 +61,34 @@ function validate_enable ( object )
 	{
 		validate_chk_value( object,e );
 	});
+}
+
+function validate_set_visual_state( object, state )
+{
+	var field = $(object);
+
+	if (state == 'ok')
+	{
+		field.css({'background-color': '#C0FFC0', 'color': '#111827', '-webkit-text-fill-color': '#111827'});
+		return;
+	}
+	if (state == 'error')
+	{
+		field.css({'background-color': '#FFC0C0', 'color': '#111827', '-webkit-text-fill-color': '#111827'});
+		return;
+	}
+
+	field.css({
+		'background-color': field.attr('original-background-color') || '',
+		'color': field.attr('original-color') || '',
+		'-webkit-text-fill-color': field.attr('original-webkit-text-fill-color') || ''
+	});
+}
+
+function validate_restore_border_radius( object )
+{
+	var field = $(object);
+	field.css('border-radius', field.attr('original-border-radius') || '');
 }
 
 function validate_all()
@@ -396,24 +429,25 @@ function validate_chk_value( object,evt,rule )
 			}
 			rule = '$';
 		    $('#error-msg-'+or_object.substring(1)).fadeOut(100);
+			validate_restore_border_radius(or_object);
 			// If coloring is not disabled change the color
 			if ( $(or_object).attr('data-validation-coloring') != 'off' )
 			{
 				if ( $(or_object).val() == '' )
 				{
 					// Set color for nocolor
-					$( or_object ).css("background-color",$(or_object).attr("original-background-color"));
+					validate_set_visual_state(or_object, 'none');
 				}
 				else
 				{
 					// Set color for ok
-					$( or_object ).css("background-color","#C0FFC0");
+					validate_set_visual_state(or_object, 'ok');
 				}
 			}
 			else
 			{
 				// Set color for nocolor
-				$( or_object ).css("background-color",$(or_object).attr("original-background-color"));
+				validate_set_visual_state(or_object, 'none');
 			}
 		}
 	}
@@ -462,18 +496,18 @@ function validate_chk_value( object,evt,rule )
 			if ( $(object).val() == '' )
 			{
 				// Set color for nocolor
-				$( object ).css("background-color",$(object).attr("original-background-color"));
+				validate_set_visual_state(object, 'none');
 			}
 			else
 			{
 				// Set color for error
-				$( object ).css("background-color","#FFC0C0");
+				validate_set_visual_state(object, 'error');
 			}
 		}
 		else
 		{
 			// Set color for nocolor
-			$( object ).css("background-color",$(object).attr("original-background-color"));
+			validate_set_visual_state(object, 'none');
 		}
 
 		// Return false to the caller
@@ -489,25 +523,25 @@ function validate_chk_value( object,evt,rule )
 			if ( $(object).val() == '' )
 			{
 				// Set color for nocolor
-				$( object ).css("background-color",$(object).attr("original-background-color"));
+				validate_set_visual_state(object, 'none');
 			}
 			else
 			{
 				// Set color for ok
-				$( object ).css("background-color","#C0FFC0");
+				validate_set_visual_state(object, 'ok');
 			}
 		}
 		else
 		{
 			// Set color for nocolor
-			$( object ).css("background-color",$(object).attr("original-background-color"));
+			validate_set_visual_state(object, 'none');
 		}
 
 		// Hide the tooltip
 		$('#error-msg-'+object.substring(1)).fadeOut(100);
 
 		// Add the bottom round corners of input after disconnecting the error message 
-		$(object).css({'border-radius': 'inherit'});
+		validate_restore_border_radius(object);
 
 		// Return false to the caller
 		return true
@@ -556,7 +590,8 @@ function validate_clean_objects( to_clean )
 		$('#error-msg-'+object.substring(1)).fadeOut(100);
 
 		// Set color for nocolor
-		$( object ).css("background-color",$(object).attr("original-background-color"));
+		validate_set_visual_state(object, 'none');
+		validate_restore_border_radius(object);
 
 		// Remove the object from the global array window.obj_to_validate
 		window.obj_to_validate.splice($.inArray(object, obj_to_validate),1);
