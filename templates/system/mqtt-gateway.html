@@ -139,6 +139,56 @@
     background-color: #888;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' d='M2 6L10 6'/%3E%3C/svg%3E");
 }
+
+/* Wert-Zelle: Hinweis, dass ein Doppelklick den vollen Wert anzeigt */
+.mqttgw-traffic-value-has-full {
+    cursor: zoom-in;
+}
+.mqttgw-traffic-value-has-full .mqttgw-traffic-value-inner {
+    border-bottom: 1px dotted var(--lb-gray-400, #aaa);
+}
+.mqttgw-traffic-value-open {
+    cursor: zoom-out;
+}
+.mqttgw-traffic-value-open .mqttgw-traffic-value-inner {
+    border-bottom-style: solid;
+    border-bottom-color: var(--lb-primary, #6dac20);
+}
+
+/* Detail-Panel: erscheint als eigene Zeile direkt unter der angeklickten Zeile */
+.mqttgw-traffic-detail {
+    position: relative;
+    margin: 2px 0 4px 0;
+    padding: 10px 34px 10px 12px;
+    background: var(--lb-gray-50, #f7f7f7);
+    border: 1px solid var(--lb-border-color, #ddd);
+    border-radius: var(--lb-radius-sm, 4px);
+}
+.mqttgw-traffic-detail pre {
+    margin: 0;
+    font-family: var(--lb-font-mono, monospace);
+    font-size: 11px;
+    color: var(--lb-gray-700, #333);
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 300px;
+    overflow-y: auto;
+}
+.mqttgw-traffic-detail-close {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    color: var(--lb-gray-500, #888);
+    padding: 2px 4px;
+}
+.mqttgw-traffic-detail-close:hover {
+    color: var(--lb-gray-700, #333);
+}
 </style>
 
 <!-- Disable jQuery Mobile auto-enhancement for this page -->
@@ -1859,6 +1909,12 @@ $(function () {
     $('#v2-' + transport + '-content .mqttgw-tgroup').each(function () {
       if (!this.open) savedClosed[$(this).data('grp')] = true;
     });
+    // Offene Detail-Panels (Doppelklick-Wertanzeige) vor Re-Render merken
+    var savedOpenDetail = {};
+    $('#v2-' + transport + '-content .mqttgw-traffic-value-open').each(function () {
+      var vi = $(this).closest('.mqttgw-traffic-row').data('vi');
+      if (vi) savedOpenDetail[vi] = true;
+    });
 
     var rowCls = 'mqttgw-traffic-row' + (isHttp ? '' : ' mqttgw-traffic-row-udp');
     var html = '';
@@ -1899,11 +1955,9 @@ $(function () {
           var pms = e && e.last_processing_ms != null
                       ? (+e.last_processing_ms).toFixed(1) + 'ms' : '&mdash;';
           var valDisp = val
-            ? (val.length > 28
-                ? '<span title="' + esc(val) + '">' + esc(val.slice(0, 28)) + '&hellip;</span>'
-                : esc(val))
+            ? '<span class="mqttgw-traffic-value-inner" title="' + esc(val) + ' (Doubleclick for formatted Details)">' + esc(val) + '</span>'
             : '&mdash;';
-          html += '<div class="' + rowCls + '">';
+          html += '<div class="' + rowCls + '" data-vi="' + esc(r.vi) + '">';
           html += '<img src="' + _iconImg[sc] + '" class="mqttgw-traffic-icon" title="' + esc(_titles[sc]) + '" width="14" height="14">';
           if (isHttp) {
             html += '<span class="mqttgw-traffic-vi">';
@@ -1919,7 +1973,7 @@ $(function () {
             html += '</span>';
           }
           html += '<span class="mqttgw-traffic-topic" title="' + esc(r.topic) + (r.jp ? ' &bull; ' + esc(r.jp) : '') + '">' + esc(r.topic) + (r.jp ? ' <em>&bull;&nbsp;' + esc(r.jp) + '</em>' : '') + '</span>';
-          html += '<span class="mqttgw-traffic-value">' + valDisp + '</span>';
+          html += '<span class="mqttgw-traffic-value' + (val ? ' mqttgw-traffic-value-has-full' : '') + '" data-full="' + esc(val || '') + '">' + valDisp + '</span>';
           html += '<button class="mqttgw-resend-btn" type="button" data-resend="' + esc(r.vi) + '" title="' + esc(_lang.resendOne) + '">' + _svgResend + '</button>';
           html += '<span class="mqttgw-traffic-ms-label">' + ms + '</span>';
           html += '<span class="mqttgw-traffic-time">' + relTime(ts) + '</span>';
@@ -1934,6 +1988,12 @@ $(function () {
     // Gespeicherten Zustand wiederherstellen
     $('#v2-' + transport + '-content .mqttgw-tgroup').each(function () {
       if (savedClosed[$(this).data('grp')]) this.open = false;
+    });
+    // Offene Detail-Panels wiederherstellen
+    Object.keys(savedOpenDetail).forEach(function (vi) {
+      var $row = $('#v2-' + transport + '-content .mqttgw-traffic-row[data-vi="' + vi.replace(/"/g, '\\"') + '"]');
+      var $val = $row.find('.mqttgw-traffic-value-has-full');
+      if ($val.length) openValueDetail($val);
     });
   }
 
@@ -1994,6 +2054,51 @@ $(function () {
       $b.addClass('mqttgw-resend-ok');
       setTimeout(function () { $b.removeClass('mqttgw-resend-ok'); }, 1200);
     });
+  });
+
+  // Vollen Wert per Doppelklick in einem Panel direkt unter der Zeile anzeigen.
+  function fmtFullValue(v) {
+    try {
+      return JSON.stringify(JSON.parse(v), null, 2);
+    } catch (e) {
+      return v;
+    }
+  }
+
+  function openValueDetail($val) {
+    var $row = $val.closest('.mqttgw-traffic-row');
+    var full = $val.attr('data-full');
+    var $detail = $('<div class="mqttgw-traffic-detail"></div>');
+    $('<pre></pre>').text(fmtFullValue(full)).appendTo($detail);
+    $('<button type="button" class="mqttgw-traffic-detail-close" title="Schlie&szlig;en">&times;</button>').appendTo($detail);
+    $row.after($detail);
+    $val.addClass('mqttgw-traffic-value-open');
+  }
+
+  $('#v2-http-content, #v2-udp-content').on('dblclick', '.mqttgw-traffic-value-has-full', function (e) {
+    e.preventDefault();
+    var $val = $(this);
+    var $row = $val.closest('.mqttgw-traffic-row');
+    var $existing = $row.next('.mqttgw-traffic-detail');
+    if ($existing.length) {
+      $existing.remove();
+      $val.removeClass('mqttgw-traffic-value-open');
+      return;
+    }
+    // Andere offene Panels in diesem Panel-Container schließen
+    var $container = $row.closest('#v2-http-content, #v2-udp-content');
+    $container.find('.mqttgw-traffic-detail').remove();
+    $container.find('.mqttgw-traffic-value-open').removeClass('mqttgw-traffic-value-open');
+
+    openValueDetail($val);
+  });
+
+  $('#v2-http-content, #v2-udp-content').on('click', '.mqttgw-traffic-detail-close', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var $detail = $(this).closest('.mqttgw-traffic-detail');
+    $detail.prev('.mqttgw-traffic-row').find('.mqttgw-traffic-value-has-full').removeClass('mqttgw-traffic-value-open');
+    $detail.remove();
   });
 
   $(document).on('click', '.mqttgw-copy-btn', function (e) {
