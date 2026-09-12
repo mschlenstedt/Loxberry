@@ -1078,7 +1078,8 @@ $(function() {
     }
 
     function getTopicHttpSc(topic) {
-        var vi = topic.replace(/\//g, '_');
+        // Wie build_vi_name() in mqtt_gateway.py: '/', ' ' und '%' werden zu '_'
+        var vi = topic.replace(/\//g, '_').replace(/ /g, '_').replace(/%/g, '_');
         if (statusData[vi]) return httpScOf(statusData[vi]);
         // JSON-expand: mehrere VIs mit Prefix vi + '_'
         var prefix = vi + '_';
@@ -2111,10 +2112,12 @@ $(function () {
   var _svgCheck = '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
   var _svgResend = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>';
 
+  // Must match build_vi_name() in mqtt_gateway.py exactly: every single ' '
+  // (not runs of whitespace) and '%' become '_', otherwise status lookups miss.
   function viName(topic, jsonPath) {
-    var tp = topic.replace(/\//g, '_').replace(/\s+/g, '_');
+    var tp = topic.replace(/\//g, '_').replace(/ /g, '_').replace(/%/g, '_');
     if (!jsonPath) return tp;
-    var jp = jsonPath.replace(/\[(\d+)\]/g, '$1').replace(/@@/g, '_').replace(/\s+/g, '_');
+    var jp = jsonPath.replace(/\[(\d+)\]/g, '$1').replace(/@@/g, '_').replace(/ /g, '_');
     return tp + '_' + jp;
   }
 
@@ -2317,7 +2320,7 @@ $(function () {
             html += '<button class="mqttgw-copy-btn mqttgw-copy-icon" type="button" data-copy="' + esc(r.vi) + '" title="VI kopieren">' + _svgCopy + '</button>';
             html += '</span>';
           } else {
-            var udpJp = r.jp ? r.jp.replace(/\[(\d+)\]/g, '$1').replace(/@@/g, '_').replace(/\s+/g, '_') : null;
+            var udpJp = r.jp ? r.jp.replace(/\[(\d+)\]/g, '$1').replace(/@@/g, '_').replace(/ /g, '_') : null;
             var cmd = 'MQTT:\\i' + (udpJp ? r.topic + '/' + udpJp : r.topic) + '=\\i\\v';
             html += '<span class="mqttgw-traffic-cmd">';
             html += '<span class="mqttgw-traffic-cmd-text" title="' + esc(cmd) + '">' + esc(cmd) + '</span>';
