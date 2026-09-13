@@ -407,6 +407,26 @@ elseif ( $_POST['ajax'] == 'save_subscriptions' || $_GET['ajax'] == 'save_subscr
     echo json_encode(array('status' => 'ok', 'count' => count($input['Subscriptions'])));
 }
 
+elseif ( $ajax == 'scan_miniservers' ) {
+    // "Miniserver scannen" (V2): liest die virtuellen Eingänge aus der
+    // Programmdatei der Miniserver. Liest nur - sendet nichts an den
+    // Miniserver und schreibt keine Konfiguration.
+    $cmd = 'timeout 240 python3 ' . escapeshellarg("$lbhomedir/bin/mqtt-scan-miniserver.py");
+    if ( !empty($_POST['force']) ) {
+        $cmd .= ' --force';
+    }
+    $output = [];
+    $rc = 0;
+    exec($cmd . ' 2>/dev/null', $output, $rc);
+    $result = json_decode(implode("\n", $output), true);
+    if ( !is_array($result) ) {
+        http_response_code(500);
+        echo json_encode([ 'miniservers' => new stdClass(), 'error' => 'internal', 'detail' => "scan exited with code $rc" ]);
+        exit;
+    }
+    echo json_encode($result, JSON_UNESCAPED_UNICODE);
+}
+
 elseif ( $ajax == 'get_status_v2' ) {
     $f = '/dev/shm/mqttgatwayv2_status.json';
     header('Content-Type: application/json');
