@@ -1,4 +1,64 @@
 <link rel="stylesheet" href="/system/css/mqtt-gateway-v2.css">
+<script src="/system/scripts/mqttgw-scan.js?v=5"></script>
+<script>
+// Texte für "Miniserver scannen" (Tab Abonnements und Umstieg V1->V2)
+MqttgwScan.lang = {
+	loading:         '<TMPL_VAR MQTT.SCAN_LOADING>',
+	loadingHint:     '<TMPL_VAR MQTT.SCAN_LOADING_HINT>',
+	inputs:          '<TMPL_VAR MQTT.SCAN_INPUTS>',
+	fromProject:     '<TMPL_VAR MQTT.SCAN_FROM_PROJECT>',
+	chipAll:         '<TMPL_VAR MQTT.SCAN_CHIP_ALL>',
+	chipNew:         '<TMPL_VAR MQTT.SCAN_CHIP_NEW>',
+	chipHint:        '<TMPL_VAR MQTT.SCAN_CHIP_HINT>',
+	chipSub:         '<TMPL_VAR MQTT.SCAN_CHIP_SUB>',
+	chipMiss:        '<TMPL_VAR MQTT.SCAN_CHIP_MISS>',
+	selAll:          '<TMPL_VAR MQTT.SCAN_SELECT_ALL>',
+	selNone:         '<TMPL_VAR MQTT.SCAN_SELECT_NONE>',
+	selHint:         '<TMPL_VAR MQTT.SCAN_SELECT_HINTS>',
+	colInput:        '<TMPL_VAR MQTT.SCAN_COL_INPUT>',
+	colTopic:        '<TMPL_VAR MQTT.SCAN_COL_TOPIC>',
+	colValue:        '<TMPL_VAR MQTT.SCAN_COL_VALUE>',
+	colStatus:       '<TMPL_VAR MQTT.SCAN_COL_STATUS>',
+	stNew:           '<TMPL_VAR MQTT.SCAN_STATUS_NEW>',
+	stSub:           '<TMPL_VAR MQTT.SCAN_STATUS_SUB>',
+	stJson:          '<TMPL_VAR MQTT.SCAN_STATUS_JSON>',
+	stRename:        '<TMPL_VAR MQTT.SCAN_STATUS_RENAME>',
+	stGuess:         '<TMPL_VAR MQTT.SCAN_STATUS_GUESS>',
+	stTypo:          '<TMPL_VAR MQTT.SCAN_STATUS_TYPO>',
+	stNoTopic:       '<TMPL_VAR MQTT.SCAN_STATUS_NOTOPIC>',
+	typeText:        '<TMPL_VAR MQTT.SCAN_TYPE_TEXT>',
+	noTopic:         '<TMPL_VAR MQTT.SCAN_NO_TOPIC>',
+	similar:         '<TMPL_VAR MQTT.SCAN_SIMILAR>',
+	neverSeen:       '<TMPL_VAR MQTT.SCAN_NEVER_SEEN>',
+	renameHint:      '<TMPL_VAR MQTT.SCAN_RENAME_HINT>',
+	guessHint:       '<TMPL_VAR MQTT.SCAN_GUESS_HINT>',
+	ambiguous:       '<TMPL_VAR MQTT.SCAN_AMBIGUOUS>',
+	hidden:          '<TMPL_VAR MQTT.SCAN_HIDDEN_INPUTS>',
+	nothing:         '<TMPL_VAR MQTT.SCAN_NOTHING_FOUND>',
+	orphans:         '<TMPL_VAR MQTT.SCAN_ORPHANS>',
+	orphansHint:     '<TMPL_VAR MQTT.SCAN_ORPHANS_HINT>',
+	optResend:       '<TMPL_VAR MQTT.SCAN_OPT_RESEND>',
+	optUnsub:        '<TMPL_VAR MQTT.SCAN_OPT_UNSUB>',
+	unsubUdp:        '<TMPL_VAR MQTT.SCAN_UNSUB_UDP>',
+	unsubIncomplete: '<TMPL_VAR MQTT.SCAN_UNSUB_INCOMPLETE>',
+	apply:           '<TMPL_VAR MQTT.SCAN_BTN_APPLY>',
+	done:            '<TMPL_VAR MQTT.SCAN_DONE>',
+	doneUnsub:       '<TMPL_VAR MQTT.SCAN_DONE_UNSUB>',
+	doneResend:      '<TMPL_VAR MQTT.SCAN_DONE_RESEND>',
+	doneSent:        '<TMPL_VAR MQTT.SCAN_DONE_SENT>',
+	undone:          '<TMPL_VAR MQTT.SCAN_UNDONE>',
+	err: {
+		auth_token:  '<TMPL_VAR MQTT.SCAN_ERR_AUTH_TOKEN>',
+		denied:      '<TMPL_VAR MQTT.SCAN_ERR_DENIED>',
+		unreachable: '<TMPL_VAR MQTT.SCAN_ERR_UNREACHABLE>',
+		nofile:      '<TMPL_VAR MQTT.SCAN_ERR_NOFILE>',
+		unpack:      '<TMPL_VAR MQTT.SCAN_ERR_UNPACK>',
+		xml:         '<TMPL_VAR MQTT.SCAN_ERR_XML>',
+		http:        '<TMPL_VAR MQTT.SCAN_ERR_HTTP>',
+		internal:    '<TMPL_VAR MQTT.SCAN_ERR_INTERNAL>'
+	}
+};
+</script>
 
 <style>
 .mono {
@@ -138,6 +198,263 @@
     border-color: #888;
     background-color: #888;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' d='M2 6L10 6'/%3E%3C/svg%3E");
+}
+
+/* "Miniserver scannen" (V2) */
+.mqttgw-status .mqttgw-scan-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: 6px;
+    background: var(--lb-card-bg);
+    border-color: var(--lb-primary);
+    color: var(--lb-primary-dark);
+    font-weight: 600;
+}
+#mqttgw-scan-popup {
+    width: min(880px, 94vw);
+    max-width: 94vw;
+    padding: 0;
+}
+.mqttgw-scan-head {
+    padding: 14px 20px 10px;
+    border-bottom: 1px solid var(--lb-border-color);
+}
+.mqttgw-scan-head h3 {
+    margin: 0 0 4px 0;
+    font-size: 1.05rem;
+}
+.mqttgw-scan-sub {
+    margin: 0;
+    font-size: var(--lb-font-sm);
+    color: var(--lb-text-secondary);
+}
+.mqttgw-scan-ms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--lb-text-secondary);
+}
+.mqttgw-scan-ms .mqttgw-scan-err {
+    color: var(--lb-danger);
+}
+.mqttgw-scan-body {
+    padding: 6px 20px 10px;
+    max-height: 60vh;
+    overflow: auto;
+}
+.mqttgw-scan-loading {
+    padding: 28px 4px;
+    text-align: center;
+    color: var(--lb-text-secondary);
+    font-size: var(--lb-font-sm);
+}
+.mqttgw-scan-bar {
+    position: relative;
+    height: 6px;
+    max-width: 320px;
+    margin: 12px auto 10px;
+    border-radius: 6px;
+    background: var(--lb-gray-200);
+    overflow: hidden;
+}
+.mqttgw-scan-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 35%;
+    border-radius: 6px;
+    background: var(--lb-primary);
+    animation: mqttgw-scan-slide 1.2s ease-in-out infinite;
+}
+@keyframes mqttgw-scan-slide {
+    from { left: -35%; }
+    to   { left: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .mqttgw-scan-bar::after { animation: none; left: 0; width: 100%; opacity: .5; }
+}
+.mqttgw-scan-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 8px 0 4px;
+}
+/* Auswahl-Knöpfe sitzen in der rechtsbündigen Aktionsgruppe vor "Neu laden" */
+.mqttgw-scan-select {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-right: 10px;
+}
+.mqttgw-scan-select:empty {
+    display: none;
+}
+.mqttgw-scan-select .lb-btn,
+.mqttgw-scan-actions .lb-btn {
+    margin: 0;
+}
+.mqttgw-scan-subicon {
+    color: var(--lb-text-muted);
+    font-size: 13px;
+    text-align: center;
+}
+.mqttgw-scan-headrow,
+.mqttgw-scan-row {
+    display: grid;
+    grid-template-columns: 20px minmax(0, 1.3fr) minmax(0, 1.3fr) minmax(40px, .5fr) 128px;
+    gap: 10px;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--lb-gray-100);
+    font-size: var(--lb-font-sm);
+}
+.mqttgw-scan-headrow {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--lb-text-secondary);
+    border-bottom: 2px solid var(--lb-border-color);
+}
+.mqttgw-scan-group {
+    padding: 10px 0 4px;
+    font-size: var(--lb-font-sm);
+    font-weight: 700;
+}
+.mqttgw-scan-mono {
+    font-family: var(--lb-font-mono);
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+.mqttgw-scan-topic {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 3px 6px;
+    color: var(--lb-text-secondary);
+}
+.mqttgw-scan-none {
+    font-family: var(--lb-font);
+    font-style: italic;
+    color: var(--lb-text-muted);
+}
+.mqttgw-scan-hint {
+    font-family: var(--lb-font);
+    font-style: normal;
+    font-size: 11.5px;
+    color: var(--lb-warning);
+}
+.mqttgw-scan-val {
+    font-family: var(--lb-font-mono);
+    font-size: 12px;
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.mqttgw-scan-state {
+    text-align: right;
+}
+.mqttgw-scan-tag {
+    font-family: var(--lb-font);
+    font-size: 10.5px;
+    padding: 0 5px;
+    border: 1px solid var(--lb-border-color);
+    border-radius: 6px;
+    color: var(--lb-text-secondary);
+    white-space: nowrap;
+}
+.mqttgw-scan-row.mqttgw-scan-is-sub .mqttgw-scan-mono {
+    opacity: .6;
+}
+.mqttgw-scan-note {
+    padding: 8px 0 2px;
+    font-size: 12px;
+    color: var(--lb-text-muted);
+}
+.mqttgw-scan-orphans {
+    margin: 10px 0 4px;
+    border: 1px dashed var(--lb-border-color);
+    border-radius: var(--lb-radius);
+    font-size: var(--lb-font-sm);
+}
+.mqttgw-scan-orphans > summary {
+    padding: 8px 10px;
+    cursor: pointer;
+    color: var(--lb-text-secondary);
+}
+.mqttgw-scan-orphans > div {
+    padding: 0 10px 10px;
+    color: var(--lb-text-secondary);
+}
+.mqttgw-scan-orphans ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+    font-family: var(--lb-font-mono);
+    font-size: 12px;
+}
+.mqttgw-scan-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--lb-border-color);
+}
+.mqttgw-scan-opts {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: var(--lb-font-sm);
+}
+.mqttgw-scan-opts label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+}
+.mqttgw-scan-locked {
+    font-size: 12px;
+    color: var(--lb-text-muted);
+}
+.mqttgw-scan-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-left: auto;
+}
+.mqttgw-scan-error {
+    padding: 18px 4px;
+    color: var(--lb-danger);
+    font-size: var(--lb-font-sm);
+}
+/* ID-Selektor: schlägt .lb-content input[type="text"] aus components.css (16px, 8/12px Innenabstand) */
+#mqttgw-scan-popup input.mqttgw-scan-guess {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 2px 6px;
+    font-family: var(--lb-font-mono);
+    font-size: 12px;
+    color: var(--lb-input-text);
+    background: var(--lb-input-bg);
+    border: 1px solid var(--lb-input-border);
+    border-radius: var(--lb-radius-sm);
+}
+@media (max-width: 700px) {
+    .mqttgw-scan-headrow { display: none; }
+    .mqttgw-scan-row { grid-template-columns: 20px minmax(0, 1fr); gap: 2px 10px; }
+    .mqttgw-scan-row > :not(:first-child) { grid-column: 2; text-align: left; }
+    .mqttgw-scan-val { display: none; }
 }
 </style>
 
@@ -355,42 +672,28 @@ $(function() {
     });
 
     var _lang_migrate = {
-        msgData:   '<TMPL_VAR MQTT.MIGRATE_TO_V2_MSG_DATA>',
-        msgNoData: '<TMPL_VAR MQTT.MIGRATE_TO_V2_MSG_NODATA>',
-        msgNoFile: '<TMPL_VAR MQTT.MIGRATE_TO_V2_MSG_NOFILE>',
-        btnEmpty:  '<TMPL_VAR MQTT.MIGRATE_BTN_EMPTY>',
-        btnOk:     '<TMPL_VAR MQTT.MIGRATE_BTN_OK>'
+        btnKeep:  '<TMPL_VAR MQTT.MIGRATE_BTN_KEEP>',
+        scanDone: '<TMPL_VAR MQTT.MIGRATE_SCAN_DONE>'
     };
 
     // Version change popup
     var originalVersion = gatewayversion;
     var _migrationChoice = null;
+    var _existingSubs = [];
     $('input[name="gatewayversion"]').on("change", function() {
         var newVersion = parseInt($(this).val());
         _migrationChoice = null;
 
         if (newVersion === 2 && originalVersion === 1) {
-            $.post('ajax/ajax-mqtt.php', { ajax: 'get_v1_migration_status' })
-            .done(function(data) {
-                if (data.nofile) {
-                    $("#mqttgw-migrate-msg").text(_lang_migrate.msgNoFile);
-                    $("#mqttgw-migrate-btn-import").hide();
-                    $("#mqttgw-migrate-btn-empty").text(_lang_migrate.btnOk);
-                } else if (data.available && data.count > 0) {
-                    $("#mqttgw-migrate-msg").text(_lang_migrate.msgData.replace('%s', data.count));
-                    $("#mqttgw-migrate-btn-import").show();
-                    $("#mqttgw-migrate-btn-empty").text(_lang_migrate.btnEmpty);
+            // Vorhandene V2-Abos ermitteln - sie werden nicht mehr ungefragt überschrieben
+            $.post('ajax/ajax-mqtt.php', { ajax: 'get_subscriptions' })
+            .always(function(data) {
+                _existingSubs = (data && data.Subscriptions) || [];
+                if (_existingSubs.length) {
+                    $("#mqttgw-migrate-btn-keep").text(_lang_migrate.btnKeep.replace('%n', _existingSubs.length)).show();
                 } else {
-                    $("#mqttgw-migrate-msg").text(_lang_migrate.msgNoData);
-                    $("#mqttgw-migrate-btn-import").hide();
-                    $("#mqttgw-migrate-btn-empty").text(_lang_migrate.btnOk);
+                    $("#mqttgw-migrate-btn-keep").hide();
                 }
-                document.getElementById("mqttgw-migrate-popup").showModal();
-            })
-            .fail(function() {
-                $("#mqttgw-migrate-msg").text(_lang_migrate.msgNoData);
-                $("#mqttgw-migrate-btn-import").hide();
-                $("#mqttgw-migrate-btn-empty").text(_lang_migrate.btnOk);
                 document.getElementById("mqttgw-migrate-popup").showModal();
             });
         } else if (newVersion === 1 && originalVersion === 2) {
@@ -407,10 +710,40 @@ $(function() {
         document.getElementById("mqttgw-migrate-popup").close();
     });
 
-    // V1→V2 dialog: import button
-    $("#mqttgw-migrate-btn-import").on("click", function(e) {
+    // V1→V2 dialog: Miniserver scannen -> Abos für V2 vorbereiten (ersetzt die frühere Migration)
+    $("#mqttgw-migrate-btn-scan").on("click", function(e) {
         e.preventDefault();
-        _migrationChoice = 'migrate';
+        document.getElementById("mqttgw-migrate-popup").close();
+        var udp = cfg.Main ? cfg.Main.use_udp : 0;
+        MqttgwScan.open({
+            defaultMS: parseInt(cfg.Main && cfg.Main.msno) || 1,
+            useUdp: ['1', 'true', 'yes', 'on', 'enabled'].indexOf(String(udp).toLowerCase()) !== -1,
+            allowResend: false,   // V1 hat die Werte bereits an den Miniserver gesendet
+            getSubscriptions: function() { return _existingSubs; },
+            onApply: function(res) {
+                $.ajax({
+                    type: 'POST',
+                    url: 'ajax/ajax-mqtt.php?ajax=save_subscriptions',
+                    contentType: 'application/json; charset=UTF-8',
+                    data: JSON.stringify({ Subscriptions: res.list })
+                })
+                .done(function() {
+                    _existingSubs = res.list;
+                    _migrationChoice = 'keep';
+                    $("#savemessages, #savemessages_btn").attr("style", "color:green")
+                        .text(MqttgwScan.fmt(_lang_migrate.scanDone, { t: res.list.length }));
+                })
+                .fail(function() {
+                    $("#savemessages, #savemessages_btn").attr("style", "color:red").html(_lang_save.saveError);
+                });
+            }
+        });
+    });
+
+    // V1→V2 dialog: vorhandene V2-Abos behalten
+    $("#mqttgw-migrate-btn-keep").on("click", function(e) {
+        e.preventDefault();
+        _migrationChoice = 'keep';
         document.getElementById("mqttgw-migrate-popup").close();
     });
 
@@ -481,16 +814,17 @@ $(function() {
         }
 
         if (newVersion === 2 && originalVersion === 1) {
-            var choice = _migrationChoice || 'empty';
-            if (choice === 'migrate') {
-                $.post('ajax/ajax-mqtt.php', { ajax: 'migrate_v1_to_v2' }).always(doSave);
-            } else {
+            // Ohne ausdrückliche Wahl bleiben vorhandene V2-Abos erhalten
+            var choice = _migrationChoice || 'keep';
+            if (choice === 'empty') {
                 $.ajax({
                     type: 'POST',
                     url: 'ajax/ajax-mqtt.php?ajax=save_subscriptions',
                     contentType: 'application/json; charset=UTF-8',
                     data: JSON.stringify({ Subscriptions: [] })
                 }).always(doSave);
+            } else {
+                doSave();
             }
         } else {
             doSave();
@@ -658,7 +992,16 @@ $(function(){
         <span class="mqttgw-status-uptime">
             <button class="lb-btn lb-btn-sm" id="btn_discovery_pause" type="button" data-role="none" title="Aktualisierung pausieren">&#x23f8;</button>
             <button class="lb-btn lb-btn-sm mqttgw-discovery-refresh" id="btn_discovery_refresh" type="button" data-role="none" title="<TMPL_VAR MQTT.DISCOVERY_REFRESH>">&#x21bb;</button>
+            <button class="lb-btn lb-btn-sm mqttgw-scan-btn" id="btn_ms_scan" type="button" data-role="none" title="<TMPL_VAR MQTT.SCAN_BTN_TOOLTIP>"><i class="pi pi-search"></i> <TMPL_VAR MQTT.SCAN_BTN></button>
             <span id="save_status" style="font-size:var(--lb-font-sm);margin-left:10px"></span>
+        </span>
+    </div>
+
+    <!-- Ergebnis von "Miniserver scannen" -->
+    <div class="mqttgw-status mqttgw-status-ok" id="scan_done_bar" style="display:none">
+        <span class="mqttgw-status-label" id="scan_done_text"></span>
+        <span class="mqttgw-status-uptime">
+            <button class="lb-btn lb-btn-sm" id="btn_scan_undo" type="button" data-role="none"><TMPL_VAR MQTT.SCAN_BTN_UNDO></button>
         </span>
     </div>
 
@@ -1516,6 +1859,69 @@ $(function() {
             delete openDetails[$(this).data('key')];
         });
         try { sessionStorage.setItem(_ssKey, JSON.stringify(openDetails)); } catch(e) {}
+    });
+
+    // ── Miniserver scannen ────────────────────────────────────────────────
+    // Abgleich und Dialog: webfrontend/html/system/scripts/mqttgw-scan.js
+
+    var scanUndo  = null;
+    var scanTimer = null;
+    var SCAN_RESEND_DELAY = 10000;   // config_watcher prüft alle 5 s, danach kommen die retained-Werte
+
+    function scanUdpEnabled() {
+        var val = cfg2.Main ? cfg2.Main.use_udp : 0;
+        return ['1', 'true', 'yes', 'on', 'enabled'].indexOf(String(val).toLowerCase()) !== -1;
+    }
+
+    function scanSaveNow() {
+        clearTimeout(saveTimer);
+        isDirty = true;
+        showSaveStatus('pending');
+        doSave();
+        renderTopics();
+    }
+
+    $('#btn_ms_scan').on('click', function() {
+        MqttgwScan.open({
+            defaultMS: defaultMS,
+            useUdp: scanUdpEnabled(),
+            allowResend: true,
+            getSubscriptions: function() { return subscriptions; },
+            onApply: function(res) {
+                var L = MqttgwScan.lang;
+                scanUndo = res.undo;
+                subscriptions = res.list;
+                scanSaveNow();
+
+                var parts = [];
+                if (res.picked) parts.push(MqttgwScan.fmt(L.done, { t: res.topics, n: res.picked }));
+                if (res.unsubCount) parts.push(MqttgwScan.fmt(L.doneUnsub, { n: res.unsubCount }));
+
+                clearTimeout(scanTimer);
+                var udpinport = $('#udpinportconfig').text().trim();
+                if (res.resend && res.vis.length && udpinport) {
+                    var doneText = parts.join(' ');
+                    scanTimer = setTimeout(function() {
+                        MqttgwScan.resend(res.vis, udpinport);
+                        $('#scan_done_text').text(doneText + ' ' + L.doneSent);
+                    }, SCAN_RESEND_DELAY);
+                    parts.push(L.doneResend);
+                }
+                $('#scan_done_text').text(parts.join(' '));
+                $('#btn_scan_undo').show();
+                $('#scan_done_bar').show();
+            }
+        });
+    });
+
+    $('#btn_scan_undo').on('click', function() {
+        if (!scanUndo) return;
+        clearTimeout(scanTimer);
+        subscriptions = scanUndo;
+        scanUndo = null;
+        scanSaveNow();
+        $('#scan_done_text').text(MqttgwScan.lang.undone);
+        $(this).hide();
     });
 
     // ── Discovery ─────────────────────────────────────────────────────────
@@ -3526,12 +3932,13 @@ $("#reconnect").click(function(){
 </dialog>
 
 <!-- V1→V2 migration dialog -->
-<dialog id="mqttgw-migrate-popup" class="lb-modal" style="max-width:460px;padding:16px 20px 20px">
+<dialog id="mqttgw-migrate-popup" class="lb-modal" style="max-width:480px;padding:16px 20px 20px">
 	<h3 style="margin:0 0 10px 0;font-size:1rem"><TMPL_VAR MQTT.MIGRATE_TO_V2_TITLE></h3>
-	<p id="mqttgw-migrate-msg" style="font-size:0.875rem;margin:0 0 16px 0"></p>
-	<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
-		<a href="#" id="mqttgw-migrate-btn-import" class="lb-btn lb-btn-sm lb-btn-primary"><TMPL_VAR MQTT.MIGRATE_BTN_IMPORT></a>
-		<a href="#" id="mqttgw-migrate-btn-empty" class="lb-btn lb-btn-sm"></a>
+	<p style="font-size:0.875rem;margin:0 0 16px 0"><TMPL_VAR MQTT.MIGRATE_TO_V2_MSG></p>
+	<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;margin-top:16px">
+		<a href="#" id="mqttgw-migrate-btn-scan" class="lb-btn lb-btn-sm lb-btn-primary"><TMPL_VAR MQTT.MIGRATE_BTN_SCAN></a>
+		<a href="#" id="mqttgw-migrate-btn-keep" class="lb-btn lb-btn-sm" style="display:none"></a>
+		<a href="#" id="mqttgw-migrate-btn-empty" class="lb-btn lb-btn-sm"><TMPL_VAR MQTT.MIGRATE_BTN_EMPTY></a>
 		<a href="#" id="mqttgw-migrate-btn-cancel" class="lb-btn lb-btn-sm"><TMPL_VAR MQTT.BTN_CANCEL></a>
 	</div>
 </dialog>
@@ -3543,5 +3950,24 @@ $("#reconnect").click(function(){
 	<div style="display:flex;gap:8px;justify-content:flex-end">
 		<a href="#" id="mqttgw-switch-v1-proceed" class="lb-btn lb-btn-sm lb-btn-primary"><TMPL_VAR MQTT.MIGRATE_BTN_PROCEED></a>
 		<a href="#" id="mqttgw-switch-v1-cancel" class="lb-btn lb-btn-sm"><TMPL_VAR MQTT.BTN_CANCEL></a>
+	</div>
+</dialog>
+
+<!-- "Miniserver scannen" (V2) -->
+<dialog id="mqttgw-scan-popup" class="lb-modal" aria-labelledby="mqttgw-scan-title">
+	<div class="mqttgw-scan-head">
+		<h3 id="mqttgw-scan-title"><TMPL_VAR MQTT.SCAN_TITLE></h3>
+		<p class="mqttgw-scan-sub"><TMPL_VAR MQTT.SCAN_RULE></p>
+		<div class="mqttgw-scan-ms" id="scan_ms_info"></div>
+	</div>
+	<div class="mqttgw-scan-body" id="scan_body"></div>
+	<div class="mqttgw-scan-foot">
+		<div class="mqttgw-scan-opts" id="scan_opts"></div>
+		<div class="mqttgw-scan-actions">
+			<div class="mqttgw-scan-select" id="scan_select"></div>
+			<a href="#" id="scan_btn_retry" class="lb-btn lb-btn-sm" style="display:none"><TMPL_VAR MQTT.SCAN_BTN_RETRY></a>
+			<a href="#" id="scan_btn_close" class="lb-btn lb-btn-sm"><TMPL_VAR MQTT.SCAN_BTN_CLOSE></a>
+			<a href="#" id="scan_btn_apply" class="lb-btn lb-btn-sm lb-btn-primary" style="display:none"></a>
+		</div>
 	</div>
 </dialog>
