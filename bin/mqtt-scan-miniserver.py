@@ -5,20 +5,20 @@ mqtt-scan-miniserver.py - liest die virtuellen Eingänge aus der Programmdatei
 der Miniserver. Grundlage für den Button "Miniserver scannen" im MQTT Gateway V2.
 
 Ablauf je Miniserver:
-  1. /jdev/sps/LoxAPPversion3  -> unverändert seit dem letzten Scan? Cache nutzen
-  2. /dev/fslist/prog/         -> neueste sps_*.zip bzw. sps_*.LoxCC finden
-  3. /dev/fsget/prog/<datei>   -> in den Arbeitsspeicher laden
-  4. entpacken (zip/LoxCC) und VirtualIn/VirtualTextIn aus dem XML lesen
-  5. jeden Eingang über die IntAddr seines LoxLIVE-Knotens einem
+  1. /dev/fslist/prog/         -> neueste sps_*.zip bzw. sps_*.LoxCC finden
+  2. /dev/fsget/prog/<datei>   -> in den Arbeitsspeicher laden
+  3. entpacken (zip/LoxCC) und VirtualIn/VirtualTextIn aus dem XML lesen
+  4. jeden Eingang über die IntAddr seines LoxLIVE-Knotens einem
      LoxBerry-Miniserver zuordnen
 
-Es wird nichts an den Miniserver gesendet und keine Konfiguration geschrieben.
-Enthält ein Projekt mehrere Miniserver (Client/Gateway), wird es nur einmal
-geladen.
+Es wird nichts an den Miniserver gesendet und nichts auf Datenträger oder
+RAM-Disk geschrieben. Bewusst ohne Cache: Der Scan wird im Wesentlichen einmal
+beim Umstieg von V1 auf V2 gebraucht. Enthält ein Projekt mehrere Miniserver
+(Client/Gateway), wird es nur einmal geladen.
 
 Ausgabe auf stdout (JSON):
   {"miniservers": {"1": {"name": "Haus", "ok": true, "error": null,
-                         "source": "download" | "cache" | "project:<msnr>",
+                         "source": "download" | "project:<msnr>",
                          "inputs": [{"name": "w4l_cur_tt", "type": "VirtualIn"}]}}}
 
 Fehlercodes in "error": auth_token, denied, unreachable, nofile, unpack, xml,
@@ -29,7 +29,7 @@ Herkunft: Download, Entpacken und Miniserver-Zuordnung folgen Stats4Lox-NG
 unpack_loxcc.py, ParseXML.pm; Apache-2.0). LoxCC-Algorithmus von Sarnau,
 https://github.com/sarnau/Inside-The-Loxone-Miniserver
 
-Aufruf: mqtt-scan-miniserver.py [--force] [--ms 1,2] [--pretty]
+Aufruf: mqtt-scan-miniserver.py [--ms 1,2] [--pretty]
 """
 
 from __future__ import annotations
@@ -51,7 +51,6 @@ import zipfile
 import zlib
 
 INPUT_TYPES = ("VirtualIn", "VirtualTextIn")
-CACHE_DIR = "/tmp/lb-mqttscan"   # /tmp liegt auf LoxBerry nicht auf der RAM-Disk
 TIMEOUT_SHORT = 5
 TIMEOUT_DOWNLOAD = 90
 LOXCC_MAGIC = 0xaabbccee
@@ -356,16 +355,6 @@ class MiniserverClient:
 			raise ScanError("unreachable", str(getattr(exc, "reason", exc)))
 
 
-def program_version(client) -> str | None:
-	try:
-		body = client.get("/jdev/sps/LoxAPPversion3", TIMEOUT_SHORT)
-		return str(json.loads(body.decode("utf-8", "replace"))["LL"]["value"])
-	except ScanError:
-		raise
-	except (ValueError, KeyError, TypeError):
-		return None
-
-
 def load_inputs_from_ms(msnr, miniservers, client):
 	"""Lädt und wertet die Programmdatei eines Miniservers aus -> {msnr: [inputs]}."""
 	listing = client.get("/dev/fslist/prog/", TIMEOUT_SHORT).decode("utf-8", "replace")
@@ -377,39 +366,6 @@ def load_inputs_from_ms(msnr, miniservers, client):
 	del blob
 	lives, inputs = parse_project(xml)
 	return assign_inputs(lives, inputs, miniservers, msnr)
-
-
-# ---------------------------------------------------------------------------
-# Cache
-# ---------------------------------------------------------------------------
-def _cache_file(msnr):
-	return os.path.join(CACHE_DIR, "ms%s.json" % re.sub(r"[^0-9A-Za-z]", "", str(msnr)))
-
-
-def cache_read(msnr, version):
-	if not version:
-		return None
-	try:
-		with open(_cache_file(msnr), "r", encoding="utf-8") as fh:
-			data = json.load(fh)
-		if data.get("version") == version:
-			return data.get("by_ms")
-	except (OSError, ValueError):
-		pass
-	return None
-
-
-def cache_write(msnr, version, by_ms):
-	if not version:
-		return
-	try:
-		os.makedirs(CACHE_DIR, mode=0o700, exist_ok=True)
-		tmp = _cache_file(msnr) + ".tmp"
-		with open(tmp, "w", encoding="utf-8") as fh:
-			json.dump({"version": version, "by_ms": by_ms}, fh)
-		os.replace(tmp, _cache_file(msnr))
-	except OSError:
-		pass
 
 
 # ---------------------------------------------------------------------------
@@ -427,7 +383,7 @@ def token_auth_enabled(msnr) -> bool:
 		return False
 
 
-def scan(miniservers: dict, force=False, only=None, client_factory=MiniserverClient,
+def scan(miniservers: dict, only=None, client_factory=MiniserverClient,
          token_check=token_auth_enabled):
 	result = {}
 	covered = {}
@@ -448,19 +404,12 @@ def scan(miniservers: dict, force=False, only=None, client_factory=MiniserverCli
 			continue
 
 		try:
-			client = client_factory(ms)
-			version = program_version(client)
-			by_ms = None if force else cache_read(msnr, version)
-			source = "cache"
-			if by_ms is None:
-				by_ms = load_inputs_from_ms(msnr, miniservers, client)
-				cache_write(msnr, version, by_ms)
-				source = "download"
+			by_ms = load_inputs_from_ms(msnr, miniservers, client_factory(ms))
 		except ScanError as exc:
 			entry.update(error=exc.code, detail=exc.detail or None)
 			continue
 
-		entry.update(ok=True, source=source, inputs=by_ms.get(msnr, []))
+		entry.update(ok=True, source="download", inputs=by_ms.get(msnr, []))
 		for other, inputs in by_ms.items():
 			if other != msnr and other in miniservers and other not in covered:
 				covered[other] = (msnr, inputs)
@@ -479,7 +428,6 @@ def _load_miniservers():
 
 def main(argv=None):
 	parser = argparse.ArgumentParser(description="Virtuelle Eingänge aus der Programmdatei der Miniserver lesen")
-	parser.add_argument("--force", action="store_true", help="Cache ignorieren")
 	parser.add_argument("--ms", default="", help="nur diese Miniserver, z. B. 1,2")
 	parser.add_argument("--pretty", action="store_true", help="JSON eingerückt ausgeben")
 	args = parser.parse_args(argv)
@@ -488,7 +436,7 @@ def main(argv=None):
 		import lxml  # noqa: F401
 		miniservers = _load_miniservers()
 		only = set(x.strip() for x in args.ms.split(",") if x.strip()) or None
-		out = scan(miniservers, force=args.force, only=only)
+		out = scan(miniservers, only=only)
 		rc = 0
 	except Exception as exc:  # letzte Verteidigung: die WebUI bekommt immer JSON
 		out = {"miniservers": {}, "error": "internal", "detail": str(exc)}

@@ -295,27 +295,25 @@ scanmod._resolve = resolve
 scanmod.match_lives.__defaults__ = (resolve,)
 scanmod.assign_inputs.__defaults__ = (resolve,)
 
-with tempfile.TemporaryDirectory() as tmp:
-	scanmod.CACHE_DIR = tmp
-	ms3 = dict(MINISERVERS)
-	ms3["3"] = {"Name": "Gesperrt", "IPAddress": "192.168.1.79", "Port": 80}
-	ms3["4"] = {"Name": "Token", "IPAddress": "192.168.1.80", "Port": 80}
-	token = lambda msnr: msnr == "4"
+ms3 = dict(MINISERVERS)
+ms3["3"] = {"Name": "Gesperrt", "IPAddress": "192.168.1.79", "Port": 80}
+ms3["4"] = {"Name": "Token", "IPAddress": "192.168.1.80", "Port": 80}
+token = lambda msnr: msnr == "4"
 
-	out = scanmod.scan(ms3, client_factory=FakeClient, token_check=token)["miniservers"]
-	check("scan: MS 1 aus Download", out["1"]["ok"] and out["1"]["source"] == "download", repr(out["1"]))
-	check("scan: MS 2 aus demselben Projekt, ohne zweiten Download",
-	      out["2"]["ok"] and out["2"]["source"] == "project:1" and downloads == ["Haus"], repr((out["2"], downloads)))
-	check("scan: Zugriff verweigert -> denied", not out["3"]["ok"] and out["3"]["error"] == "denied")
-	check("scan: Token-Anmeldung -> auth_token", not out["4"]["ok"] and out["4"]["error"] == "auth_token")
+tmp_before = set(os.listdir(tempfile.gettempdir()))
+out = scanmod.scan(ms3, client_factory=FakeClient, token_check=token)["miniservers"]
+check("scan: MS 1 aus Download", out["1"]["ok"] and out["1"]["source"] == "download", repr(out["1"]))
+check("scan: MS 2 aus demselben Projekt, ohne zweiten Download",
+      out["2"]["ok"] and out["2"]["source"] == "project:1" and downloads == ["Haus"], repr((out["2"], downloads)))
+check("scan: Zugriff verweigert -> denied", not out["3"]["ok"] and out["3"]["error"] == "denied")
+check("scan: Token-Anmeldung -> auth_token", not out["4"]["ok"] and out["4"]["error"] == "auth_token")
 
-	out = scanmod.scan(MINISERVERS, client_factory=FakeClient, token_check=lambda m: False)["miniservers"]
-	check("scan: zweiter Lauf aus dem Cache", out["1"]["source"] == "cache" and downloads == ["Haus"], repr((out["1"]["source"], downloads)))
+out = scanmod.scan(MINISERVERS, client_factory=FakeClient, token_check=lambda m: False)["miniservers"]
+check("scan: kein Cache - zweiter Lauf lädt neu", out["1"]["source"] == "download" and downloads == ["Haus", "Haus"], repr(downloads))
+check("scan: schreibt nichts ins Temp-Verzeichnis", set(os.listdir(tempfile.gettempdir())) == tmp_before)
+check("scan: keine Cache-Reste im Modul", not hasattr(scanmod, "CACHE_DIR") and not hasattr(scanmod, "cache_read"))
 
-	out = scanmod.scan(MINISERVERS, force=True, client_factory=FakeClient, token_check=lambda m: False)["miniservers"]
-	check("scan: --force lädt neu", out["1"]["source"] == "download" and downloads == ["Haus", "Haus"])
-
-	print(json.dumps(out["1"], ensure_ascii=False))
+print(json.dumps(out["1"], ensure_ascii=False))
 
 scanmod._resolve = orig_resolve
 

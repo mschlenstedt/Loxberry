@@ -1,4 +1,64 @@
 <link rel="stylesheet" href="/system/css/mqtt-gateway-v2.css">
+<script src="/system/scripts/mqttgw-scan.js?v=5"></script>
+<script>
+// Texte für "Miniserver scannen" (Tab Abonnements und Umstieg V1->V2)
+MqttgwScan.lang = {
+	loading:         '<TMPL_VAR MQTT.SCAN_LOADING>',
+	loadingHint:     '<TMPL_VAR MQTT.SCAN_LOADING_HINT>',
+	inputs:          '<TMPL_VAR MQTT.SCAN_INPUTS>',
+	fromProject:     '<TMPL_VAR MQTT.SCAN_FROM_PROJECT>',
+	chipAll:         '<TMPL_VAR MQTT.SCAN_CHIP_ALL>',
+	chipNew:         '<TMPL_VAR MQTT.SCAN_CHIP_NEW>',
+	chipHint:        '<TMPL_VAR MQTT.SCAN_CHIP_HINT>',
+	chipSub:         '<TMPL_VAR MQTT.SCAN_CHIP_SUB>',
+	chipMiss:        '<TMPL_VAR MQTT.SCAN_CHIP_MISS>',
+	selAll:          '<TMPL_VAR MQTT.SCAN_SELECT_ALL>',
+	selNone:         '<TMPL_VAR MQTT.SCAN_SELECT_NONE>',
+	selHint:         '<TMPL_VAR MQTT.SCAN_SELECT_HINTS>',
+	colInput:        '<TMPL_VAR MQTT.SCAN_COL_INPUT>',
+	colTopic:        '<TMPL_VAR MQTT.SCAN_COL_TOPIC>',
+	colValue:        '<TMPL_VAR MQTT.SCAN_COL_VALUE>',
+	colStatus:       '<TMPL_VAR MQTT.SCAN_COL_STATUS>',
+	stNew:           '<TMPL_VAR MQTT.SCAN_STATUS_NEW>',
+	stSub:           '<TMPL_VAR MQTT.SCAN_STATUS_SUB>',
+	stJson:          '<TMPL_VAR MQTT.SCAN_STATUS_JSON>',
+	stRename:        '<TMPL_VAR MQTT.SCAN_STATUS_RENAME>',
+	stGuess:         '<TMPL_VAR MQTT.SCAN_STATUS_GUESS>',
+	stTypo:          '<TMPL_VAR MQTT.SCAN_STATUS_TYPO>',
+	stNoTopic:       '<TMPL_VAR MQTT.SCAN_STATUS_NOTOPIC>',
+	typeText:        '<TMPL_VAR MQTT.SCAN_TYPE_TEXT>',
+	noTopic:         '<TMPL_VAR MQTT.SCAN_NO_TOPIC>',
+	similar:         '<TMPL_VAR MQTT.SCAN_SIMILAR>',
+	neverSeen:       '<TMPL_VAR MQTT.SCAN_NEVER_SEEN>',
+	renameHint:      '<TMPL_VAR MQTT.SCAN_RENAME_HINT>',
+	guessHint:       '<TMPL_VAR MQTT.SCAN_GUESS_HINT>',
+	ambiguous:       '<TMPL_VAR MQTT.SCAN_AMBIGUOUS>',
+	hidden:          '<TMPL_VAR MQTT.SCAN_HIDDEN_INPUTS>',
+	nothing:         '<TMPL_VAR MQTT.SCAN_NOTHING_FOUND>',
+	orphans:         '<TMPL_VAR MQTT.SCAN_ORPHANS>',
+	orphansHint:     '<TMPL_VAR MQTT.SCAN_ORPHANS_HINT>',
+	optResend:       '<TMPL_VAR MQTT.SCAN_OPT_RESEND>',
+	optUnsub:        '<TMPL_VAR MQTT.SCAN_OPT_UNSUB>',
+	unsubUdp:        '<TMPL_VAR MQTT.SCAN_UNSUB_UDP>',
+	unsubIncomplete: '<TMPL_VAR MQTT.SCAN_UNSUB_INCOMPLETE>',
+	apply:           '<TMPL_VAR MQTT.SCAN_BTN_APPLY>',
+	done:            '<TMPL_VAR MQTT.SCAN_DONE>',
+	doneUnsub:       '<TMPL_VAR MQTT.SCAN_DONE_UNSUB>',
+	doneResend:      '<TMPL_VAR MQTT.SCAN_DONE_RESEND>',
+	doneSent:        '<TMPL_VAR MQTT.SCAN_DONE_SENT>',
+	undone:          '<TMPL_VAR MQTT.SCAN_UNDONE>',
+	err: {
+		auth_token:  '<TMPL_VAR MQTT.SCAN_ERR_AUTH_TOKEN>',
+		denied:      '<TMPL_VAR MQTT.SCAN_ERR_DENIED>',
+		unreachable: '<TMPL_VAR MQTT.SCAN_ERR_UNREACHABLE>',
+		nofile:      '<TMPL_VAR MQTT.SCAN_ERR_NOFILE>',
+		unpack:      '<TMPL_VAR MQTT.SCAN_ERR_UNPACK>',
+		xml:         '<TMPL_VAR MQTT.SCAN_ERR_XML>',
+		http:        '<TMPL_VAR MQTT.SCAN_ERR_HTTP>',
+		internal:    '<TMPL_VAR MQTT.SCAN_ERR_INTERNAL>'
+	}
+};
+</script>
 
 <style>
 .mono {
@@ -220,8 +280,29 @@
 .mqttgw-scan-chips {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 6px;
     margin: 8px 0 4px;
+}
+/* Auswahl-Knöpfe sitzen in der rechtsbündigen Aktionsgruppe vor "Neu laden" */
+.mqttgw-scan-select {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-right: 10px;
+}
+.mqttgw-scan-select:empty {
+    display: none;
+}
+.mqttgw-scan-select .lb-btn,
+.mqttgw-scan-actions .lb-btn {
+    margin: 0;
+}
+.mqttgw-scan-subicon {
+    color: var(--lb-text-muted);
+    font-size: 13px;
+    text-align: center;
 }
 .mqttgw-scan-headrow,
 .mqttgw-scan-row {
@@ -345,6 +426,8 @@
 .mqttgw-scan-actions {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
     gap: 6px;
     margin-left: auto;
 }
@@ -352,6 +435,20 @@
     padding: 18px 4px;
     color: var(--lb-danger);
     font-size: var(--lb-font-sm);
+}
+/* ID-Selektor: schlägt .lb-content input[type="text"] aus components.css (16px, 8/12px Innenabstand) */
+#mqttgw-scan-popup input.mqttgw-scan-guess {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 2px 6px;
+    font-family: var(--lb-font-mono);
+    font-size: 12px;
+    color: var(--lb-input-text);
+    background: var(--lb-input-bg);
+    border: 1px solid var(--lb-input-border);
+    border-radius: var(--lb-radius-sm);
 }
 @media (max-width: 700px) {
     .mqttgw-scan-headrow { display: none; }
@@ -575,42 +672,28 @@ $(function() {
     });
 
     var _lang_migrate = {
-        msgData:   '<TMPL_VAR MQTT.MIGRATE_TO_V2_MSG_DATA>',
-        msgNoData: '<TMPL_VAR MQTT.MIGRATE_TO_V2_MSG_NODATA>',
-        msgNoFile: '<TMPL_VAR MQTT.MIGRATE_TO_V2_MSG_NOFILE>',
-        btnEmpty:  '<TMPL_VAR MQTT.MIGRATE_BTN_EMPTY>',
-        btnOk:     '<TMPL_VAR MQTT.MIGRATE_BTN_OK>'
+        btnKeep:  '<TMPL_VAR MQTT.MIGRATE_BTN_KEEP>',
+        scanDone: '<TMPL_VAR MQTT.MIGRATE_SCAN_DONE>'
     };
 
     // Version change popup
     var originalVersion = gatewayversion;
     var _migrationChoice = null;
+    var _existingSubs = [];
     $('input[name="gatewayversion"]').on("change", function() {
         var newVersion = parseInt($(this).val());
         _migrationChoice = null;
 
         if (newVersion === 2 && originalVersion === 1) {
-            $.post('ajax/ajax-mqtt.php', { ajax: 'get_v1_migration_status' })
-            .done(function(data) {
-                if (data.nofile) {
-                    $("#mqttgw-migrate-msg").text(_lang_migrate.msgNoFile);
-                    $("#mqttgw-migrate-btn-import").hide();
-                    $("#mqttgw-migrate-btn-empty").text(_lang_migrate.btnOk);
-                } else if (data.available && data.count > 0) {
-                    $("#mqttgw-migrate-msg").text(_lang_migrate.msgData.replace('%s', data.count));
-                    $("#mqttgw-migrate-btn-import").show();
-                    $("#mqttgw-migrate-btn-empty").text(_lang_migrate.btnEmpty);
+            // Vorhandene V2-Abos ermitteln - sie werden nicht mehr ungefragt überschrieben
+            $.post('ajax/ajax-mqtt.php', { ajax: 'get_subscriptions' })
+            .always(function(data) {
+                _existingSubs = (data && data.Subscriptions) || [];
+                if (_existingSubs.length) {
+                    $("#mqttgw-migrate-btn-keep").text(_lang_migrate.btnKeep.replace('%n', _existingSubs.length)).show();
                 } else {
-                    $("#mqttgw-migrate-msg").text(_lang_migrate.msgNoData);
-                    $("#mqttgw-migrate-btn-import").hide();
-                    $("#mqttgw-migrate-btn-empty").text(_lang_migrate.btnOk);
+                    $("#mqttgw-migrate-btn-keep").hide();
                 }
-                document.getElementById("mqttgw-migrate-popup").showModal();
-            })
-            .fail(function() {
-                $("#mqttgw-migrate-msg").text(_lang_migrate.msgNoData);
-                $("#mqttgw-migrate-btn-import").hide();
-                $("#mqttgw-migrate-btn-empty").text(_lang_migrate.btnOk);
                 document.getElementById("mqttgw-migrate-popup").showModal();
             });
         } else if (newVersion === 1 && originalVersion === 2) {
@@ -627,10 +710,40 @@ $(function() {
         document.getElementById("mqttgw-migrate-popup").close();
     });
 
-    // V1→V2 dialog: import button
-    $("#mqttgw-migrate-btn-import").on("click", function(e) {
+    // V1→V2 dialog: Miniserver scannen -> Abos für V2 vorbereiten (ersetzt die frühere Migration)
+    $("#mqttgw-migrate-btn-scan").on("click", function(e) {
         e.preventDefault();
-        _migrationChoice = 'migrate';
+        document.getElementById("mqttgw-migrate-popup").close();
+        var udp = cfg.Main ? cfg.Main.use_udp : 0;
+        MqttgwScan.open({
+            defaultMS: parseInt(cfg.Main && cfg.Main.msno) || 1,
+            useUdp: ['1', 'true', 'yes', 'on', 'enabled'].indexOf(String(udp).toLowerCase()) !== -1,
+            allowResend: false,   // V1 hat die Werte bereits an den Miniserver gesendet
+            getSubscriptions: function() { return _existingSubs; },
+            onApply: function(res) {
+                $.ajax({
+                    type: 'POST',
+                    url: 'ajax/ajax-mqtt.php?ajax=save_subscriptions',
+                    contentType: 'application/json; charset=UTF-8',
+                    data: JSON.stringify({ Subscriptions: res.list })
+                })
+                .done(function() {
+                    _existingSubs = res.list;
+                    _migrationChoice = 'keep';
+                    $("#savemessages, #savemessages_btn").attr("style", "color:green")
+                        .text(MqttgwScan.fmt(_lang_migrate.scanDone, { t: res.list.length }));
+                })
+                .fail(function() {
+                    $("#savemessages, #savemessages_btn").attr("style", "color:red").html(_lang_save.saveError);
+                });
+            }
+        });
+    });
+
+    // V1→V2 dialog: vorhandene V2-Abos behalten
+    $("#mqttgw-migrate-btn-keep").on("click", function(e) {
+        e.preventDefault();
+        _migrationChoice = 'keep';
         document.getElementById("mqttgw-migrate-popup").close();
     });
 
@@ -701,16 +814,17 @@ $(function() {
         }
 
         if (newVersion === 2 && originalVersion === 1) {
-            var choice = _migrationChoice || 'empty';
-            if (choice === 'migrate') {
-                $.post('ajax/ajax-mqtt.php', { ajax: 'migrate_v1_to_v2' }).always(doSave);
-            } else {
+            // Ohne ausdrückliche Wahl bleiben vorhandene V2-Abos erhalten
+            var choice = _migrationChoice || 'keep';
+            if (choice === 'empty') {
                 $.ajax({
                     type: 'POST',
                     url: 'ajax/ajax-mqtt.php?ajax=save_subscriptions',
                     contentType: 'application/json; charset=UTF-8',
                     data: JSON.stringify({ Subscriptions: [] })
                 }).always(doSave);
+            } else {
+                doSave();
             }
         } else {
             doSave();
@@ -1748,492 +1862,65 @@ $(function() {
     });
 
     // ── Miniserver scannen ────────────────────────────────────────────────
-    // bin/mqtt-scan-miniserver.py liest die virtuellen Eingänge aus der
-    // Programmdatei der Miniserver; hier werden sie mit den gesehenen Topics
-    // abgeglichen. Abonniert wird nur, was der Anwender übernimmt, und
-    // gesendet wird nur auf Wunsch und nur für diese Eingänge.
+    // Abgleich und Dialog: webfrontend/html/system/scripts/mqttgw-scan.js
 
-    var _lang_scan = {
-        loading:         '<TMPL_VAR MQTT.SCAN_LOADING>',
-        loadingHint:     '<TMPL_VAR MQTT.SCAN_LOADING_HINT>',
-        inputs:          '<TMPL_VAR MQTT.SCAN_INPUTS>',
-        fromProject:     '<TMPL_VAR MQTT.SCAN_FROM_PROJECT>',
-        cached:          '<TMPL_VAR MQTT.SCAN_CACHED>',
-        chipAll:         '<TMPL_VAR MQTT.SCAN_CHIP_ALL>',
-        chipNew:         '<TMPL_VAR MQTT.SCAN_CHIP_NEW>',
-        chipSub:         '<TMPL_VAR MQTT.SCAN_CHIP_SUB>',
-        chipMiss:        '<TMPL_VAR MQTT.SCAN_CHIP_MISS>',
-        colInput:        '<TMPL_VAR MQTT.SCAN_COL_INPUT>',
-        colTopic:        '<TMPL_VAR MQTT.SCAN_COL_TOPIC>',
-        colValue:        '<TMPL_VAR MQTT.SCAN_COL_VALUE>',
-        colStatus:       '<TMPL_VAR MQTT.SCAN_COL_STATUS>',
-        stNew:           '<TMPL_VAR MQTT.SCAN_STATUS_NEW>',
-        stSub:           '<TMPL_VAR MQTT.SCAN_STATUS_SUB>',
-        stJson:          '<TMPL_VAR MQTT.SCAN_STATUS_JSON>',
-        stTypo:          '<TMPL_VAR MQTT.SCAN_STATUS_TYPO>',
-        stNoTopic:       '<TMPL_VAR MQTT.SCAN_STATUS_NOTOPIC>',
-        typeText:        '<TMPL_VAR MQTT.SCAN_TYPE_TEXT>',
-        noTopic:         '<TMPL_VAR MQTT.SCAN_NO_TOPIC>',
-        similar:         '<TMPL_VAR MQTT.SCAN_SIMILAR>',
-        neverSeen:       '<TMPL_VAR MQTT.SCAN_NEVER_SEEN>',
-        ambiguous:       '<TMPL_VAR MQTT.SCAN_AMBIGUOUS>',
-        hidden:          '<TMPL_VAR MQTT.SCAN_HIDDEN_INPUTS>',
-        nothing:         '<TMPL_VAR MQTT.SCAN_NOTHING_FOUND>',
-        orphans:         '<TMPL_VAR MQTT.SCAN_ORPHANS>',
-        orphansHint:     '<TMPL_VAR MQTT.SCAN_ORPHANS_HINT>',
-        optResend:       '<TMPL_VAR MQTT.SCAN_OPT_RESEND>',
-        optUnsub:        '<TMPL_VAR MQTT.SCAN_OPT_UNSUB>',
-        unsubUdp:        '<TMPL_VAR MQTT.SCAN_UNSUB_UDP>',
-        unsubIncomplete: '<TMPL_VAR MQTT.SCAN_UNSUB_INCOMPLETE>',
-        apply:           '<TMPL_VAR MQTT.SCAN_BTN_APPLY>',
-        done:            '<TMPL_VAR MQTT.SCAN_DONE>',
-        doneUnsub:       '<TMPL_VAR MQTT.SCAN_DONE_UNSUB>',
-        doneResend:      '<TMPL_VAR MQTT.SCAN_DONE_RESEND>',
-        doneSent:        '<TMPL_VAR MQTT.SCAN_DONE_SENT>',
-        undone:          '<TMPL_VAR MQTT.SCAN_UNDONE>',
-        err: {
-            auth_token:  '<TMPL_VAR MQTT.SCAN_ERR_AUTH_TOKEN>',
-            denied:      '<TMPL_VAR MQTT.SCAN_ERR_DENIED>',
-            unreachable: '<TMPL_VAR MQTT.SCAN_ERR_UNREACHABLE>',
-            nofile:      '<TMPL_VAR MQTT.SCAN_ERR_NOFILE>',
-            unpack:      '<TMPL_VAR MQTT.SCAN_ERR_UNPACK>',
-            xml:         '<TMPL_VAR MQTT.SCAN_ERR_XML>',
-            http:        '<TMPL_VAR MQTT.SCAN_ERR_HTTP>',
-            internal:    '<TMPL_VAR MQTT.SCAN_ERR_INTERNAL>'
-        }
-    };
-
-    var scanData    = null;   // Antwort von ajax=scan_miniservers
-    var scanRows    = [];
-    var scanOrphans = [];
-    var scanFilter  = 'all';
-    var scanUndo    = null;   // Abo-Liste von vor dem Übernehmen
-    var scanTimer   = null;
+    var scanUndo  = null;
+    var scanTimer = null;
     var SCAN_RESEND_DELAY = 10000;   // config_watcher prüft alle 5 s, danach kommen die retained-Werte
-    var SCAN_STATE_ORDER  = { 'new': 0, 'sub': 1, 'json': 1, 'miss': 2 };
-
-    function scanFmt(str, values) {
-        return String(str).replace(/%([nts])/g, function(m, k) {
-            return values[k] !== undefined ? values[k] : m;
-        });
-    }
-
-    // Wie build_vi_name() in mqtt_gateway.py
-    function scanViName(topic, path) {
-        var name = topic.replace(/\//g, '_').replace(/ /g, '_').replace(/%/g, '_');
-        if (path === null) return name;
-        return name + '_' + path.replace(/\[(\d+)\]/g, '$1').replace(/@@/g, '_').replace(/ /g, '_');
-    }
-
-    // Blätter eines JSON-Payloads, Pfade wie in renderJsonTree()
-    function scanWalkJson(value, path, fn) {
-        if (Array.isArray(value)) {
-            for (var i = 0; i < value.length; i++) {
-                scanWalkJson(value[i], path === null ? '[' + i + ']' : path + '@@[' + i + ']', fn);
-            }
-        } else if (value !== null && typeof value === 'object') {
-            Object.keys(value).forEach(function(k) {
-                scanWalkJson(value[k], path === null ? k : path + '@@' + k, fn);
-            });
-        } else if (path !== null) {
-            fn(path, value === null ? 'null' : String(value));
-        }
-    }
-
-    // Für "Tippfehler?": Groß/klein, Umlaute und Trennzeichen ignorieren
-    function scanNormalize(name) {
-        return name.toLowerCase()
-            .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
-            .replace(/[^a-z0-9]/g, '');
-    }
-
-    function scanSubState(entry) {
-        var sub = findSub(entry.topic);
-        if (!sub) return 'new';
-        if (entry.path === null) return sub.Jsonexpand ? 'json' : 'sub';
-        return (sub.Jsonexpand && findJsonField(sub, entry.path)) ? 'sub' : 'new';
-    }
-
-    function scanCandidates() {
-        var byName = {}, byNorm = {}, seen = {};
-        function add(entry) {
-            var name = scanViName(entry.topic, entry.path);
-            (byName[name] = byName[name] || []).push(entry);
-            var norm = scanNormalize(name);
-            if (!byNorm[norm]) byNorm[norm] = entry;
-        }
-        discoveredTopics.forEach(function(t) {
-            var payload = t.payload || '';
-            seen[t.topic] = true;
-            add({ topic: t.topic, path: null, value: payload });
-            var first = payload.replace(/^\s+/, '').charAt(0);
-            if (first === '{' || first === '[') {
-                var parsed = null;
-                try { parsed = JSON.parse(payload); } catch (e) {}
-                if (parsed !== null && typeof parsed === 'object') {
-                    scanWalkJson(parsed, null, function(path, val) {
-                        add({ topic: t.topic, path: path, value: val });
-                    });
-                }
-            }
-        });
-        // Abonnierte, aber gerade nicht gesehene Topics gelten als "schon abonniert"
-        subscriptions.forEach(function(sub) {
-            if (seen[sub.Id]) return;
-            add({ topic: sub.Id, path: null, value: '' });
-            (sub.Json || []).forEach(function(f) { add({ topic: sub.Id, path: f.Id, value: '' }); });
-        });
-        return { byName: byName, byNorm: byNorm };
-    }
-
-    function scanBuild() {
-        var cand   = scanCandidates();
-        var msMap  = (scanData && scanData.miniservers) || {};
-        var groups = {};
-        discoveredTopics.forEach(function(t) { groups[scanViName(t.topic.split('/')[0], null) + '_'] = true; });
-        subscriptions.forEach(function(s) { groups[scanViName(s.Id.split('/')[0], null) + '_'] = true; });
-        var groupList = Object.keys(groups);
-
-        var rows = [], names = {}, hidden = 0, okCount = 0, allOk = true;
-        Object.keys(msMap).forEach(function(id) {
-            var ms = msMap[id];
-            if (!ms.ok) { allOk = false; return; }
-            okCount++;
-            (ms.inputs || []).forEach(function(inp) {
-                names[inp.name] = true;
-                var row  = { ms: parseInt(id, 10), name: inp.name, type: inp.type, entry: null, similar: null, count: 0 };
-                var list = cand.byName[inp.name];
-                if (list && list.length) {
-                    row.entry = list[0];
-                    for (var i = 0; i < list.length; i++) {
-                        if (scanSubState(list[i]) !== 'new') { row.entry = list[i]; break; }
-                    }
-                    row.count = list.length;
-                    row.state = scanSubState(row.entry);
-                } else {
-                    // Nicht jeder virtuelle Eingang ist für MQTT gedacht: ohne Topic nur
-                    // zeigen, wenn er zu einer bekannten Topic-Gruppe passen könnte.
-                    row.similar = cand.byNorm[scanNormalize(inp.name)] || null;
-                    var inGroup = groupList.some(function(g) { return inp.name.indexOf(g) === 0; });
-                    if (!inGroup && !row.similar) { hidden++; return; }
-                    row.state = 'miss';
-                }
-                rows.push(row);
-            });
-        });
-        rows.sort(function(a, b) {
-            return a.ms - b.ms || SCAN_STATE_ORDER[a.state] - SCAN_STATE_ORDER[b.state]
-                || a.name.toLowerCase().localeCompare(b.name.toLowerCase());
-        });
-
-        scanRows = rows;
-        scanOrphans = okCount === 0 ? [] : subscriptions.filter(function(sub) {
-            if (sub.Jsonexpand && sub.Json && sub.Json.length) {
-                return !sub.Json.some(function(f) { return names[scanViName(sub.Id, f.Id)]; });
-            }
-            return !names[scanViName(sub.Id, null)];
-        });
-        return { hidden: hidden, allOk: allOk };
-    }
-
-    function scanRowHtml(row, idx) {
-        var isSub = row.state === 'sub' || row.state === 'json';
-        var html  = '<div class="mqttgw-scan-row' + (isSub ? ' mqttgw-scan-is-sub' : '') + '" data-state="' + (isSub ? 'sub' : row.state) + '">';
-        if (row.state === 'new') {
-            html += '<input type="checkbox" class="scan-pick" data-idx="' + idx + '" checked aria-label="' + escHtml(row.name) + '">';
-        } else if (isSub) {
-            html += '<input type="checkbox" checked disabled aria-label="' + escHtml(row.name) + '">';
-        } else {
-            html += '<span></span>';
-        }
-        html += '<span class="mqttgw-scan-mono">' + escHtml(row.name)
-             + (row.type === 'VirtualTextIn' ? ' <span class="mqttgw-scan-tag">' + escHtml(_lang_scan.typeText) + '</span>' : '')
-             + '</span>';
-        if (row.entry) {
-            html += '<span class="mqttgw-scan-mono mqttgw-scan-topic">' + escHtml(row.entry.topic)
-                 + (row.entry.path !== null ? ' <span class="mqttgw-scan-tag">JSON: ' + escHtml(row.entry.path.replace(/@@/g, '.')) + '</span>' : '')
-                 + (row.count > 1 ? ' <span class="mqttgw-scan-hint">' + escHtml(scanFmt(_lang_scan.ambiguous, { n: row.count })) + '</span>' : '')
-                 + '</span>';
-            html += '<span class="mqttgw-scan-val" title="' + escHtml(row.entry.value) + '">' + escHtml(row.entry.value) + '</span>';
-        } else {
-            html += '<span class="mqttgw-scan-topic mqttgw-scan-none">';
-            if (row.similar) {
-                html += escHtml(_lang_scan.noTopic) + ' <span class="mqttgw-scan-hint">' + escHtml(_lang_scan.similar)
-                     + ' <span class="mqttgw-scan-mono">' + escHtml(row.similar.topic
-                     + (row.similar.path !== null ? ' → ' + row.similar.path.replace(/@@/g, '.') : '')) + '</span></span>';
-            } else {
-                html += escHtml(_lang_scan.neverSeen);
-            }
-            html += '</span><span class="mqttgw-scan-val">–</span>';
-        }
-        var badge = {
-            'new':  ['mqttgw-ms-ok',   _lang_scan.stNew],
-            'sub':  ['mqttgw-ms-new',  _lang_scan.stSub],
-            'json': ['mqttgw-ms-new',  _lang_scan.stJson],
-            'miss': ['mqttgw-ms-warn', row.similar ? _lang_scan.stTypo : _lang_scan.stNoTopic]
-        }[row.state];
-        html += '<span class="mqttgw-scan-state"><span class="mqttgw-ms-badge ' + badge[0] + '">' + escHtml(badge[1]) + '</span></span>';
-        return html + '</div>';
-    }
 
     function scanUdpEnabled() {
         var val = cfg2.Main ? cfg2.Main.use_udp : 0;
         return ['1', 'true', 'yes', 'on', 'enabled'].indexOf(String(val).toLowerCase()) !== -1;
     }
 
-    function scanRender() {
-        var msMap = (scanData && scanData.miniservers) || {};
-        var ids   = Object.keys(msMap).sort(function(a, b) { return parseInt(a, 10) - parseInt(b, 10); });
-
-        var info = '';
-        ids.forEach(function(id) {
-            var ms    = msMap[id];
-            var label = getMSName(parseInt(id, 10));
-            if (ms.ok) {
-                var extra = '';
-                if (ms.source === 'cache') {
-                    extra = ' · ' + _lang_scan.cached;
-                } else if (String(ms.source).indexOf('project:') === 0) {
-                    extra = ' · ' + scanFmt(_lang_scan.fromProject, { s: getMSName(parseInt(ms.source.slice(8), 10)) });
-                }
-                info += '<span>' + escHtml(label + ' – ' + scanFmt(_lang_scan.inputs, { n: (ms.inputs || []).length }) + extra) + '</span>';
-            } else {
-                info += '<span class="mqttgw-scan-err">' + escHtml(label + ' – ' + (_lang_scan.err[ms.error] || _lang_scan.err.internal)) + '</span>';
-            }
-        });
-        $('#scan_ms_info').html(info);
-        $('#scan_btn_retry').show();
-
-        if (!ids.length || scanData.error) {
-            var msg = _lang_scan.err[scanData && scanData.error] || _lang_scan.err.internal;
-            $('#scan_body').html('<div class="mqttgw-scan-error">' + escHtml(msg) + '</div>');
-            $('#scan_opts').empty();
-            $('#scan_btn_apply').hide();
-            return;
-        }
-
-        var meta   = scanBuild();
-        var counts = { 'all': scanRows.length, 'new': 0, 'sub': 0, 'miss': 0 };
-        scanRows.forEach(function(r) { counts[r.state === 'json' ? 'sub' : r.state]++; });
-
-        var html = '';
-        if (scanRows.length) {
-            html += '<div class="mqttgw-scan-chips">';
-            [['all', _lang_scan.chipAll], ['new', _lang_scan.chipNew], ['sub', _lang_scan.chipSub], ['miss', _lang_scan.chipMiss]].forEach(function(c) {
-                html += '<span class="mqttgw-chip scan-chip" data-filter="' + c[0] + '" role="button" tabindex="0">'
-                     + escHtml(c[1]) + ' ' + counts[c[0]] + '</span>';
-            });
-            html += '</div>';
-            html += '<div class="mqttgw-scan-headrow"><span></span><span>' + escHtml(_lang_scan.colInput) + '</span><span>'
-                 + escHtml(_lang_scan.colTopic) + '</span><span style="text-align:right">' + escHtml(_lang_scan.colValue)
-                 + '</span><span style="text-align:right">' + escHtml(_lang_scan.colStatus) + '</span></div>';
-            var lastMs = null;
-            scanRows.forEach(function(row, idx) {
-                if (row.ms !== lastMs) {
-                    html += '<div class="mqttgw-scan-group">' + escHtml(getMSName(row.ms)) + '</div>';
-                    lastMs = row.ms;
-                }
-                html += scanRowHtml(row, idx);
-            });
-        } else {
-            html += '<div class="mqttgw-scan-note">' + escHtml(_lang_scan.nothing) + '</div>';
-        }
-        if (meta.hidden) {
-            html += '<div class="mqttgw-scan-note">' + escHtml(scanFmt(_lang_scan.hidden, { n: meta.hidden })) + '</div>';
-        }
-        if (scanOrphans.length) {
-            html += '<details class="mqttgw-scan-orphans"><summary>' + escHtml(scanFmt(_lang_scan.orphans, { n: scanOrphans.length }))
-                 + '</summary><div>' + escHtml(_lang_scan.orphansHint) + '<ul>';
-            scanOrphans.forEach(function(s) { html += '<li>' + escHtml(s.Id) + '</li>'; });
-            html += '</ul></div></details>';
-        }
-        $('#scan_body').html(html);
-        scanApplyFilter();
-
-        var opts = '';
-        if (counts['new']) {
-            opts += '<label for="scan_opt_resend"><input type="checkbox" id="scan_opt_resend" checked> ' + escHtml(_lang_scan.optResend) + '</label>';
-        }
-        if (scanOrphans.length) {
-            // Mit UDP braucht ein Abo keinen virtuellen HTTP-Eingang - dann nie abwählen
-            var locked = scanUdpEnabled() ? _lang_scan.unsubUdp : (!meta.allOk ? _lang_scan.unsubIncomplete : '');
-            opts += '<label for="scan_opt_unsub"><input type="checkbox" id="scan_opt_unsub"' + (locked ? ' disabled' : '') + '> '
-                 + escHtml(scanFmt(_lang_scan.optUnsub, { n: scanOrphans.length })) + '</label>';
-            if (locked) opts += '<span class="mqttgw-scan-locked">' + escHtml(locked) + '</span>';
-        }
-        $('#scan_opts').html(opts);
-        scanUpdateApply();
-    }
-
-    function scanApplyFilter() {
-        $('#scan_body .scan-chip').each(function() {
-            $(this).toggleClass('mqttgw-chip-active', $(this).data('filter') === scanFilter);
-        });
-        $('#scan_body .mqttgw-scan-row').each(function() {
-            $(this).toggle(scanFilter === 'all' || $(this).data('state') === scanFilter);
-        });
-    }
-
-    function scanUpdateApply() {
-        var $btn  = $('#scan_btn_apply');
-        var n     = $('#scan_body .scan-pick:checked').length;
-        var unsub = $('#scan_opt_unsub').prop('checked');
-        if (!$('#scan_body .scan-pick').length && !$('#scan_opt_unsub').length) { $btn.hide(); return; }
-        $btn.text(scanFmt(_lang_scan.apply, { n: n })).show().toggleClass('lb-disabled', n === 0 && !unsub);
-    }
-
-    function scanLoad(force) {
-        scanData = null;
-        $('#scan_ms_info, #scan_opts').empty();
-        $('#scan_btn_apply, #scan_btn_retry').hide();
-        $('#scan_body').html('<div class="mqttgw-scan-loading">' + escHtml(_lang_scan.loading)
-            + '<div class="mqttgw-scan-bar"></div>' + escHtml(_lang_scan.loadingHint) + '</div>');
-        $.ajax({
-            type: 'POST',
-            url: 'ajax/ajax-mqtt.php',
-            data: { ajax: 'scan_miniservers', force: force ? 1 : 0 },
-            dataType: 'json',
-            timeout: 300000
-        })
-        .done(function(resp) { scanData = resp || {}; })
-        .fail(function(xhr) { scanData = (xhr && xhr.responseJSON) || { miniservers: {}, error: 'internal' }; })
-        .always(function() {
-            if (document.getElementById('mqttgw-scan-popup').open) scanRender();
-        });
-    }
-
-    // Übernimmt gewählte Zeilen ins Datenmodell - ohne DOM, damit testbar
-    function scanApplyRows(picked, unsub) {
-        if (unsub) scanOrphans.forEach(function(s) { removeSub(s.Id); });
-
-        // JSON-Felder zuerst: ein Topic, das als JSON läuft, sendet keinen Gesamtwert
-        picked = picked.slice().sort(function(a, b) {
-            return (a.entry.path === null ? 1 : 0) - (b.entry.path === null ? 1 : 0);
-        });
-
-        var created = [], topics = {}, vis = [];
-        // Toms: [] = Standard-Miniserver. Erster Treffer setzt, weitere ergänzen.
-        function touch(obj, ms) {
-            if (created.indexOf(obj) === -1) {
-                created.push(obj);
-                obj.Toms = ms === defaultMS ? [] : [ms];
-                return;
-            }
-            var toms = (obj.Toms || []).slice();
-            if (!toms.length) {
-                if (ms === defaultMS) return;
-                toms = [defaultMS];
-            }
-            if (toms.indexOf(ms) === -1) toms.push(ms);
-            obj.Toms = toms.sort(function(a, b) { return a - b; });
-        }
-
-        picked.forEach(function(row) {
-            var e       = row.entry;
-            var existed = findSub(e.topic);
-            var sub     = getOrCreateSub(e.topic);
-            if (e.path === null) {
-                if (sub.Jsonexpand) return;
-                if (!existed || created.indexOf(sub) !== -1) touch(sub, row.ms);
-            } else {
-                if (!sub.Jsonexpand) { sub.Jsonexpand = true; sub.Json = []; }
-                var field = findJsonField(sub, e.path);
-                if (!field) {
-                    field = { Id: e.path, Toms: [], Noncached: false, resetaftersend: false };
-                    sub.Json.push(field);
-                    touch(field, row.ms);
-                } else if (created.indexOf(field) !== -1) {
-                    touch(field, row.ms);
-                }
-            }
-            topics[e.topic] = true;
-            if (vis.indexOf(row.name) === -1) vis.push(row.name);
-        });
-        return { topics: Object.keys(topics).length, vis: vis };
-    }
-
-    function scanApply() {
-        var picked = [];
-        $('#scan_body .scan-pick:checked').each(function() {
-            picked.push(scanRows[parseInt($(this).data('idx'), 10)]);
-        });
-        var unsub = $('#scan_opt_unsub').prop('checked') && !$('#scan_opt_unsub').prop('disabled');
-        if (!picked.length && !unsub) return;
-
-        scanUndo = JSON.parse(JSON.stringify(subscriptions));
-        var result = scanApplyRows(picked, unsub);
-        var vis    = result.vis;
-
+    function scanSaveNow() {
         clearTimeout(saveTimer);
         isDirty = true;
         showSaveStatus('pending');
         doSave();
         renderTopics();
-        document.getElementById('mqttgw-scan-popup').close();
-
-        var parts = [];
-        if (picked.length) parts.push(scanFmt(_lang_scan.done, { t: result.topics, n: vis.length }));
-        if (unsub) parts.push(scanFmt(_lang_scan.doneUnsub, { n: scanOrphans.length }));
-
-        clearTimeout(scanTimer);
-        var udpinport = $('#udpinportconfig').text().trim();
-        if (picked.length && udpinport && $('#scan_opt_resend').prop('checked')) {
-            var doneText = parts.join(' ');
-            scanTimer = setTimeout(function() {
-                vis.forEach(function(vi) {
-                    $.post('ajax/ajax-mqtt.php', { ajax: 'resend_one', udpinport: udpinport, vi: vi });
-                });
-                $('#scan_done_text').text(doneText + ' ' + _lang_scan.doneSent);
-            }, SCAN_RESEND_DELAY);
-            parts.push(_lang_scan.doneResend);
-        }
-        $('#scan_done_text').text(parts.join(' '));
-        $('#btn_scan_undo').show();
-        $('#scan_done_bar').show();
     }
 
     $('#btn_ms_scan').on('click', function() {
-        scanFilter = 'all';
-        document.getElementById('mqttgw-scan-popup').showModal();
-        scanLoad(false);
-    });
+        MqttgwScan.open({
+            defaultMS: defaultMS,
+            useUdp: scanUdpEnabled(),
+            allowResend: true,
+            getSubscriptions: function() { return subscriptions; },
+            onApply: function(res) {
+                var L = MqttgwScan.lang;
+                scanUndo = res.undo;
+                subscriptions = res.list;
+                scanSaveNow();
 
-    $('#scan_btn_close').on('click', function(e) {
-        e.preventDefault();
-        document.getElementById('mqttgw-scan-popup').close();
-    });
+                var parts = [];
+                if (res.picked) parts.push(MqttgwScan.fmt(L.done, { t: res.topics, n: res.picked }));
+                if (res.unsubCount) parts.push(MqttgwScan.fmt(L.doneUnsub, { n: res.unsubCount }));
 
-    $('#scan_btn_retry').on('click', function(e) {
-        e.preventDefault();
-        scanLoad(true);
+                clearTimeout(scanTimer);
+                var udpinport = $('#udpinportconfig').text().trim();
+                if (res.resend && res.vis.length && udpinport) {
+                    var doneText = parts.join(' ');
+                    scanTimer = setTimeout(function() {
+                        MqttgwScan.resend(res.vis, udpinport);
+                        $('#scan_done_text').text(doneText + ' ' + L.doneSent);
+                    }, SCAN_RESEND_DELAY);
+                    parts.push(L.doneResend);
+                }
+                $('#scan_done_text').text(parts.join(' '));
+                $('#btn_scan_undo').show();
+                $('#scan_done_bar').show();
+            }
+        });
     });
-
-    $('#scan_btn_apply').on('click', function(e) {
-        e.preventDefault();
-        if ($(this).hasClass('lb-disabled')) return;
-        scanApply();
-    });
-
-    $('#mqttgw-scan-popup').on('click keydown', '.scan-chip', function(e) {
-        if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
-        e.preventDefault();
-        scanFilter = $(this).data('filter');
-        scanApplyFilter();
-    });
-
-    $('#mqttgw-scan-popup').on('change', '.scan-pick, #scan_opt_unsub', scanUpdateApply);
 
     $('#btn_scan_undo').on('click', function() {
         if (!scanUndo) return;
         clearTimeout(scanTimer);
         subscriptions = scanUndo;
         scanUndo = null;
-        clearTimeout(saveTimer);
-        isDirty = true;
-        showSaveStatus('pending');
-        doSave();
-        renderTopics();
-        $('#scan_done_text').text(_lang_scan.undone);
+        scanSaveNow();
+        $('#scan_done_text').text(MqttgwScan.lang.undone);
         $(this).hide();
     });
 
@@ -4245,12 +3932,13 @@ $("#reconnect").click(function(){
 </dialog>
 
 <!-- V1→V2 migration dialog -->
-<dialog id="mqttgw-migrate-popup" class="lb-modal" style="max-width:460px;padding:16px 20px 20px">
+<dialog id="mqttgw-migrate-popup" class="lb-modal" style="max-width:480px;padding:16px 20px 20px">
 	<h3 style="margin:0 0 10px 0;font-size:1rem"><TMPL_VAR MQTT.MIGRATE_TO_V2_TITLE></h3>
-	<p id="mqttgw-migrate-msg" style="font-size:0.875rem;margin:0 0 16px 0"></p>
-	<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
-		<a href="#" id="mqttgw-migrate-btn-import" class="lb-btn lb-btn-sm lb-btn-primary"><TMPL_VAR MQTT.MIGRATE_BTN_IMPORT></a>
-		<a href="#" id="mqttgw-migrate-btn-empty" class="lb-btn lb-btn-sm"></a>
+	<p style="font-size:0.875rem;margin:0 0 16px 0"><TMPL_VAR MQTT.MIGRATE_TO_V2_MSG></p>
+	<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;margin-top:16px">
+		<a href="#" id="mqttgw-migrate-btn-scan" class="lb-btn lb-btn-sm lb-btn-primary"><TMPL_VAR MQTT.MIGRATE_BTN_SCAN></a>
+		<a href="#" id="mqttgw-migrate-btn-keep" class="lb-btn lb-btn-sm" style="display:none"></a>
+		<a href="#" id="mqttgw-migrate-btn-empty" class="lb-btn lb-btn-sm"><TMPL_VAR MQTT.MIGRATE_BTN_EMPTY></a>
 		<a href="#" id="mqttgw-migrate-btn-cancel" class="lb-btn lb-btn-sm"><TMPL_VAR MQTT.BTN_CANCEL></a>
 	</div>
 </dialog>
@@ -4276,6 +3964,7 @@ $("#reconnect").click(function(){
 	<div class="mqttgw-scan-foot">
 		<div class="mqttgw-scan-opts" id="scan_opts"></div>
 		<div class="mqttgw-scan-actions">
+			<div class="mqttgw-scan-select" id="scan_select"></div>
 			<a href="#" id="scan_btn_retry" class="lb-btn lb-btn-sm" style="display:none"><TMPL_VAR MQTT.SCAN_BTN_RETRY></a>
 			<a href="#" id="scan_btn_close" class="lb-btn lb-btn-sm"><TMPL_VAR MQTT.SCAN_BTN_CLOSE></a>
 			<a href="#" id="scan_btn_apply" class="lb-btn lb-btn-sm lb-btn-primary" style="display:none"></a>
