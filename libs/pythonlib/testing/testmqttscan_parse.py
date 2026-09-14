@@ -242,10 +242,9 @@ by_single = scanmod.assign_inputs(single[0], single[1], MINISERVERS, "2", resolv
 check("assign: bei nur einem Miniserver im Projekt fällt der Eingang auf die Quelle",
       [x["name"] for x in by_single.get("2", [])] == ["lose"], repr(by_single))
 
-# Rückmeldung Jan W. (14.09.2026): "Virtueller HTTP Eingang Befehl" wurde vom Scan
-# übersehen, seine (zufällig funktionierenden) Abos erschienen als "ohne Eingang".
-# Laut Michael ist der Typ falsch konfiguriert - das Skript liefert ihn mit, damit die
-# WebUI warnt und die Abos schützt. Typnamen wie in einer echten Programmdatei.
+# Rückmeldung Jan W. (14.09.2026): "Virtueller HTTP Eingang Befehl" nimmt Werte über
+# /dev/sps/io/<Name> an (Datenverkehr zeigt HTTP 200), wurde vom Scan aber übersehen.
+# Typnamen wie in einer echten Programmdatei: VirtualHttpIn -> VirtualHttpInCmd.
 # VirtualUdpInCmd wird über die Befehlserkennung angesprochen und bleibt außen vor.
 HTTPCMD = (
 	b'<ControlList><C Type="LoxLIVE" U="ms" Title="Home" IntAddr="192.168.1.77">'
@@ -259,7 +258,7 @@ HTTPCMD = (
 )
 hc_lives, hc_inputs = scanmod.parse_project(HTTPCMD)
 hc_titles = dict((t, ty) for t, ty, ref in hc_inputs)
-check("xml: Virtueller HTTP Eingang Befehl wird mit Typ geliefert (für Warnung)",
+check("xml: Virtueller HTTP Eingang Befehl wird erkannt",
       hc_titles.get("easee_EHVVL69G_cableLocked") == "VirtualHttpInCmd" and hc_titles.get("easee_EHVVL69G_isOnline") == "VirtualHttpInCmd",
       repr(hc_titles))
 check("xml: HTTP-Eingang selbst (Container) und UDP-Befehle nicht als Eingang",

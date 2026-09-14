@@ -1,5 +1,5 @@
 <link rel="stylesheet" href="/system/css/mqtt-gateway-v2.css">
-<script src="/system/scripts/mqttgw-scan.js?v=6"></script>
+<script src="/system/scripts/mqttgw-scan.js?v=7"></script>
 <script>
 // Texte für "Miniserver scannen" (Tab Abonnements und Umstieg V1->V2)
 MqttgwScan.lang = {
@@ -12,10 +12,6 @@ MqttgwScan.lang = {
 	chipHint:        '<TMPL_VAR MQTT.SCAN_CHIP_HINT>',
 	chipSub:         '<TMPL_VAR MQTT.SCAN_CHIP_SUB>',
 	chipMiss:        '<TMPL_VAR MQTT.SCAN_CHIP_MISS>',
-	chipWrong:       '<TMPL_VAR MQTT.SCAN_CHIP_WRONG>',
-	stWrong:         '<TMPL_VAR MQTT.SCAN_STATUS_WRONG>',
-	wrongHint:       '<TMPL_VAR MQTT.SCAN_WRONG_HINT>',
-	wrongLink:       '<TMPL_VAR MQTT.SCAN_WRONG_LINK>',
 	selAll:          '<TMPL_VAR MQTT.SCAN_SELECT_ALL>',
 	selNone:         '<TMPL_VAR MQTT.SCAN_SELECT_NONE>',
 	selHint:         '<TMPL_VAR MQTT.SCAN_SELECT_HINTS>',
@@ -31,6 +27,7 @@ MqttgwScan.lang = {
 	stTypo:          '<TMPL_VAR MQTT.SCAN_STATUS_TYPO>',
 	stNoTopic:       '<TMPL_VAR MQTT.SCAN_STATUS_NOTOPIC>',
 	typeText:        '<TMPL_VAR MQTT.SCAN_TYPE_TEXT>',
+	typeHttp:        '<TMPL_VAR MQTT.SCAN_TYPE_HTTP>',
 	noTopic:         '<TMPL_VAR MQTT.SCAN_NO_TOPIC>',
 	similar:         '<TMPL_VAR MQTT.SCAN_SIMILAR>',
 	neverSeen:       '<TMPL_VAR MQTT.SCAN_NEVER_SEEN>',
@@ -46,6 +43,7 @@ MqttgwScan.lang = {
 	unsubUdp:        '<TMPL_VAR MQTT.SCAN_UNSUB_UDP>',
 	unsubIncomplete: '<TMPL_VAR MQTT.SCAN_UNSUB_INCOMPLETE>',
 	apply:           '<TMPL_VAR MQTT.SCAN_BTN_APPLY>',
+	applyChanges:    '<TMPL_VAR MQTT.SCAN_BTN_APPLY_CHANGES>',
 	done:            '<TMPL_VAR MQTT.SCAN_DONE>',
 	doneUnsub:       '<TMPL_VAR MQTT.SCAN_DONE_UNSUB>',
 	doneResend:      '<TMPL_VAR MQTT.SCAN_DONE_RESEND>',

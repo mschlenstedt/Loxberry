@@ -50,11 +50,10 @@ import urllib.request
 import zipfile
 import zlib
 
-# Eingänge, die der Gateway über /dev/sps/io/<Name> erreicht. Richtig sind laut
-# Anleitung nur VirtualIn und VirtualTextIn. VirtualHttpInCmd ("Virtueller HTTP
-# Eingang Befehl") ist eine Fehlkonfiguration, die zufällig funktioniert - er wird nur
-# mitgeliefert, damit die WebUI davor warnen und passende Abos schützen kann.
-# VirtualUdpInCmd (Befehlserkennung) und CallerVirtualIn (Anruf-Baustein) bleiben außen vor.
+# Eingänge, die der Gateway über /dev/sps/io/<Name> beschreibt. Neben dem virtuellen
+# (Text-)Eingang nimmt auch der "Virtuelle HTTP Eingang Befehl" (VirtualHttpInCmd)
+# Werte über seinen Namen an. VirtualUdpInCmd wird über die Befehlserkennung
+# angesprochen, CallerVirtualIn gehört zum Anruf-Baustein - beide bleiben außen vor.
 INPUT_TYPES = ("VirtualIn", "VirtualTextIn", "VirtualHttpInCmd")
 TIMEOUT_SHORT = 5
 TIMEOUT_DOWNLOAD = 90

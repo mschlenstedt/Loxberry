@@ -17,21 +17,7 @@
 (function (root) {
 	'use strict';
 
-	var STATE_ORDER = { 'new': 0, 'rename': 1, 'guess': 2, 'sub': 3, 'json': 3, 'wrongtype': 4, 'miss': 5 };
-
-	// Eingangstypen, die der Gateway zwar erreicht, die laut Anleitung aber falsch
-	// sind: MQTT-Werte gehören in einen "Virtuellen Eingang", nicht in einen
-	// "Virtuellen HTTP Eingang Befehl". Sie werden angezeigt, aber nie übernommen.
-	var WRONG_TYPES = { 'VirtualHttpInCmd': true };
-	var WIKI_VIRTUAL_INPUT = 'https://wiki.loxberry.de/konfiguration/widget_help/widget_mqtt/mqtt_gateway/mqtt_schritt_fur_schritt_mqtt_loxone#schritt_5avirtuellen_eingang_anlegen_http';
-
-	// Zeilenzustand -> Filter-Chip
-	function filterKey(state) {
-		if (state === 'json') return 'sub';
-		if (state === 'rename' || state === 'guess') return 'hint';
-		if (state === 'wrongtype') return 'wrong';
-		return state;
-	}
+	var STATE_ORDER = { 'new': 0, 'rename': 1, 'guess': 2, 'sub': 3, 'json': 3, 'miss': 4 };
 	var S = { lang: {} };
 
 	// ── Hilfen ───────────────────────────────────────────────────────────
@@ -212,17 +198,6 @@
 				var list = cand.byName[inp.name];
 				var renamed = inp.name.indexOf('##_') !== -1 ? inp.name.replace(/##_/g, '_') : null;
 
-				// Falscher Eingangstyp: nur Hinweis. Der Name bleibt in "names", damit
-				// passende Abos nicht als "Abos ohne Eingang" zum Abwählen angeboten werden.
-				if (WRONG_TYPES[inp.type]) {
-					var wrongInGroup = groupList.some(function (g) { return inp.name.indexOf(g) === 0; });
-					if (!(list && list.length) && !wrongInGroup) { hidden++; return; }
-					row.entry = (list && list.length) ? list[0] : null;
-					row.state = 'wrongtype';
-					rows.push(row);
-					return;
-				}
-
 				if (list && list.length) {
 					row.entry = list[0];
 					for (var i = 0; i < list.length; i++) {
@@ -401,7 +376,8 @@
 
 	function rowHtml(row, idx, L) {
 		var isSub = row.state === 'sub' || row.state === 'json';
-		var html = '<div class="mqttgw-scan-row' + (isSub ? ' mqttgw-scan-is-sub' : '') + '" data-state="' + filterKey(row.state) + '">';
+		var filter = isSub ? 'sub' : (row.state === 'rename' || row.state === 'guess' ? 'hint' : row.state);
+		var html = '<div class="mqttgw-scan-row' + (isSub ? ' mqttgw-scan-is-sub' : '') + '" data-state="' + filter + '">';
 
 		if (row.state === 'new') {
 			html += '<input type="checkbox" class="scan-pick" data-idx="' + idx + '" checked aria-label="' + escHtml(row.name) + '">';
@@ -416,19 +392,14 @@
 
 		html += '<span class="mqttgw-scan-mono">' + escHtml(row.name)
 			+ (row.type === 'VirtualTextIn' ? ' <span class="mqttgw-scan-tag">' + escHtml(L.typeText) + '</span>' : '')
+			+ (row.type === 'VirtualHttpInCmd' ? ' <span class="mqttgw-scan-tag">' + escHtml(L.typeHttp) + '</span>' : '')
 			+ '</span>';
 
 		var jsonTag = function (path) {
 			return path !== null ? ' <span class="mqttgw-scan-tag">JSON: ' + escHtml(path.replace(/@@/g, '.')) + '</span>' : '';
 		};
 
-		if (row.state === 'wrongtype') {
-			html += '<span class="mqttgw-scan-topic">'
-				+ (row.entry ? '<span class="mqttgw-scan-mono">' + escHtml(row.entry.topic) + '</span>' + jsonTag(row.entry.path) : '')
-				+ ' <span class="mqttgw-scan-hint">' + escHtml(L.wrongHint)
-				+ ' <a href="' + WIKI_VIRTUAL_INPUT + '" target="_blank" rel="noopener">' + escHtml(L.wrongLink) + '</a></span>'
-				+ '</span><span class="mqttgw-scan-val">' + (row.entry ? escHtml(row.entry.value) : '–') + '</span>';
-		} else if (row.state === 'guess') {
+		if (row.state === 'guess') {
 			html += '<span class="mqttgw-scan-topic">'
 				+ '<input type="text" class="mqttgw-scan-guess" data-idx="' + idx + '" value="' + escHtml(row.guess.topic) + '" aria-label="Topic">'
 				+ jsonTag(row.guess.path)
@@ -458,7 +429,6 @@
 			'json':   ['mqttgw-ms-new',  L.stJson],
 			'rename': ['mqttgw-ms-warn', L.stRename],
 			'guess':  ['mqttgw-ms-warn', L.stGuess],
-			'wrongtype': ['mqttgw-ms-error', L.stWrong],
 			'miss':   ['mqttgw-ms-warn', row.similar ? L.stTypo : L.stNoTopic]
 		}[row.state];
 		html += '<span class="mqttgw-scan-state"><span class="mqttgw-ms-badge ' + badge[0] + '">' + escHtml(badge[1]) + '</span></span>';
@@ -493,13 +463,15 @@
 
 		cur.result = build(scan, cur.topics, cur.subs);
 		var rows = cur.result.rows;
-		var counts = { 'all': rows.length, 'new': 0, 'hint': 0, 'sub': 0, 'wrong': 0, 'miss': 0 };
-		rows.forEach(function (r) { counts[filterKey(r.state)]++; });
+		var counts = { 'all': rows.length, 'new': 0, 'hint': 0, 'sub': 0, 'miss': 0 };
+		rows.forEach(function (r) {
+			counts[r.state === 'json' ? 'sub' : (r.state === 'rename' || r.state === 'guess' ? 'hint' : r.state)]++;
+		});
 
 		var html = '';
 		if (rows.length) {
 			html += '<div class="mqttgw-scan-chips">';
-			[['all', L.chipAll], ['new', L.chipNew], ['hint', L.chipHint], ['sub', L.chipSub], ['wrong', L.chipWrong], ['miss', L.chipMiss]].forEach(function (c) {
+			[['all', L.chipAll], ['new', L.chipNew], ['hint', L.chipHint], ['sub', L.chipSub], ['miss', L.chipMiss]].forEach(function (c) {
 				if (c[0] !== 'all' && !counts[c[0]]) return;
 				html += '<span class="mqttgw-chip scan-chip" data-filter="' + c[0] + '" role="button" tabindex="0">'
 					+ escHtml(c[1]) + ' ' + counts[c[0]] + '</span>';
@@ -569,7 +541,13 @@
 		var n = $('#scan_body .scan-pick:checked').length;
 		var unsub = $('#scan_opt_unsub').prop('checked');
 		if (!$('#scan_body .scan-pick').length && !$('#scan_opt_unsub').length) { $btn.hide(); return; }
-		$btn.text(fmt(S.lang.apply, { n: n })).show().toggleClass('lb-disabled', n === 0 && !unsub);
+		var unsubCount = unsub && cur.result ? cur.result.orphans.length : 0;
+		$btn.text(applyLabel(n, unsubCount, S.lang)).show().toggleClass('lb-disabled', n === 0 && !unsub);
+	}
+
+	// Beim Abwählen zählt der Knopf alle Änderungen, sonst stünde dort "0 Eingänge übernehmen"
+	function applyLabel(n, unsubCount, L) {
+		return unsubCount ? fmt(L.applyChanges, { n: n + unsubCount }) : fmt(L.apply, { n: n });
 	}
 
 	function load() {
@@ -710,6 +688,7 @@
 	S.build = build;
 	S.applyRows = applyRows;
 	S.rowHtml = rowHtml;
+	S.applyLabel = applyLabel;
 
 	if (typeof module !== 'undefined' && module.exports) {
 		module.exports = S;
