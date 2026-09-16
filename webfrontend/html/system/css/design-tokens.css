@@ -100,14 +100,24 @@ html, body {
   --lb-radius-sm: 2px;
   --lb-border: 1px solid var(--lb-border-color);
 
-  /* === Tab Bar (mobile) === */
-  --lb-tab-bar-bg: var(--lb-sidebar-bg);
-  --lb-tab-bar-text: var(--lb-sidebar-text);
-  --lb-tab-bar-active: var(--lb-sidebar-active-text);
-
   /* === Glass extras (only used by glass theme) === */
   --lb-backdrop-blur: none;
   --lb-glow-primary: none;
   --lb-glow-danger: none;
   --lb-glow-warning: none;
+}
+
+/* === Tab Bar (mobile) ===
+   Deliberately on `body`, not `:root`: these mirror the sidebar tokens, and a
+   var() reference resolves where it is DECLARED, not where it is used. Themes
+   override the sidebar tokens on `body.theme-*` — one level below `:root` — so
+   a reference declared in `:root` would only ever see the defaults below and
+   the tab bar would stay themeless (it rendered #3d3d3d even in soft-rounded,
+   which has a white sidebar). Declared on `body`, the reference picks up the
+   active theme's value. Themes need no change. */
+body {
+  --lb-tab-bar-bg: var(--lb-sidebar-bg);
+  --lb-tab-bar-text: var(--lb-sidebar-text);
+  --lb-tab-bar-active: var(--lb-sidebar-active-text);
+  --lb-tab-bar-border: var(--lb-sidebar-border);
 }

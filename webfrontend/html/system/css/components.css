@@ -1338,7 +1338,7 @@ a.lb-sidebar-link.active:visited {
 	padding: 6px 0;
 	padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
 	background: var(--lb-tab-bar-bg);
-	border-top: 1px solid var(--lb-border-color);
+	border-top: 1px solid var(--lb-tab-bar-border);
 	/* Hidden by default on desktop; slid in via transform when nav-mode-tabbar
 	   is set or on mobile. Keeping display:flex (vs none) is what enables the
 	   transform/opacity animation. */
