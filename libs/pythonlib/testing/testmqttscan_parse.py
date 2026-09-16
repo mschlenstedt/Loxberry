@@ -242,6 +242,28 @@ by_single = scanmod.assign_inputs(single[0], single[1], MINISERVERS, "2", resolv
 check("assign: bei nur einem Miniserver im Projekt fällt der Eingang auf die Quelle",
       [x["name"] for x in by_single.get("2", [])] == ["lose"], repr(by_single))
 
+# Rückmeldung Jan W. (14.09.2026): "Virtueller HTTP Eingang Befehl" nimmt Werte über
+# /dev/sps/io/<Name> an (Datenverkehr zeigt HTTP 200), wurde vom Scan aber übersehen.
+# Typnamen wie in einer echten Programmdatei: VirtualHttpIn -> VirtualHttpInCmd.
+# VirtualUdpInCmd wird über die Befehlserkennung angesprochen und bleibt außen vor.
+HTTPCMD = (
+	b'<ControlList><C Type="LoxLIVE" U="ms" Title="Home" IntAddr="192.168.1.77">'
+	b'<C Type="VirtualInCaption" U="c" Title="Virtuelle Eingaenge">'
+	b'<C Type="VirtualHttpIn" U="h" Title="easee MQTT Inputs">'
+	b'<C Type="VirtualHttpInCmd" U="h1" Title="easee_EHVVL69G_cableLocked"/>'
+	b'<C Type="VirtualHttpInCmd" U="h2" Title="easee_EHVVL69G_isOnline"/>'
+	b'</C>'
+	b'<C Type="VirtualUdpIn" U="u" Title="ekey"><C Type="VirtualUdpInCmd" U="u1" Title="ekey_finger"/></C>'
+	b'</C></C></ControlList>'
+)
+hc_lives, hc_inputs = scanmod.parse_project(HTTPCMD)
+hc_titles = dict((t, ty) for t, ty, ref in hc_inputs)
+check("xml: Virtueller HTTP Eingang Befehl wird erkannt",
+      hc_titles.get("easee_EHVVL69G_cableLocked") == "VirtualHttpInCmd" and hc_titles.get("easee_EHVVL69G_isOnline") == "VirtualHttpInCmd",
+      repr(hc_titles))
+check("xml: HTTP-Eingang selbst (Container) und UDP-Befehle nicht als Eingang",
+      "easee MQTT Inputs" not in hc_titles and "ekey_finger" not in hc_titles, repr(hc_titles))
+
 # ---------------------------------------------------------------------------
 # ZIP / LoxCC-Datei
 # ---------------------------------------------------------------------------

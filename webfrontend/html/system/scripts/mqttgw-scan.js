@@ -392,6 +392,7 @@
 
 		html += '<span class="mqttgw-scan-mono">' + escHtml(row.name)
 			+ (row.type === 'VirtualTextIn' ? ' <span class="mqttgw-scan-tag">' + escHtml(L.typeText) + '</span>' : '')
+			+ (row.type === 'VirtualHttpInCmd' ? ' <span class="mqttgw-scan-tag">' + escHtml(L.typeHttp) + '</span>' : '')
 			+ '</span>';
 
 		var jsonTag = function (path) {
@@ -540,7 +541,13 @@
 		var n = $('#scan_body .scan-pick:checked').length;
 		var unsub = $('#scan_opt_unsub').prop('checked');
 		if (!$('#scan_body .scan-pick').length && !$('#scan_opt_unsub').length) { $btn.hide(); return; }
-		$btn.text(fmt(S.lang.apply, { n: n })).show().toggleClass('lb-disabled', n === 0 && !unsub);
+		var unsubCount = unsub && cur.result ? cur.result.orphans.length : 0;
+		$btn.text(applyLabel(n, unsubCount, S.lang)).show().toggleClass('lb-disabled', n === 0 && !unsub);
+	}
+
+	// Beim Abwählen zählt der Knopf alle Änderungen, sonst stünde dort "0 Eingänge übernehmen"
+	function applyLabel(n, unsubCount, L) {
+		return unsubCount ? fmt(L.applyChanges, { n: n + unsubCount }) : fmt(L.apply, { n: n });
 	}
 
 	function load() {
@@ -681,6 +688,7 @@
 	S.build = build;
 	S.applyRows = applyRows;
 	S.rowHtml = rowHtml;
+	S.applyLabel = applyLabel;
 
 	if (typeof module !== 'undefined' && module.exports) {
 		module.exports = S;

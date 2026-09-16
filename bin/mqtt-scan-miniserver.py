@@ -50,7 +50,11 @@ import urllib.request
 import zipfile
 import zlib
 
-INPUT_TYPES = ("VirtualIn", "VirtualTextIn")
+# Eingänge, die der Gateway über /dev/sps/io/<Name> beschreibt. Neben dem virtuellen
+# (Text-)Eingang nimmt auch der "Virtuelle HTTP Eingang Befehl" (VirtualHttpInCmd)
+# Werte über seinen Namen an. VirtualUdpInCmd wird über die Befehlserkennung
+# angesprochen, CallerVirtualIn gehört zum Anruf-Baustein - beide bleiben außen vor.
+INPUT_TYPES = ("VirtualIn", "VirtualTextIn", "VirtualHttpInCmd")
 TIMEOUT_SHORT = 5
 TIMEOUT_DOWNLOAD = 90
 LOXCC_MAGIC = 0xaabbccee
