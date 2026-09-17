@@ -101,6 +101,24 @@ sub _cache_age_minutes {
     return (time() - $mtime) / 60;
 }
 
+# Wandelt alle dekodierten Zeichenketten einer Struktur zurueck in UTF-8-Bytes
+# (in-place, rekursiv ueber Hashes/Arrays). Siehe _read_json fuer das Warum.
+sub _encode_utf8_deep {
+    my ($node) = @_;
+    if (ref $node eq 'HASH') {
+        _encode_utf8_deep($node->{$_}) for keys %$node;
+        utf8::encode($node->{$_}) for grep { defined $node->{$_} && !ref $node->{$_} && utf8::is_utf8($node->{$_}) } keys %$node;
+    }
+    elsif (ref $node eq 'ARRAY') {
+        _encode_utf8_deep($_) for @$node;
+        for my $i (0 .. $#$node) {
+            next if ref $node->[$i] || !defined $node->[$i];
+            utf8::encode($node->[$i]) if utf8::is_utf8($node->[$i]);
+        }
+    }
+    return $node;
+}
+
 sub _read_json {
     my ($path) = @_;
     return undef unless $path && -e $path;
@@ -110,6 +128,16 @@ sub _read_json {
     open(my $fh, '<:raw', $path) or return undef;
     local $/; my $c = <$fh>; close($fh);
     my $data = eval { JSON::PP::decode_json($c) };
+    # decode_json liefert dekodierte Perl-Zeichen. Der Rest von LoxBerry
+    # (readlanguage, Templates, plugindatabase) arbeitet dagegen durchgehend mit
+    # rohen UTF-8-Bytes. Mischt HTML::Template beides in EINER Ausgabe und
+    # enthaelt irgendein Katalogfeld ein Zeichen > U+00FF (z.B. "…", "–", "→"),
+    # kann Perl den Gesamtstring beim print nicht mehr auf Bytes herunterstufen
+    # und gibt dessen interne UTF-8-Darstellung aus — die Sprachstrings werden
+    # dadurch ein zweites Mal kodiert ("BenÃ¶tigt LoxBerry ab Version").
+    # Darum hier zurueck auf Bytes: der Katalog verhaelt sich damit wie jede
+    # andere Datenquelle im Core.
+    _encode_utf8_deep($data) if $data;
     return $data;
 }
 
