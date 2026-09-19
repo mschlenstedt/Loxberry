@@ -68,6 +68,24 @@ my $monitor = File::Monitor->new();
 # Open Unix socket
 my $unixsock = open_unix_socket( $unixsocketpath );
 
+# Restore the persisted topic cache so the freshness timestamps survive a
+# finder restart. Without this, every restart would re-seed all retained
+# topics with the current time and the 7-day cleanup could never expire them.
+# The cache lives on tmpfs (/dev/shm) and is therefore only reset on reboot.
+if( -e $datafile ) {
+	eval {
+		my $restoreobj = LoxBerry::JSON->new();
+		my $restore = $restoreobj->open(filename => $datafile, readonly => 1);
+		if( $restore and ref $restore->{incoming} eq 'HASH' ) {
+			%sendhash = %{ $restore->{incoming} };
+			LOGOK "Restored " . scalar(keys %sendhash) . " topics from $datafile";
+		}
+	};
+	if ($@) {
+		LOGWARN "Could not restore topic cache from $datafile: $@";
+	}
+}
+
 read_config();
 	
 # Capture messages
@@ -117,7 +135,7 @@ while(1) {
 sub received
 {
 
-	my ($topic, $message) = @_;
+	my ($topic, $message, $retain) = @_;
 
 	utf8::encode($topic);
 	# Net::MQTT::Simple delivers payload as raw bytes (no UTF-8 flag).
@@ -131,13 +149,27 @@ sub received
 			$message = $decoded;
 		}
 	}
-	LOGOK "MQTT received: $topic: $message";
+	LOGOK "MQTT received: $topic: $message" . ( $retain ? " (retained)" : "" );
 
 	# Remember that we have currently have received data
 	$mqtt_data_received = 1;
 
 	$sendhash{$topic}{p} = $message;
-	$sendhash{$topic}{t} = Time::HiRes::time();
+	$sendhash{$topic}{r} = $retain ? 1 : 0;
+
+	# Only a freshly published message (retain flag = 0) proves that the topic
+	# is still actively being sent. A message delivered with the retain flag
+	# set is just the broker replaying a stored value at (re)subscribe time —
+	# it must NOT reset the freshness timestamp, otherwise stale retained
+	# topics (e.g. parameters that were renamed on the publisher side) would
+	# keep resetting the 7-day cleanup clock on every reconnect and never
+	# expire. A retained topic seen for the first time is seeded once, so it
+	# gets a grace period to prove it is still alive via a fresh publish.
+	if( !$retain ) {
+		$sendhash{$topic}{t} = Time::HiRes::time();
+	} else {
+		$sendhash{$topic}{t} //= Time::HiRes::time();
+	}
 	
 }
 
