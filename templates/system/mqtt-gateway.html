@@ -803,7 +803,12 @@ $(function() {
             $.when(saveGwConfig, saveVersion)
                 .done(function() {
                     if (newVersion !== originalVersion) {
-                        location.reload();
+                        // Version wurde umgeschaltet: Gateway-Daemon neu starten,
+                        // damit die passende Version (V1 Perl / V2 Python) läuft.
+                        // Ohne diesen Restart bleibt der alte Daemon aktiv und der
+                        // Datenverkehr-Tab zeigt mangels Statusdatei alles als "neu".
+                        $.post('ajax/ajax-mqtt.php', { ajax: 'restartgateway' })
+                            .always(function() { location.reload(); });
                         return;
                     }
                     _showSaveOk(_lang_save.restartHint);
