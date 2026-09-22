@@ -84,9 +84,14 @@ $( document ).ready(function() {
 			}
 		}
 		if( data.update_running == 1) {
-			$("#footerLBStatusbar").fadeIn().text("<TMPL_VAR UPDATES.LBU_UPDATE_WARNING_FOOTER> ("+data.which.toString()+")");
+			// Dezente Kapsel statt Vollbreiten-Leiste; voller Text inkl. Prozess als Tooltip
+			var lbuFull = "<TMPL_VAR UPDATES.LBU_UPDATE_WARNING_FOOTER> ("+data.which.toString()+")";
+			$("#footerLBStatusbar").attr("title", lbuFull).fadeIn();
+			$("#footerLBStatusbar .lb-statusbar-text").text("<TMPL_VAR UPDATES.LBU_UPDATE_RUNNING_SHORT>");
+			$("#btnpower").addClass("lb-update-running").attr("title", lbuFull);
 		} else {
 			$("#footerLBStatusbar").fadeOut();
+			$("#btnpower").removeClass("lb-update-running").removeAttr("title");
 		}
 	}
 });
@@ -98,6 +103,7 @@ $( document ).ready(function() {
      stacking is deterministic and independent of any stacking context a
      plugin page introduces. z-index 1000 keeps it below jQM popups
      (container 1100 / overlay 1099) so a popup is not covered, and above
-     normal page content (issue #1544). -->
-<div id="footerLBStatusbar" style="display:none;z-index:1000;overflow:hidden;background-color:#6dac20;position:fixed;bottom:0;min-height:42px;width:100%;box-sizing:border-box;padding:6px;text-align:center;color:white;"></div>
+     normal page content (issue #1544). Styling: .lb-statusbar in components.css
+     (compact pill bottom right, does not block the rest of the page). -->
+<div id="footerLBStatusbar" class="lb-statusbar" role="status" aria-live="polite" style="display:none;"><span class="lb-statusbar-spin"></span><span class="lb-statusbar-text"></span></div>
 <!-- pageend.html END -->
