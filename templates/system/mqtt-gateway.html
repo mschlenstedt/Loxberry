@@ -1056,10 +1056,10 @@ $(function() {
     // ── Status data from get_status_v2 (keyed by VI name) ────────────────
     var statusData = {};
 
-    function fetchStatusData() {
+    function fetchStatusData(filterChanged) {
         $.get('ajax/ajax-mqtt.php', {ajax: 'get_status_v2'}, function(resp) {
             statusData = resp || {};
-            renderTopics();
+            renderTopics(filterChanged);
         });
     }
 
@@ -1107,7 +1107,8 @@ $(function() {
     var subscriptions = [];
     var isDirty = false;
     var saveTimer = null;
-    var firstRender = true;
+    var firstRender = true;     // stays true until the first discovery answer (see renderTopics)
+    var discoveryAnswered = false;
     var discoveredTopics = [];  // [{ topic, payload, group }]
     var filterActive = false;
     var forceOpenOnFilter = false; // expand matches only when the filter itself changed
@@ -1612,8 +1613,11 @@ $(function() {
 
         $("#filter_count").text(subCount + " von " + totalCount + " abonniert");
 
-        openDetails = {};
+        // Take over the open/closed state from the DOM - but not on the first
+        // render, where openDetails still holds the state restored from
+        // sessionStorage and the DOM is empty.
         if (!firstRender) {
+            openDetails = {};
             $("#topic_groups_container details[open]").each(function() {
                 var key = $(this).data('key');
                 if (key) openDetails[key] = true;
@@ -1649,7 +1653,11 @@ $(function() {
         $("#topic_groups_container [data-indeterminate='true']").each(function() {
             this.indeterminate = true;
         });
-        firstRender = false;
+        // Status data and discovery load in parallel; the status answer usually
+        // comes first and renders only the subscribed topics. The first render
+        // (stored state, filter matches opened) must last until the discovered
+        // topics are there, otherwise they are taken over as closed.
+        if (discoveryAnswered) firstRender = false;
     }
 
     // ── Event handlers ────────────────────────────────────────────────────
@@ -1792,9 +1800,9 @@ $(function() {
     $("#filter_errors_only").on("change", function() {
         saveFilterState();
         if ($(this).prop("checked") && Object.keys(statusData).length === 0) {
-            fetchStatusData();
+            fetchStatusData(true);
         } else {
-            renderTopics();
+            renderTopics(true);
         }
     });
     $("#btn_topic_filter_clear").on("click", function() {
@@ -1966,8 +1974,12 @@ $(function() {
             }
             lastDiscoveryTime = Date.now();
             discoveredTopics  = topics;
+            discoveryAnswered = true;
             $("#discovery_count").text(topics.length);
             renderTopics();
+        })
+        .fail(function() {
+            discoveryAnswered = true;
         })
         .always(function() {
             discoveryRunning = false;
