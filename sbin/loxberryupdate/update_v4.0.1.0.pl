@@ -78,6 +78,18 @@ if ( $tsexitcode == 0 ) {
 	LOGWARN "Time server settings could not be applied (exit code $tsexitcode) - see $lbhomedir/log/system_tmpfs/settimeserver.log";
 }
 
+# ---------------------------------------------------------------------------
+# Watchdog for MQTT Gateway V2 (#1567): restarts the gateway if it is not
+# running or no longer publishes its keepalive, unless it was stopped on
+# purpose. The cron wrapper lives in system/ (excluded from rsync), the logic
+# (sbin/mqttgatewaywatchdog.pl) comes with the rsync.
+# ---------------------------------------------------------------------------
+LOGINF "Installing MQTT Gateway V2 watchdog cron job...";
+copy_to_loxberry('/system/cron/cron.01min/mqttgatewaywatchdog');
+execute( command => "chmod +x $lbhomedir/system/cron/cron.01min/mqttgatewaywatchdog", log => $log );
+execute( command => "dos2unix $lbhomedir/system/cron/cron.01min/mqttgatewaywatchdog", log => $log, ignoreerrors => 1 );
+execute( command => "chmod +x $lbhomedir/sbin/mqttgatewaywatchdog.pl", log => $log );
+
 LOGOK "Update script $0 finished." if ( $errors == 0 );
 LOGERR "Update script $0 finished with errors." if ( $errors != 0 );
 
