@@ -13,7 +13,7 @@ use Socket ();
 use Time::HiRes;
 
 our $SENDDELAY = 0.017;
-our $VERSION = '1.32-3LB';
+our $VERSION = '1.32-4LB';
 
 # Please note that these are not documented and are subject to change:
 our $KEEPALIVE_INTERVAL = 60;
@@ -157,7 +157,7 @@ sub _connect {
     # Reset state
     $self->{last_connect} = time;
     $self->{buffer} = "";
-    $self->{subscribed} = {};
+    $self->{actually_subscribed} = {};
     delete $self->{ping};
 
     # Connect
