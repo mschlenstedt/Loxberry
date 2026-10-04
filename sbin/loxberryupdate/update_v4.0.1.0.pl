@@ -90,6 +90,29 @@ execute( command => "chmod +x $lbhomedir/system/cron/cron.01min/mqttgatewaywatch
 execute( command => "dos2unix $lbhomedir/system/cron/cron.01min/mqttgatewaywatchdog", log => $log, ignoreerrors => 1 );
 execute( command => "chmod +x $lbhomedir/sbin/mqttgatewaywatchdog.pl", log => $log );
 
+# ---------------------------------------------------------------------------
+# Web terminal as native systemd unit (#1566). The Debian package shellinabox
+# only ships a SysV script, so systemd generated a unit from it (deprecation
+# warning) that started an unused second instance on port 4200, which
+# 06-shellinabox then killed again. system/systemd/shellinabox.service has the
+# same name and replaces both. system/ is excluded from rsync, so the unit is
+# copied and the old daemon script removed here.
+# ---------------------------------------------------------------------------
+LOGINF "Installing the web terminal (shellinabox) as systemd unit...";
+copy_to_loxberry('/system/systemd/shellinabox.service');
+execute( command => "dos2unix $lbhomedir/system/systemd/shellinabox.service", log => $log, ignoreerrors => 1 );
+if ( -e "$lbhomedir/system/daemons/system/06-shellinabox" ) {
+	unlink "$lbhomedir/system/daemons/system/06-shellinabox" or LOGWARN "Could not remove 06-shellinabox: $!";
+}
+execute( command => "rm -f /etc/systemd/system/shellinabox.service", log => $log, ignoreerrors => 1 );
+execute( command => "ln -s $lbhomedir/system/systemd/shellinabox.service /etc/systemd/system/shellinabox.service", log => $log );
+execute( command => "systemctl daemon-reload", log => $log );
+execute( command => "systemctl enable shellinabox.service", log => $log );
+# The running instances were not started by this unit - stop them, then start the unit
+execute( command => "pkill -f /usr/bin/shellinaboxd", log => $log, ignoreerrors => 1 );
+sleep(1);
+execute( command => "systemctl restart shellinabox.service", log => $log );
+
 LOGOK "Update script $0 finished." if ( $errors == 0 );
 LOGERR "Update script $0 finished with errors." if ( $errors != 0 );
 
