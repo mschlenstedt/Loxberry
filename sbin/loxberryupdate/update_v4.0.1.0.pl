@@ -41,6 +41,78 @@ if ( -e "$pylib/install_pth.py" ) {
 LOGINF "Installing python3-paho-mqtt for the Python MQTT library...";
 apt_install("python3-paho-mqtt");
 
+# ---------------------------------------------------------------------------
+# 51-mqttfinder no longer starts a second MQTT Finder at boot (#1578, #1579):
+# cron.01min (mqttfinderwatchdog.pl) may already have started one before
+# loxberryinit.sh reaches the system daemons.
+# system/ is excluded from rsync (update-exclude.system), so the daemon script
+# must be copied explicitly.
+# ---------------------------------------------------------------------------
+LOGINF "Installing 51-mqttfinder daemon script...";
+copy_to_loxberry('/system/daemons/system/51-mqttfinder');
+execute( command => "chmod +x $lbhomedir/system/daemons/system/51-mqttfinder", log => $log );
+
+# ---------------------------------------------------------------------------
+# DietPi keeps the system time in sync now (#1581). sbin/settimeserver.sh hands
+# LoxBerry's time settings to DietPi and replaces sbin/setdatetime.pl.
+# system/ is excluded from rsync (update-exclude.system), so the sudoers
+# defaults (settimeserver.sh instead of ntpdate) are copied and the hourly cron
+# job of setdatetime.pl is removed here.
+# ---------------------------------------------------------------------------
+LOGINF "Installing updated sudoers defaults (settimeserver.sh entry)...";
+copy_to_loxberry("/system/sudoers/lbdefaults");
+
+if ( -e "$lbhomedir/system/cron/cron.hourly/01-setdatetime" ) {
+	LOGINF "Removing the hourly cron job of setdatetime.pl...";
+	unlink "$lbhomedir/system/cron/cron.hourly/01-setdatetime" or LOGWARN "Could not remove 01-setdatetime: $!";
+}
+
+# The NTP server set in LoxBerry never reached DietPi so far, although the
+# window showed it as active. Hand it over once. A failed sync is not an update
+# error - settimeserver.sh then keeps the server DietPi had.
+LOGINF "Handing the time server settings to DietPi...";
+my ($tsexitcode) = execute( command => "$lbhomedir/sbin/settimeserver.sh", log => $log, ignoreerrors => 1 );
+if ( $tsexitcode == 0 ) {
+	LOGOK "Time server settings handed to DietPi.";
+} else {
+	LOGWARN "Time server settings could not be applied (exit code $tsexitcode) - see $lbhomedir/log/system_tmpfs/settimeserver.log";
+}
+
+# ---------------------------------------------------------------------------
+# Watchdog for MQTT Gateway V2 (#1567): restarts the gateway if it is not
+# running or no longer publishes its keepalive, unless it was stopped on
+# purpose. The cron wrapper lives in system/ (excluded from rsync), the logic
+# (sbin/mqttgatewaywatchdog.pl) comes with the rsync.
+# ---------------------------------------------------------------------------
+LOGINF "Installing MQTT Gateway V2 watchdog cron job...";
+copy_to_loxberry('/system/cron/cron.01min/mqttgatewaywatchdog');
+execute( command => "chmod +x $lbhomedir/system/cron/cron.01min/mqttgatewaywatchdog", log => $log );
+execute( command => "dos2unix $lbhomedir/system/cron/cron.01min/mqttgatewaywatchdog", log => $log, ignoreerrors => 1 );
+execute( command => "chmod +x $lbhomedir/sbin/mqttgatewaywatchdog.pl", log => $log );
+
+# ---------------------------------------------------------------------------
+# Web terminal as native systemd unit (#1566). The Debian package shellinabox
+# only ships a SysV script, so systemd generated a unit from it (deprecation
+# warning) that started an unused second instance on port 4200, which
+# 06-shellinabox then killed again. system/systemd/shellinabox.service has the
+# same name and replaces both. system/ is excluded from rsync, so the unit is
+# copied and the old daemon script removed here.
+# ---------------------------------------------------------------------------
+LOGINF "Installing the web terminal (shellinabox) as systemd unit...";
+copy_to_loxberry('/system/systemd/shellinabox.service');
+execute( command => "dos2unix $lbhomedir/system/systemd/shellinabox.service", log => $log, ignoreerrors => 1 );
+if ( -e "$lbhomedir/system/daemons/system/06-shellinabox" ) {
+	unlink "$lbhomedir/system/daemons/system/06-shellinabox" or LOGWARN "Could not remove 06-shellinabox: $!";
+}
+execute( command => "rm -f /etc/systemd/system/shellinabox.service", log => $log, ignoreerrors => 1 );
+execute( command => "ln -s $lbhomedir/system/systemd/shellinabox.service /etc/systemd/system/shellinabox.service", log => $log );
+execute( command => "systemctl daemon-reload", log => $log );
+execute( command => "systemctl enable shellinabox.service", log => $log );
+# The running instances were not started by this unit - stop them, then start the unit
+execute( command => "pkill -f /usr/bin/shellinaboxd", log => $log, ignoreerrors => 1 );
+sleep(1);
+execute( command => "systemctl restart shellinabox.service", log => $log );
+
 LOGOK "Update script $0 finished." if ( $errors == 0 );
 LOGERR "Update script $0 finished with errors." if ( $errors != 0 );
 

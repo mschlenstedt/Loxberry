@@ -170,7 +170,6 @@ sub change_mailcfg
 			$var = uc ($var); # UPPERCASE
 			push (@msmtprckeys, $var);
 			$mcfg->{SMTP}->{$var} = $value;
-			print STDERR "Read config: $var: $mcfg->{SMTP}->{$var}\n";
 		} 
 	}
 	

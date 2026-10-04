@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+# MQTT Gateway V2 Watchdog — runs every minute as user "loxberry".
+#
+# Thin wrapper; the actual logic lives in sbin/mqttgatewaywatchdog.pl. It
+# restarts MQTT Gateway V2 if it is not running or no longer publishes its
+# keepalive to the broker - unless the gateway was stopped on purpose.
+
+LBHOMEDIR="${LBHOMEDIR:-/opt/loxberry}"
+
+PERL5LIB="$LBHOMEDIR/libs/perllib" "$LBHOMEDIR/sbin/mqttgatewaywatchdog.pl" >/dev/null 2>&1
+
+exit 0

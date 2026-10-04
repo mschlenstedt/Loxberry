@@ -44,44 +44,42 @@ our $do="form";
 our @lines;
 our $timezonelist="";
 our $timezones;
-our $zeitserver;
 our $ntpserverurl;
 our $zeitzone;
-our $checked1;
-our $checked2;
+our $syncmode;
 our $datebin;
 our $systemdatetime;
-our $ntpdate;
-our $awkbin;
-our $grepbin;
+
+# DietPi keeps the time in sync; its settings live in dietpi.txt (#1581)
+my $dietpitxt = "/boot/dietpi.txt";
 
 ##########################################################################
 # Read Settings
 ##########################################################################
 
 # Version of this script
-my $version = "2.0.2.3";
+my $version = "4.0.1.0";
 
 my $cgi = CGI->new;
 $cgi->import_names('R');
 $R::saveformdata if 0;
 $R::ntpserverurl if 0;
-$R::zeitserver if 0;
+$R::syncmode if 0;
 $R::zeitzone if 0;
 $R::do if 0;
 
 my $jsonobj = LoxBerry::System::General->new();
 my $cfg = $jsonobj->open();
 
-$zeitserver = $cfg->{Timeserver}->{Method};
-$ntpserverurl = $cfg->{Timeserver}->{Ntpserver};
-$zeitzone = $cfg->{Timeserver}->{Timezone};
+# Show what is really in effect: server and sync mode from dietpi.txt,
+# timezone from the system. general.json is the fallback.
+my %dietpi = read_dietpitxt();
+$ntpserverurl = $dietpi{CONFIG_NTP_MIRROR} // $cfg->{Timeserver}->{Ntpserver};
+$syncmode = ( defined $dietpi{CONFIG_NTP_MODE} and $dietpi{CONFIG_NTP_MODE} =~ /^[1-4]$/ ) ? $dietpi{CONFIG_NTP_MODE} : 2;
+$zeitzone = trim(qx(timedatectl show --property=Timezone --value 2>/dev/null)) || $cfg->{Timeserver}->{Timezone};
 
 my $bins = LoxBerry::System::get_binaries();
 $datebin = $bins->{DATE};
-$ntpdate = $bins->{NTPDATE};
-$awkbin = $bins->{AWK};
-$grepbin = $bins->{GREP};
 
 $do = "";
 
@@ -120,21 +118,6 @@ $navbar{50}{URL} = 'services.php?load=3';
 
 $do = $R::do;
 
-# Just for testing via: http://loxberry/admin/system/timeserver.cgi?do=query
-if ( $do eq "query" ) 
-{
-  print "Content-Type: text/plain\n\n";
-  if ( $zeitserver eq "ntp" )
-  {
-  	print `$ntpdate -q $ntpserverurl 2>&1| $grepbin ntp | $awkbin '{for (I=1;I<=NF;I++) if (\$I == "offset") {print \$(I+1)};}'`;
-  }
-  else
-  {
-	print "Miniserver configured. No NTP-Query done.";
-  }
-  exit;
-}
-
 $saveformdata = $R::saveformdata;
 
 ##########################################################################
@@ -172,17 +155,17 @@ exit;
 
 sub form {
 
-	# Defaults for template
-	if ($zeitserver eq "ntp") {
-	  $checked2 = 'checked="checked"';
-	  $maintemplate->param("CHECKED2", $checked2);
-	  
-	} else {
-	  $checked1 = 'checked="checked"';
-	  $maintemplate->param("CHECKED1", $checked1);
+	# Sync modes of DietPi (CONFIG_NTP_MODE). Mode 0 (no sync) is not offered:
+	# a Raspberry Pi without RTC would start with a wrong time after every boot.
+	my @syncmodes;
+	foreach my $mode ( 1..4 ) {
+		push @syncmodes, {
+			VALUE => $mode,
+			LABEL => $SL{"TIMESERVER.SYNC_MODE_$mode"},
+			SELECTED => $mode == $syncmode ? 'selected="selected"' : '',
+		};
 	}
-
-	$maintemplate->param("MSSELECTLIST", mslist_select_html( FORMID => 'msno', SELECTED => $cfg->{Timeserver}->{Timemsno} ) );
+	$maintemplate->param("SYNCMODES", \@syncmodes);
 	
 	# Prepare Timezones
 	$timezones = qx( timedatectl  list-timezones|grep Europe/; timedatectl  list-timezones|grep -v  Europe/) || die "Problem reading timezones";
@@ -222,40 +205,59 @@ sub form {
 sub save {
 
 	# Everything from Forms
-	$zeitserver   = $R::zeitserver;
-	$ntpserverurl = $R::ntpserverurl;
-	$zeitzone     = $R::zeitzone;
-	my $msno 	  = $R::msno;
+	my $oldserver = $ntpserverurl;
+	my $newserver = join( ' ', split( ' ', $R::ntpserverurl // '' ) );
+	my $newmode   = $R::syncmode // '';
+	my $newzone   = trim( $R::zeitzone // '' );
 
-	# Test if NTP-Server is reachable
-	our $ntp_check="0"; 
-	if ( $zeitserver eq "ntp" )
-	{
-	 $ntp_check = system("$ntpdate -q $ntpserverurl >/dev/null 2>&1");
+	# Host names, IP addresses or the DietPi keywords default/gateway, separated
+	# by spaces - settimeserver.sh checks the same
+	if ( !$newserver or grep { !/^[A-Za-z0-9]([A-Za-z0-9.:-]*[A-Za-z0-9])?$/ } split( ' ', $newserver ) ) {
+		$error = $SL{'TIMESERVER.MSG_VAL_INVALID_HOST'};
+		&error;
+		exit;
 	}
-	# Error if we can't get time
-	if ($ntp_check) {
-	  $error = $SL{'TIMESERVER.ERR_NTP_UNREACHABLE'};
-	  &error;
-	  exit;
+	$newmode = 2 if ( $newmode !~ /^[1-4]$/ );
+
+	# DietPi turns every entry ending in pool.ntp.org into the servers 0-3 of
+	# that pool, so "0.pool.ntp.org" would become "0.0.pool.ntp.org"
+	my @hosts;
+	foreach my $host ( split( ' ', $newserver ) ) {
+		$host =~ s/^\d+\.(.*pool\.ntp\.org)$/$1/;
+		push @hosts, $host if ( !grep { $_ eq $host } @hosts );
 	}
+	$newserver = join( ' ', @hosts );
 
 	# Check if the timezone was changed
 	my $tzchanged;
-	$tzchanged = 1 if ( $cfg->{Timeserver}->{Timezone} ne $zeitzone );
-	
-		
-	# Write configuration file(s)
-	$cfg->{Timeserver}->{Ntpserver} = trim($ntpserverurl);
-	$cfg->{Timeserver}->{Method} = trim($zeitserver);
-	$cfg->{Timeserver}->{Timezone} = trim($zeitzone);
-	$cfg->{Timeserver}->{Timemsno} = $msno;
+	$tzchanged = 1 if ( $zeitzone ne $newzone );
+
+	# Write configuration file - general.json still provides lbtimezone and the
+	# legacy general.cfg
+	my $oldjsonserver = $cfg->{Timeserver}->{Ntpserver};
+	my $oldjsonzone = $cfg->{Timeserver}->{Timezone};
+	$cfg->{Timeserver}->{Ntpserver} = $newserver;
+	$cfg->{Timeserver}->{Method} = "ntp";
+	$cfg->{Timeserver}->{Timezone} = $newzone;
+	delete $cfg->{Timeserver}->{Timemsno};
 	$jsonobj->write();
-	
-	# Trigger timesync
-	my ($exitcode, $datetime_res) = LoxBerry::System::execute( "$lbhomedir/sbin/setdatetime.pl" );
+
+	# Hand the settings to DietPi and sync once
+	my ($exitcode) = LoxBerry::System::execute( "sudo -n $lbhomedir/sbin/settimeserver.sh $newmode" );
 	if ($exitcode != 0) {
-		$error = LoxBerry::Web::logfile_button_html( LOGFILE => $lbstmpfslogdir."/setdatetime.log" );
+		my $logbutton = LoxBerry::Web::logfile_button_html( LOGFILE => $lbstmpfslogdir."/settimeserver.log" );
+		if ($exitcode == 2) {
+			# The new server does not answer - settimeserver.sh changed nothing
+			$cfg->{Timeserver}->{Ntpserver} = $oldjsonserver;
+			$cfg->{Timeserver}->{Timezone} = $oldjsonzone;
+			$jsonobj->write();
+			$error = $SL{'TIMESERVER.ERR_SYNC_FAILED'};
+			$error =~ s/%NEW%/$newserver/g;
+			$error =~ s/%OLD%/$oldserver/g;
+			$error .= " " . $logbutton;
+		} else {
+			$error = $logbutton;
+		}
 		&error;
 		exit;
 	}
@@ -298,6 +300,23 @@ exit;
 # Subroutines
 #
 #####################################################
+
+#####################################################
+# Read the settings of dietpi.txt (KEY=VALUE lines)
+#####################################################
+
+sub read_dietpitxt {
+	my %values;
+	open( my $fh, '<', $dietpitxt ) or return %values;
+	while ( my $line = <$fh> ) {
+		next if ( $line =~ /^\s*#/ );
+		if ( $line =~ /^\s*([A-Z0-9_]+)=(.*?)\s*$/ ) {
+			$values{$1} = $2;
+		}
+	}
+	close $fh;
+	return %values;
+}
 
 #####################################################
 # Error
