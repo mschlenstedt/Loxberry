@@ -1,3 +1,13 @@
 #!/bin/bash
 LBHOMEDIR="${LBHOMEDIR:-/opt/loxberry}"
+
+# cron.01min (mqttfinderwatchdog.pl) runs before loxberryinit.sh reaches this
+# daemon and may already have started the Finder. mqttfinder.pl has no
+# single-instance guard, so starting it again would leave two Finders running
+# (#1578). The [m] trick keeps pgrep from matching its own command line.
+if pgrep -f -- "$LBHOMEDIR/sbin/[m]qttfinder.pl" > /dev/null; then
+	echo "MQTT Finder already running - not starting a second instance."
+	exit 0
+fi
+
 su loxberry -c "PERL5LIB=$LBHOMEDIR/libs/perllib $LBHOMEDIR/sbin/mqttfinder.pl > /dev/null 2>&1 &"
