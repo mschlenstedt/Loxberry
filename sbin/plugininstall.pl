@@ -80,6 +80,7 @@ my $parch;
 my $script;
 our $output;
 my $plugin;
+my $remove_dbentry_on_fail = 0;
 
 ##########################################################################
 # Variables / Commandline
@@ -767,6 +768,10 @@ sub install {
 
 	$plugin->save();
 
+	# A new installation that fails before its files are copied must not stay
+	# in the database (#1589)
+	$remove_dbentry_on_fail = 1 if !$isupgrade;
+
 	# Create shadow plugindatabase.json- and backup of plugindatabase
 	LOGINF $LL{'INF_SHADOWDB'};
 	#system("cp -v $LoxBerry::System::PLUGINDATABASE $LoxBerry::System::PLUGINDATABASE- 2>&1");
@@ -911,6 +916,10 @@ sub install {
 			}
 		}
 	}
+
+	# From here on files are copied - a failing installation keeps its entry
+	# so it can be uninstalled
+	$remove_dbentry_on_fail = 0;
 
 	# Copy Config files
 	make_path("$lbhomedir/config/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
@@ -1667,11 +1676,20 @@ sub fail {
 
 	my $failmessage = shift;
 
-	if ( -e "/tmp/uploads/$tempfile" ) {
-		execute( command => "$sudobin -n -u loxberry rm -rf /tmp/uploads/$tempfile >> $logfile 2>&1" );
+	if ( $tempfile and -e "$lbsdatadir/tmp/uploads/$tempfile" ) {
+		execute( command => "$sudobin -n -u loxberry rm -rf $lbsdatadir/tmp/uploads/$tempfile >> $logfile 2>&1" );
 	}
 	if ( $R::tempfile ) {
-		execute( command => "$sudobin -n -u loxberry rm -vf /tmp/$tempfile.zip >> $logfile 2>&1" );
+		execute( command => "$sudobin -n -u loxberry rm -vf $lbsdatadir/tmp/uploads/$tempfile.zip >> $logfile 2>&1" );
+	}
+
+	# Remove the entry of a new installation that failed before its files were
+	# copied, and refresh the shadow database that pluginsupdate.pl reads (#1589)
+	if ( $remove_dbentry_on_fail and $plugin ) {
+		LOGINF "Removing plugin from plugin database";
+		$plugin->remove();
+		undef $plugin;
+		execute( command => "cp -v $LoxBerry::System::PLUGINDATABASE $LoxBerry::System::PLUGINDATABASE- >> $logfile 2>&1" );
 	}
 
 	# Status file
