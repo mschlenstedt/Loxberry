@@ -120,15 +120,18 @@ sub received
 	my ($topic, $message) = @_;
 
 	utf8::encode($topic);
-	# Net::MQTT::Simple delivers payload as raw bytes (no UTF-8 flag).
-	# decode() with FB_CROAK modifies its argument in-place (consumes bytes),
-	# leaving $message empty on success — so capture the return value instead.
-	if (!utf8::is_utf8($message)) {
-		my $decoded = eval { decode('UTF-8', $message, Encode::FB_CROAK) };
-		if ($@) {
-			$message = decode('latin1', $message);
-		} else {
-			$message = $decoded;
+	# LoxBerry::JSON writes UTF-8 bytes, so topic and payload must both be bytes.
+	# A decoded payload makes Perl write the whole file as Latin-1 or double
+	# encoded UTF-8, depending on the other payloads (#1576).
+	# Net::MQTT::Simple delivers the payload as raw bytes: keep valid UTF-8,
+	# convert anything else from Latin-1. decode() with FB_CROAK consumes its
+	# argument, so it gets a copy.
+	if (utf8::is_utf8($message)) {
+		utf8::encode($message);
+	} else {
+		my $copy = $message;
+		if (!eval { decode('UTF-8', $copy, Encode::FB_CROAK); 1 }) {
+			$message = encode('UTF-8', decode('latin1', $message));
 		}
 	}
 	LOGOK "MQTT received: $topic: $message";
