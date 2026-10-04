@@ -41,6 +41,17 @@ if ( -e "$pylib/install_pth.py" ) {
 LOGINF "Installing python3-paho-mqtt for the Python MQTT library...";
 apt_install("python3-paho-mqtt");
 
+# ---------------------------------------------------------------------------
+# 51-mqttfinder no longer starts a second MQTT Finder at boot (#1578, #1579):
+# cron.01min (mqttfinderwatchdog.pl) may already have started one before
+# loxberryinit.sh reaches the system daemons.
+# system/ is excluded from rsync (update-exclude.system), so the daemon script
+# must be copied explicitly.
+# ---------------------------------------------------------------------------
+LOGINF "Installing 51-mqttfinder daemon script...";
+copy_to_loxberry('/system/daemons/system/51-mqttfinder');
+execute( command => "chmod +x $lbhomedir/system/daemons/system/51-mqttfinder", log => $log );
+
 LOGOK "Update script $0 finished." if ( $errors == 0 );
 LOGERR "Update script $0 finished with errors." if ( $errors != 0 );
 
