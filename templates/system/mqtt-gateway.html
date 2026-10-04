@@ -1653,7 +1653,7 @@ $(function() {
         $("#topic_groups_container [data-indeterminate='true']").each(function() {
             this.indeterminate = true;
         });
-        // Status data and discovery load in parallel; the status answer usually
+        // Status data and discovery load in parallel; the status answer may
         // comes first and renders only the subscribed topics. The first render
         // (stored state, filter matches opened) must last until the discovered
         // topics are there, otherwise they are taken over as closed.
