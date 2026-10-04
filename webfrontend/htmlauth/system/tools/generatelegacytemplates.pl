@@ -109,6 +109,10 @@ foreach my $file (@files) {
 	print STDERR "generatelegacytemplates.pl: Language $file WILL BE RE-CREATED\n";	
 	print STDERR "max_tmpl_epoch: $max_tmpl_epoch   min_tmpllang_epoch: $min_tmpllang_epoch\n";
 	
+	# Read general.json now: its first read sets $LoxBerry::System::lang to the
+	# system language and would override the language pre-set below (#1580)
+	LoxBerry::System::read_generaljson();
+
 	# Pre-set the language in LoxBerry:System
 	$LoxBerry::System::lang = $langcode;
 	
