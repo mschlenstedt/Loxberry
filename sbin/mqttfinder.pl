@@ -4,6 +4,7 @@ use Time::HiRes;
 use LoxBerry::IO;
 use LoxBerry::Log;
 use LoxBerry::JSON;
+use JSON;
 use IO::Socket::UNIX;
 use warnings;
 use strict;
@@ -250,21 +251,24 @@ sub read_config
 
 sub save_data
 {
-		
-	# LOGINF "Relayed topics are saved on RAMDISK for UI";
-	unlink $datafile;
-	my $relayjsonobj = LoxBerry::JSON->new();
-	my $relayjson = $relayjsonobj->open(filename => $datafile, lockexclusive => 1);
-
-	
-	$relayjson->{incoming} = \%sendhash;
-
-	
-	my $saved = $relayjsonobj->write();
-	# if($saved) { LOGINF("Changes written to $datafile"); };
-	undef $relayjsonobj;
-
-	
+	# Relayed topics are saved on RAMDISK for the UI, the watchdog and plugins.
+	# Write a temporary file and rename it, so readers always find a complete
+	# file - deleting and recreating it every second left moments without it
+	# (#1593). Topics and payloads are UTF-8 bytes (see received()), so the JSON
+	# text is written as it is, like LoxBerry::JSON->write() did.
+	my $json = eval { JSON->new->pretty->canonical(1)->encode( { incoming => \%sendhash } ) };
+	if ( $@ or !defined $json ) {
+		LOGERR "Could not encode topic data: $@";
+		return;
+	}
+	my $tmpfile = "$datafile.tmp";
+	if ( open( my $fh, '>', $tmpfile ) ) {
+		print $fh $json;
+		close $fh;
+		rename( $tmpfile, $datafile ) or LOGERR "Could not rename $tmpfile to $datafile: $!";
+	} else {
+		LOGERR "Could not write $tmpfile: $!";
+	}
 }
 
 sub data_cleanup
