@@ -8,7 +8,6 @@
 	<div id="notificationItems">
 	<TMPL_IF NOTIFICATIONCOUNT>
 	<div style="display:none" id="notificationCount"><TMPL_VAR NOTIFICATIONCOUNT></div>
-
 	<TMPL_LOOP NAME="NOTIFICATIONS">
 	<div class="lb-notify-box <TMPL_IF ISINFO>lb-notify-info<TMPL_ELSE>lb-notify-error</TMPL_IF>"
 	     id="notifyrow<TMPL_VAR KEY>" data-notifykey="<TMPL_VAR KEY>">
@@ -20,7 +19,6 @@
 			<img src="/system/images/notification_error_small.svg" width="20" height="20">
 			</TMPL_IF>
 		</div>
-
 		<TMPL_IF SHOW_HEADER>
 		<div class="lb-notify-title"><TMPL_VAR TITLE></div>
 		</TMPL_IF>
@@ -28,7 +26,6 @@
 		<div class="lb-notify-message">
 			<b><TMPL_VAR DATESTR>:</b> <TMPL_VAR CONTENTHTML>
 		</div>
-
 		<div class="lb-notify-actions">
 			<TMPL_IF LOGFILEPATH>
 			<a class="lb-btn lb-btn-sm lb-btn-icon btnlogs"
@@ -45,7 +42,6 @@
 		</div>
 	</div>
 	</TMPL_LOOP>
-
 	<div style="display:flex;justify-content:flex-end;margin-top:4px;">
 		<a class="lb-btn lb-btn-sm lb-btn-icon" href="#" id="notifdeleteall"
 		   style="display:none;" role="button"><i class="pi pi-times"></i> <TMPL_VAR NOTIFY.DELETE_ALL_MESSAGES></a>
@@ -58,7 +54,6 @@
 	</TMPL_IF>
 
 </div>
-
 <style>
 #notificationItems {
 	width: 80%;
@@ -83,11 +78,24 @@
 	border-left: 4px solid #e53935;
 }
 .lb-notify-icon  { flex: 0 0 24px; }
-.lb-notify-title { flex: 0 0 auto; font-weight: bold; padding-right: 8px; white-space: nowrap; }
-.lb-notify-message { flex: 1 1 auto; }
+.lb-notify-title {
+	flex: 0 0 auto;
+	font-weight: bold;
+	padding-right: 8px;
+	white-space: nowrap;
+	/* ensure text is readable by dark background colours (glassmorphism and other Themes...) */
+	color: var(--lb-gray-900, #171717);
+	-webkit-text-fill-color: var(--lb-gray-900, #171717);
+	text-shadow: none;
+}
+.lb-notify-message {
+	flex: 1 1 auto;
+	color: var(--lb-gray-900, #171717);
+	-webkit-text-fill-color: var(--lb-gray-900, #171717);
+	text-shadow: none;
+}
 .lb-notify-actions { flex: 0 0 auto; display: flex; gap: 4px; }
 </style>
-
 <TMPL_IF NOTIFICATIONCOUNT>
 <script>
 var notificationCount;
@@ -101,7 +109,6 @@ $("#notifdeleteall").click(async function() {
 $(".notifdelete").click(function() {
 	deleteKey($(this).data('notifykey'));
 });
-
 function deleteKey(delid) {
 	$("#notifyrow"+delid).fadeOut(400, function(){ $(this).remove(); });
 	$.post('/admin/system/ajax/ajax-notification-handler.cgi',
@@ -114,7 +121,6 @@ function deleteKey(delid) {
 		if (typeof navbarglobal !== 'undefined') navbarglobal.$forceUpdate();
 	});
 }
-
 function updateNotificationCount(reduce) {
 	reduce = reduce || 0;
 	notificationCount = parseInt($("#notificationCount").text()) || 0;
@@ -132,5 +138,4 @@ function updateNotificationCount(reduce) {
 }
 </script>
 </TMPL_IF>
-
 <!-- ** END template/system/get_notification_html.html ************************************************************************************ -->
