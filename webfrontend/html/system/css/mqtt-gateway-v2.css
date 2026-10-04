@@ -860,7 +860,7 @@ body.theme-dark .mqttgw-topic-ms {
    the row instead of overflowing. */
 .mqttgw-traffic-row {
   display: grid;
-  grid-template-columns: 16px 1fr 1fr 80px 22px minmax(40px,auto) 76px 44px;
+  grid-template-columns: 16px minmax(0,1fr) minmax(0,1fr) 240px 22px minmax(40px,auto) 76px 44px;
   align-items: start;
   gap: 6px;
   padding: 5px 10px;
@@ -871,10 +871,10 @@ body.theme-dark .mqttgw-topic-ms {
 
 /* UDP row uses the same column layout (HTTP code never applied to UDP). */
 .mqttgw-traffic-row-udp {
-  grid-template-columns: 16px 1fr 1fr 80px 22px minmax(40px,auto) 76px 44px;
+  grid-template-columns: 16px minmax(0,1fr) minmax(0,1fr) 240px 22px minmax(40px,auto) 76px 44px;
 }
 
-.mqttgw-traffic-row:last-child {
+.mqttgw-tgroup > .mqttgw-traffic-row:last-of-type {
   border-bottom: none;
 }
 
@@ -999,6 +999,67 @@ body.theme-dark .mqttgw-topic-ms {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Full value detail: double-click a value to expand it below its row. */
+.mqttgw-traffic-value-has-full {
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+  user-select: none;
+}
+
+.mqttgw-traffic-value-open {
+  font-weight: 600;
+}
+
+.mqttgw-traffic-detail {
+  position: relative;
+  margin: 0 10px 8px 32px;
+  padding: 10px 34px 10px 12px;
+  border: 1px solid var(--lb-border-color, var(--lb-gray-200));
+  border-radius: var(--lb-radius);
+  background: var(--lb-card-bg, #fff);
+  color: var(--lb-gray-800);
+}
+
+.mqttgw-traffic-detail pre {
+  margin: 0;
+  max-width: 100%;
+  max-height: 320px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  font-family: var(--lb-font-mono);
+  font-size: 11px;
+  line-height: 1.45;
+  color: inherit;
+}
+
+.mqttgw-traffic-detail-close {
+  position: absolute;
+  top: 5px;
+  right: 7px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--lb-radius-sm, 4px);
+  background: transparent;
+  color: var(--lb-gray-600);
+  font: inherit;
+  font-size: 18px;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.mqttgw-traffic-detail-close:hover,
+.mqttgw-traffic-detail-close:focus-visible {
+  border-color: var(--lb-gray-300);
+  background: var(--lb-gray-100);
+  color: var(--lb-gray-900);
+  outline: none;
 }
 
 .mqttgw-traffic-ms-label {
