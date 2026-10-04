@@ -163,6 +163,7 @@ class LBSystem
 
 	public static function readlanguage($template = NULL, $genericlangfile = "language.ini", $syslang = FALSE)
 	{
+		$language = [];
 		if (!is_object($template) && is_string($template)) {
 			$genericlangfile = $template;
 			$template = NULL;
