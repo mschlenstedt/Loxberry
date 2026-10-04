@@ -1766,8 +1766,8 @@ sub setowner {
 		$chownoptions = "-v";
 	}
 
-	LOGINF $LL{'INF_FILE_OWNER'} . " $chownbin $chownoptions $owner.$group $target";
-	system("$chownbin $chownoptions $owner.$group $target 2>&1");
+	LOGINF $LL{'INF_FILE_OWNER'} . " $chownbin $chownoptions $owner:$group $target";
+	system("$chownbin $chownoptions $owner:$group $target 2>&1");
 	if ($? ne 0) {
 		$message = "$LL{'ERR_FILE_OWNER'}";
 		LOGERR $message;
