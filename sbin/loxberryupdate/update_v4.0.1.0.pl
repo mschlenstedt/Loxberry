@@ -52,6 +52,32 @@ LOGINF "Installing 51-mqttfinder daemon script...";
 copy_to_loxberry('/system/daemons/system/51-mqttfinder');
 execute( command => "chmod +x $lbhomedir/system/daemons/system/51-mqttfinder", log => $log );
 
+# ---------------------------------------------------------------------------
+# DietPi keeps the system time in sync now (#1581). sbin/settimeserver.sh hands
+# LoxBerry's time settings to DietPi and replaces sbin/setdatetime.pl.
+# system/ is excluded from rsync (update-exclude.system), so the sudoers
+# defaults (settimeserver.sh instead of ntpdate) are copied and the hourly cron
+# job of setdatetime.pl is removed here.
+# ---------------------------------------------------------------------------
+LOGINF "Installing updated sudoers defaults (settimeserver.sh entry)...";
+copy_to_loxberry("/system/sudoers/lbdefaults");
+
+if ( -e "$lbhomedir/system/cron/cron.hourly/01-setdatetime" ) {
+	LOGINF "Removing the hourly cron job of setdatetime.pl...";
+	unlink "$lbhomedir/system/cron/cron.hourly/01-setdatetime" or LOGWARN "Could not remove 01-setdatetime: $!";
+}
+
+# The NTP server set in LoxBerry never reached DietPi so far, although the
+# window showed it as active. Hand it over once. A failed sync is not an update
+# error - settimeserver.sh then keeps the server DietPi had.
+LOGINF "Handing the time server settings to DietPi...";
+my ($tsexitcode) = execute( command => "$lbhomedir/sbin/settimeserver.sh", log => $log, ignoreerrors => 1 );
+if ( $tsexitcode == 0 ) {
+	LOGOK "Time server settings handed to DietPi.";
+} else {
+	LOGWARN "Time server settings could not be applied (exit code $tsexitcode) - see $lbhomedir/log/system_tmpfs/settimeserver.log";
+}
+
 LOGOK "Update script $0 finished." if ( $errors == 0 );
 LOGERR "Update script $0 finished with errors." if ( $errors != 0 );
 

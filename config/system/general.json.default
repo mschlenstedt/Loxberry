@@ -64,7 +64,7 @@
    },
    "Timeserver" : {
       "Method" : "ntp",
-      "Ntpserver" : "0.europe.pool.ntp.org",
+      "Ntpserver" : "europe.pool.ntp.org",
       "Timemsno" : 1,
       "Timezone" : "Europe/Berlin"
    },
