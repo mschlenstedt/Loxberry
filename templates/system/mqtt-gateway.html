@@ -1110,6 +1110,7 @@ $(function() {
     var firstRender = true;
     var discoveredTopics = [];  // [{ topic, payload, group }]
     var filterActive = false;
+    var forceOpenOnFilter = false; // expand matches only when the filter itself changed
     var _ssKey = 'mqttgw_open';
     var _ss = null;
     try { _ss = JSON.parse(sessionStorage.getItem(_ssKey)); } catch(e) {}
@@ -1570,7 +1571,7 @@ $(function() {
             var allChecked    = childSubCount === childTopics.length && childSubCount > 0;
             var someChecked   = !allChecked && childSubCount > 0;
             var safePrefix    = escHtml(childPrefix);
-            var subIsOpen = filterActive ? true
+            var subIsOpen = forceOpenOnFilter ? true
                 : (hasStoredState || !firstRender) ? !!openDetails['sub:' + childPrefix]
                 : (childSubCount > 0);
             html += '<details class="mqttgw-subgroup" data-key="sub:' + safePrefix + '"' + (subIsOpen ? ' open' : '') + '>';
@@ -1590,10 +1591,12 @@ $(function() {
 
     // ── renderTopics ──────────────────────────────────────────────────────
 
-    function renderTopics() {
+    function renderTopics(filterChanged) {
         var groups       = {};
         var subscribedOnly = $("#filter_subscribed_only").prop("checked");
         filterActive = !!$("#topic_filter").val().trim();
+        // Periodic refreshes (discovery, status) must keep the user's open/closed state.
+        forceOpenOnFilter = filterActive && (!!filterChanged || firstRender);
         var visible      = getVisibleTopics();
         var totalCount   = 0, subCount = 0;
 
@@ -1625,7 +1628,7 @@ $(function() {
             var someChecked = !allChecked && g.subCount > 0;
             var safeGName = escHtml(gName);
             var detailKey = 'grp:' + safeGName;
-            var isOpen = filterActive ? true
+            var isOpen = forceOpenOnFilter ? true
                 : (hasStoredState || !firstRender) ? !!openDetails[detailKey]
                 : (g.subCount > 0);
             html += '<details class="lb-collapsible mqttgw-group" data-key="' + detailKey + '"' + (isOpen ? ' open' : '') + '>';
@@ -1783,9 +1786,9 @@ $(function() {
         } catch(e) {}
     }
 
-    $("#topic_filter").on("input", function() { saveFilterState(); renderTopics(); });
-    $("#filter_subscribed_only").on("change", function() { saveFilterState(); renderTopics(); });
-    $("#filter_exact_match").on("change", function() { saveFilterState(); renderTopics(); });
+    $("#topic_filter").on("input", function() { saveFilterState(); renderTopics(true); });
+    $("#filter_subscribed_only").on("change", function() { saveFilterState(); renderTopics(true); });
+    $("#filter_exact_match").on("change", function() { saveFilterState(); renderTopics(true); });
     $("#filter_errors_only").on("change", function() {
         saveFilterState();
         if ($(this).prop("checked") && Object.keys(statusData).length === 0) {
