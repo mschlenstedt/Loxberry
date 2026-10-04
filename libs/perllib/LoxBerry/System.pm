@@ -460,6 +460,8 @@ sub get_plugins
 		$plugin{PLUGINDB_MD5_CHECKSUM} = $plugindata->{md5};
 		$plugin{PLUGINDB_AUTHOR_NAME} = $plugindata->{author_name};
 		$plugin{PLUGINDB_AUTHOR_EMAIL} = $plugindata->{author_email};
+		$plugin{PLUGINDB_MAINTAINER_NAME} = $plugindata->{maintainer_name} // "";
+		$plugin{PLUGINDB_MAINTAINER_EMAIL} = $plugindata->{maintainer_email} // "";
 		$plugin{PLUGINDB_PLUGIN_WEBSITE} = $plugindata->{plugin_website} // "";
 		$plugin{PLUGINDB_VERSION} = $plugindata->{version};
 		$plugin{PLUGINDB_NAME} = $plugindata->{name};

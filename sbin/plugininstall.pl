@@ -64,6 +64,8 @@ my $pid;
 my $pauthorname;
 my $pauthoremail;
 my $pauthorwebsite;
+my $pmaintainername;
+my $pmaintaineremail;
 my $pversion;
 my $pname = "unknown"; # set dummy at this point
 my $ptitle = "Unknown Plugin"; # set dummy at this point;
@@ -459,6 +461,10 @@ sub install {
 	$pauthorname		= $pcfg->param("AUTHOR.NAME");
 	$pauthoremail		= $pcfg->param("AUTHOR.EMAIL");
 	$pauthorwebsite		= $pcfg->param("PLUGIN.WEBSITE") // "";
+	# Optional: who maintains a plugin taken over from its author. AUTHOR stays
+	# untouched, because it is part of the plugin id (#1586)
+	$pmaintainername	= $pcfg->param("MAINTAINER.NAME") // "";
+	$pmaintaineremail	= $pcfg->param("MAINTAINER.EMAIL") // "";
 	$pversion		= $pcfg->param("PLUGIN.VERSION");
 	$pname			= $pcfg->param("PLUGIN.NAME");
 	$ptitle			= $pcfg->param("PLUGIN.TITLE");
@@ -521,6 +527,8 @@ sub install {
 
 	LOGINF "Author:         $pauthorname";
 	LOGINF "Email:          $pauthoremail";
+	LOGINF "Maintainer:     $pmaintainername" if $pmaintainername;
+	LOGINF "Maint. Email:   $pmaintaineremail" if $pmaintaineremail;
 	LOGINF "Website:        " . ($pauthorwebsite ? $pauthorwebsite : "(not set)");
 	LOGINF "Version:        $pversion";
 	LOGINF "Name:           $pname";
@@ -685,6 +693,8 @@ sub install {
         author_name => _ensure_utf8($pauthorname),
         author_email => _ensure_utf8($pauthoremail),
         plugin_website => _ensure_utf8($pauthorwebsite),
+        maintainer_name => _ensure_utf8($pmaintainername),
+        maintainer_email => _ensure_utf8($pmaintaineremail),
         name => $pname,
         folder => $pfolder,
         version => $pversion,
@@ -815,7 +825,7 @@ sub install {
 	}
 
 	if ($chkhcpath) {
-		$message = $SL{'PLUGININSTALL.WARN_HARDCODEDPATHS'} . $pauthoremail;
+		$message = $SL{'PLUGININSTALL.WARN_HARDCODEDPATHS'} . ($pmaintaineremail || $pauthoremail);
 		LOGWARN $message;
 		LOGWARN $chkhcpath;
 		push(@warnings,"HARDCODED PATH'S: $message: $chkhcpath");
@@ -1048,7 +1058,7 @@ sub install {
 	make_path("$lbhomedir/log/plugins/$pfolder" , {chmod => 0755, owner=>'loxberry', group=>'loxberry'});
 	if (!&is_folder_empty("$tempfolder/log")) {
 		LOGINF "$LL{'INF_LOGFILES'}";
-		$message = "*** DEPRECIATED *** With plugin interface 2.0 (and above), the plugin must not ship with a log folder. Please inform the PLUGIN Author at $pauthoremail";
+		$message = "*** DEPRECIATED *** With plugin interface 2.0 (and above), the plugin must not ship with a log folder. Please inform the PLUGIN Author at " . ($pmaintaineremail || $pauthoremail);
 		LOGWARN $message;
 		push(@warnings,"LOG files: $message");
 		($exitcode) = execute( {

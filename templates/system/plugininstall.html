@@ -159,7 +159,10 @@
 				<a class="pcard-ico" href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false" id="pluginicon<TMPL_VAR PLUGINDB_MD5_CHECKSUM>"></a>
 				<div class="pcard-meta">
 					<a class="pcard-name" href="/admin/plugins/<TMPL_VAR PLUGINDB_FOLDER>/" data-ajax="false"><TMPL_VAR PLUGINDB_TITLE></a>
-					<div class="pcard-author">by <TMPL_VAR PLUGINDB_AUTHOR_NAME></div>
+					<div class="pcard-author"><TMPL_VAR PLUGININSTALL.UI_LABEL_BY> <TMPL_VAR PLUGINDB_AUTHOR_NAME></div>
+					<TMPL_IF PLUGINDB_MAINTAINER_NAME>
+					<div class="pcard-author"><TMPL_VAR PLUGININSTALL.UI_LABEL_MAINTAINED_BY> <TMPL_VAR PLUGINDB_MAINTAINER_NAME></div>
+					</TMPL_IF>
 				</div>
 			</div>
 
