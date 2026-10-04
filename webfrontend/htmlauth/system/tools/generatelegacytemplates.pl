@@ -44,6 +44,12 @@ if (-e $reboot_required_file) {
 	rename "$reboot_required_file", "$reboot_required_file.backup";
 }
 
+# Read general.json once before the loop. Its first read (e.g. via
+# lbfriendlyname() in lbheader) sets $LoxBerry::System::lang to the system
+# language and would overwrite the language preset of the first language
+# processed below (cs got the strings of the system language).
+LoxBerry::System::read_generaljson();
+
 # Catch all language files to detect available languages
 my @files = <$lbstemplatedir/lang/language_??.ini>;
 foreach my $file (@files) {

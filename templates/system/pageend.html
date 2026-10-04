@@ -41,6 +41,12 @@ $(window).on('load resize', lb_updateTabbarHeight);
 
 $( document ).ready(function() {
 	lb_updateTabbarHeight();
+	// Update-Kapsel: Klick/Tippen klappt den vollen Text auf und wieder zu
+	var lbsbShort = "<TMPL_VAR UPDATES.LBU_UPDATE_RUNNING_SHORT>";
+	$("#footerLBStatusbar").off("click.lbsb").on("click.lbsb", function() {
+		var $lbsb = $(this).toggleClass("lb-statusbar-open");
+		$lbsb.find(".lb-statusbar-text").text($lbsb.hasClass("lb-statusbar-open") ? $lbsb.data("full") : lbsbShort);
+	});
 	const mainiconsRefreshSec = 13;
 	mainicons_get();
 	var refresh_main_icons_interval_timer = setInterval(mainicons_get, mainiconsRefreshSec*1000);
@@ -84,10 +90,12 @@ $( document ).ready(function() {
 			}
 		}
 		if( data.update_running == 1) {
-			// Dezente Kapsel statt Vollbreiten-Leiste; voller Text inkl. Prozess als Tooltip
+			// Dezente Kapsel statt Vollbreiten-Leiste; voller Text inkl. Prozess als Tooltip,
+			// per Klick/Tippen aufklappbar (Touch-Geraete zeigen keinen Tooltip)
 			var lbuFull = "<TMPL_VAR UPDATES.LBU_UPDATE_WARNING_FOOTER> ("+data.which.toString()+")";
-			$("#footerLBStatusbar").attr("title", lbuFull).fadeIn();
-			$("#footerLBStatusbar .lb-statusbar-text").text("<TMPL_VAR UPDATES.LBU_UPDATE_RUNNING_SHORT>");
+			var $lbsb = $("#footerLBStatusbar");
+			$lbsb.attr("title", lbuFull).data("full", lbuFull).fadeIn();
+			$lbsb.find(".lb-statusbar-text").text($lbsb.hasClass("lb-statusbar-open") ? lbuFull : lbsbShort);
 			$("#btnpower").addClass("lb-update-running").attr("title", lbuFull);
 		} else {
 			$("#footerLBStatusbar").fadeOut();
