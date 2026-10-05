@@ -139,18 +139,7 @@ sub restart_gateway
 		stop_v2_gateway();
 		`pkill mqttgateway.pl`;	# kill V1 in case it's still running from before a V1→V2 migration
 		my $venv_dir = "$lbhomedir/system/python_venv/mqttgateway";
-		unless ( -f "$venv_dir/bin/python3" ) {
-			LOGINF "Creating Python venv for MQTT Gateway V2...";
-			`rm -rf $venv_dir`;
-			`python3 -m venv $venv_dir`;
-			my $req = "$lbhomedir/system/python_venv/requirements_mqttgateway.txt";
-			if ( -f $req ) {
-				`$venv_dir/bin/pip install -q -r $req`;
-			} else {
-				`$venv_dir/bin/pip install -q aiomqtt aiohttp`;
-			}
-			`chown -R loxberry:loxberry $venv_dir`;
-		}
+		return unless ensure_gateway_venv($venv_dir);
 		my $gwlog = LoxBerry::Log->new(
 			package  => 'mqtt',
 			name     => 'mqtt-gateway',
@@ -522,6 +511,79 @@ sub mosquitto_readconfig
 	}
 }
 
+
+##################################################################
+# ensure_gateway_venv
+# Makes sure the Python venv of MQTT Gateway V2 can import its packages,
+# (re)building it if not. Returns 1 if the gateway can start, 0 if not.
+#
+# Checking for bin/python3 alone is not enough - two ways leave a venv that
+# has python3 but cannot import aiomqtt, and the gateway then dies at its
+# first import, before it can log anything:
+#   - pip failed when the venv was created (no internet, DNS not up yet
+#     during boot, PyPI unreachable, disk full)
+#   - the system python changed its minor version (distro upgrade, e.g.
+#     3.11 -> 3.13): bin/python3 links to /usr/bin/python3, but the packages
+#     stay in lib/python3.11/site-packages, which the new python ignores
+# If pip fails now, the gateway is not started; the next start (watchdog,
+# WebUI, reboot) tries again.
+##################################################################
+sub ensure_gateway_venv
+{
+	my ($venv_dir) = @_;
+	LOGDEB "ensure_gateway_venv";
+
+	if ( gateway_venv_ok($venv_dir) ) {
+		LoxBerry::Log::delete_notifications("mqtt", "gateway_venv");
+		return 1;
+	}
+
+	if ( -e "$venv_dir/bin/python3" ) {
+		LOGWARN "Python venv for MQTT Gateway V2 cannot import aiomqtt/aiohttp - rebuilding it...";
+	} else {
+		LOGINF "Creating Python venv for MQTT Gateway V2...";
+	}
+	`rm -rf $venv_dir`;
+	my $output = `python3 -m venv $venv_dir 2>&1`;
+	if ( $? != 0 ) {
+		LOGERR "Creating the Python venv failed (exit code " . ($? >> 8) . "): $output";
+	} else {
+		my $req = "$lbhomedir/system/python_venv/requirements_mqttgateway.txt";
+		my $pkgs = -f $req ? "-r $req" : "aiomqtt aiohttp";
+		$output = `$venv_dir/bin/pip install -q $pkgs 2>&1`;
+		if ( $? != 0 ) {
+			LOGERR "Installing the Python packages for MQTT Gateway V2 failed (exit code " . ($? >> 8) . "): $output";
+		}
+	}
+	`chown -R loxberry:loxberry $venv_dir`;
+
+	if ( gateway_venv_ok($venv_dir) ) {
+		LOGOK "Python venv for MQTT Gateway V2 is ready.";
+		LoxBerry::Log::delete_notifications("mqtt", "gateway_venv");
+		return 1;
+	}
+
+	LOGERR "Python venv for MQTT Gateway V2 is not usable - MQTT Gateway will not start.";
+	LoxBerry::Log::notify_ext({
+		PACKAGE  => "mqtt",
+		NAME     => "gateway_venv",
+		SEVERITY => 3,
+		MESSAGE  => "MQTT Gateway V2 cannot start: its Python packages (aiomqtt, aiohttp) could not be installed. Please check the internet connection and the log of mqtt-handler.",
+	});
+	return 0;
+}
+
+# True if the venv's python can import the gateway's packages. -B: this runs
+# as root and must not leave root-owned __pycache__ files in the venv.
+sub gateway_venv_ok
+{
+	my ($venv_dir) = @_;
+	return 0 unless -x "$venv_dir/bin/python3";
+	my $output = `$venv_dir/bin/python3 -B -c 'import aiomqtt, aiohttp' 2>&1`;
+	return 1 if $? == 0;
+	LOGDEB "venv import check failed: $output";
+	return 0;
+}
 
 ##################################################################
 # stop_v2_gateway
