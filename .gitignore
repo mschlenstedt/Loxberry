@@ -52,3 +52,5 @@ desktop.ini
 *.bak
 *.orig
 *.rej
+*.ps1
+*.zip
