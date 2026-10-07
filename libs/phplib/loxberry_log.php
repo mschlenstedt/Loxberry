@@ -899,6 +899,7 @@ class LBLog
 	// KEY, LOGSTART/END/LASTMODIFIED as ISO and human-readable strings) plus
 	// all stored attributes (e.g. LOGSTARTMESSAGE, STATUS).
 	// With $nofilter = true, sessions whose logfile no longer exists are kept.
+	// Sorted by package/name, then modification time, start time and key descending.
 	public static function get_logs ($package = NULL, $name = NULL, $nofilter = false)
 	{
 		$dbfile = LBHOMEDIR . "/log/system_tmpfs/logs_sqlite.dat";
@@ -921,7 +922,7 @@ class LBLog
 		} elseif ($package) {
 			$qu .= "WHERE PACKAGE = :package ";
 		}
-		$qu .= "ORDER BY PACKAGE, NAME, LASTMODIFIED DESC ";
+		$qu .= "ORDER BY PACKAGE, NAME, LASTMODIFIED DESC, LOGSTART DESC, LOGKEY DESC ";
 
 		$sth = $dbh->prepare($qu);
 		if ($package) { $sth->bindValue(':package', $package, SQLITE3_TEXT); }
