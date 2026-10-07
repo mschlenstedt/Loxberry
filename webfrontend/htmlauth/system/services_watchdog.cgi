@@ -100,6 +100,10 @@ $maintemplate->param('JSONCONFIG', $cfgfilecontent);
 # Save config
 if ($R::saveformdata) {
 
+	my $logging = $R::Watchdog_Logging ? "1" : "0";
+	system("sudo", "$lbssbindir/serviceshelper", "watchdog_logging", $logging) == 0
+		or die "Could not configure Watchdog logging";
+
 	system ("sudo systemctl stop watchdog.service > /dev/null 2>&1");
 
 	if ($R::Watchdog_Enable) {
