@@ -16,6 +16,46 @@ APACHE=$(pgrep apache2)
 LIGHTY=$(pgrep lighttpd)
 
 case $1 in
+	watchdog_logging)
+		python3 - "$2" <<'PYTHON'
+import re
+import shlex
+import sys
+
+if len(sys.argv) != 2 or sys.argv[1] not in ("0", "1"):
+    sys.exit("watchdog_logging requires 0 or 1")
+
+with open("/etc/default/watchdog", "r+") as config:
+    content = config.read()
+    pattern = re.compile(r"^[ \t]*watchdog_options[ \t]*=([^\n]*)$", re.MULTILINE)
+    matches = list(pattern.finditer(content))
+    if len(matches) > 1:
+        sys.exit("Multiple watchdog_options assignments in /etc/default/watchdog")
+    options = []
+    if matches:
+        values = shlex.split(matches[0].group(1), comments=True)
+        if len(values) > 1:
+            sys.exit("Invalid watchdog_options assignment in /etc/default/watchdog")
+        options = shlex.split(values[0]) if values else []
+    options = [option for option in options
+               if option != "--verbose" and not re.fullmatch(r"-v+", option)]
+    if sys.argv[1] == "1":
+        options.append("-v")
+    value = " ".join(shlex.quote(option) for option in options)
+    value = re.sub(r'([\\\"$`])', r'\\\1', value)
+    assignment = 'watchdog_options="' + value + '"'
+    if matches:
+        match = matches[0]
+        updated = content[:match.start()] + assignment + content[match.end():]
+    else:
+        updated = content.rstrip("\n") + "\n" + assignment + "\n"
+    if updated != content:
+        config.seek(0)
+        config.write(updated)
+        config.truncate()
+PYTHON
+		exit $?
+		;;
 	ssdpd)
 		systemctl $2 ssdpd
 		;;
@@ -137,4 +177,3 @@ EOF
 		systemctl reload apache2
 		;;
 esac
-
