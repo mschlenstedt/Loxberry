@@ -180,7 +180,7 @@
 	function addRow(name, id) {
 		var $row = $('<div class="tg-rcpt tg-rcpt-row"></div>');
 		$('<input type="text" class="lb-input tg-rcpt-name">').attr({ 'aria-label': T.colName, placeholder: T.namePh }).val(name || '').appendTo($row);
-		$('<input type="text" class="lb-input tg-rcpt-id">').attr({ 'aria-label': T.colChatid, placeholder: T.chatidPh, inputmode: 'numeric' }).val(id || '').appendTo($row);
+		$('<input type="text" class="lb-input tg-rcpt-id">').attr({ 'aria-label': T.colChatid, placeholder: T.chatidPh }).val(id || '').appendTo($row);
 		$('<button type="button" class="lb-btn lb-btn-sm lb-btn-icon tg-rcpt-del"><i class="pi pi-trash"></i></button>')
 			.attr({ 'aria-label': T.remove, title: T.remove }).appendTo($row);
 		$('#tg_rcpt_list').append($row);
