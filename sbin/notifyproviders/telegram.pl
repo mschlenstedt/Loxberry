@@ -19,10 +19,10 @@ use strict;
 use warnings;
 use utf8;
 use LoxBerry::System;
-use LoxBerry::JSON;
 use LoxBerry::Log;
 use JSON ();
 use Encode ();
+use Fcntl ();
 use LWP::UserAgent;
 
 my $TG_MAXLEN = 4096;
@@ -37,23 +37,30 @@ sub main
 		return 1;
 	}
 
-	my $cfgfile = $ENV{LBTELEGRAM_CONFIG} || "$LoxBerry::System::lbsconfigdir/telegram.json";
-	my $cfg = {};
-	if (-r $cfgfile) {
-		my $cfgobj = LoxBerry::JSON->new();
-		$cfg = $cfgobj->open(filename => $cfgfile, readonly => 1) || {};
-	}
-	my $token = defined $ENV{LBTELEGRAM_TOKEN} && $ENV{LBTELEGRAM_TOKEN} ne '' ? $ENV{LBTELEGRAM_TOKEN} : ($cfg->{BOT_TOKEN} // '');
-
-	my %SL = LoxBerry::System::readlanguage(undef, undef, 1);
-	my $hostname = LoxBerry::System::lbhostname();
-	my $friendlyname = LoxBerry::System::lbfriendlyname();
-	$friendlyname = $hostname if (!defined $friendlyname or $friendlyname eq '');
-	my %host = (
-		friendlyname => $friendlyname,
-		hostname     => $hostname,
-		port         => LoxBerry::System::lbwebserverport(),
+	# Everything from here on works with characters; readlanguage and general.json deliver bytes
+	my ($SL, $host) = tg_prepare(
+		{ LoxBerry::System::readlanguage(undef, undef, 1) },
+		{
+			friendlyname => LoxBerry::System::lbfriendlyname(),
+			hostname     => LoxBerry::System::lbhostname(),
+			port         => LoxBerry::System::lbwebserverport(),
+		},
 	);
+	my %SL = %$SL;
+	my %host = %$host;
+
+	my $cfgfile = $ENV{LBTELEGRAM_CONFIG} || "$LoxBerry::System::lbsconfigdir/telegram.json";
+	my $cfg = tg_read_config($cfgfile);
+	my $envtoken = defined $ENV{LBTELEGRAM_TOKEN} && $ENV{LBTELEGRAM_TOKEN} ne '' ? $ENV{LBTELEGRAM_TOKEN} : undef;
+	if (!$cfg) {
+		# Damaged config: only the bot check with a token from the settings page can still work
+		if (!($envtoken and ($arg eq '--getme' or $arg eq '--getupdates'))) {
+			tg_out({ ok => 0, results => [], error => $SL{'TELEGRAM.ERR_CONFIG_BROKEN'} // 'telegram.json cannot be read' });
+			return 1;
+		}
+		$cfg = {};
+	}
+	my $token = defined $envtoken ? $envtoken : ($cfg->{BOT_TOKEN} // '');
 
 	if ($arg eq '--getme') {
 		return tg_mode_getme($token);
@@ -188,24 +195,43 @@ sub tg_report_errors
 {
 	my ($failed, $SL) = @_;
 
-	if (@$failed) {
-		my @cnt = LoxBerry::Log::get_notification_count("telegram", "telegramerror");
-		my $sum = $cnt[2] // 0;
-		if ($sum == 0) {
-			my $err = $failed->[0]->{error} // '';
-			LoxBerry::Log::notify_ext({
-				PACKAGE  => 'telegram',
-				NAME     => 'telegramerror',
-				MESSAGE  => ($SL->{'TELEGRAM.NOTIFY_SEND_ERROR'} // '') . " $err",
-				SEVERITY => 3,
-				_ISSYSTEM => 1,
-				CHANNELS => 'mail',
-			});
-		}
+	# Several providers may run at the same time (burst of notifications). Counting and
+	# creating the error notification is serialized by an exclusive lock on this script
+	# itself (opened read-only, no extra lock file), so only one error notification
+	# and one mail are created.
+	my $lockfh;
+	if (open($lockfh, '<', __FILE__)) {
+		flock($lockfh, Fcntl::LOCK_EX());
 	}
 	else {
-		LoxBerry::Log::delete_notifications("telegram", "telegramerror");
+		undef $lockfh;
 	}
+
+	eval {
+		if (@$failed) {
+			my @cnt = LoxBerry::Log::get_notification_count("telegram", "telegramerror");
+			my $sum = $cnt[2] // 0;
+			if ($sum == 0) {
+				my $err = $failed->[0]->{error} // '';
+				# notify_ext stores bytes, like all other callers (readlanguage strings)
+				my $msg = Encode::encode('UTF-8', ($SL->{'TELEGRAM.NOTIFY_SEND_ERROR'} // '') . " $err");
+				LoxBerry::Log::notify_ext({
+					PACKAGE  => 'telegram',
+					NAME     => 'telegramerror',
+					MESSAGE  => $msg,
+					SEVERITY => 3,
+					_ISSYSTEM => 1,
+					CHANNELS => 'mail',
+				});
+			}
+		}
+		else {
+			LoxBerry::Log::delete_notifications("telegram", "telegramerror");
+		}
+		1;
+	};
+
+	close($lockfh) if ($lockfh);
 }
 
 ########################################################
@@ -351,14 +377,46 @@ sub tg_api
 	return (0, tg_mask($err, $token));
 }
 
+# Byte string (UTF-8) -> characters. Strings that already are characters stay untouched;
+# invalid UTF-8 falls back to Latin-1 (e.g. a downgraded string from the caller).
+sub tg_chars
+{
+	my ($s) = @_;
+	return $s if (!defined $s or ref($s) or utf8::is_utf8($s));
+	my $copy = $s;
+	my $chars = eval { Encode::decode('UTF-8', $copy, Encode::FB_CROAK() | Encode::LEAVE_SRC()) };
+	return defined $chars ? $chars : Encode::decode('ISO-8859-1', $s);
+}
+
+# tg_prepare(\%SL_bytes, \%host_bytes) -> (\%SL, \%host) as characters
+sub tg_prepare
+{
+	my ($slraw, $hostraw) = @_;
+	my %SL = map { $_ => tg_chars($slraw->{$_}) } keys %{ $slraw || {} };
+	my %host = map { $_ => tg_chars($hostraw->{$_}) } keys %{ $hostraw || {} };
+	$host{friendlyname} = $host{hostname} if (!defined $host{friendlyname} or $host{friendlyname} eq '');
+	return (\%SL, \%host);
+}
+
+# Reads telegram.json (UTF-8 bytes) as characters.
+# Missing or empty file = {} (Telegram off), damaged file = undef. Never creates the file.
+sub tg_read_config
+{
+	my ($file) = @_;
+	return {} if (!-e $file);
+	open(my $fh, '<', $file) or return undef;
+	my $raw = do { local $/; <$fh> };
+	close($fh);
+	return {} if (!defined $raw or $raw =~ /^\s*$/);
+	my $cfg = eval { JSON->new->utf8->decode($raw) };
+	return ref($cfg) eq 'HASH' ? $cfg : undef;
+}
+
 # Argument is UTF-8; fall back to Latin-1 if the caller handed over a downgraded string
 sub tg_decode_arg
 {
 	my ($arg) = @_;
-	my $copy = $arg;
-	my $chars = eval { Encode::decode('UTF-8', $copy, Encode::FB_CROAK() | Encode::LEAVE_SRC()) };
-	$chars = Encode::decode('ISO-8859-1', $arg) if (!defined $chars);
-	return eval { JSON->new->decode($chars) };
+	return eval { JSON->new->decode(tg_chars($arg)) };
 }
 
 sub tg_out
