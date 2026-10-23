@@ -3,7 +3,7 @@
 # Kein Netzwerk, keine Schreibzugriffe auf telegram.json.
 #
 # Aufruf:
-#   TG_CGI=/pfad/zu/telegram.cgi perl -I<dir> testnotify_telegram_cgi.pl
+#   TG_CGI=/pfad/zu/telegram.cgi [TG_PROVIDER=/pfad/zu/telegram.pl] perl -I<dir> testnotify_telegram_cgi.pl
 use utf8;
 use strict;
 use warnings;
@@ -138,5 +138,68 @@ is_deeply(decode_json($out), { ok => 1, username => 'bot' }, 'provider: JSON dur
 unlike($out, qr/geheim|\Q$tok\E/, 'provider: kein STDERR/Token');
 open($fh, '>', $fake) or die; print $fh "#!/bin/sh\necho kaputt\n"; close $fh;
 is(decode_json(tgcgi_provider('--getme', undef))->{ok}, 0, 'provider: Nicht-JSON -> ok=0');
+
+# Provider-Ausgabe mit Umlaut (UTF-8 wie tg_out) geht genau einmal kodiert an den Browser
+my $empf = Encode::encode_utf8('Empf' . chr(228) . 'nger 1');
+open($fh, '>:raw', $fake) or die;
+print $fh "#!/bin/sh\necho '{\"ok\":1,\"results\":[{\"CHAT_ID\":\"1\",\"NAME\":\"$empf\",\"ok\":1}]}'\n";
+close $fh;
+$out = tgcgi_provider('--test', undef);
+my $cnt = () = $out =~ /\Q$empf\E/g;
+is($cnt, 1, 'provider: Umlaut genau einmal UTF-8-kodiert');
+unlike($out, qr/\xC3\x83/, 'provider: kein Doppel-Encoding');
+is(decode_json($out)->{results}[0]{NAME}, 'Empf' . chr(228) . 'nger 1', 'provider: Browser dekodiert Empfaenger korrekt');
+
+sub quiet(&)
+{
+	my ($code) = @_;
+	local *STDERR;
+	open(STDERR, '>', File::Spec->devnull());
+	return $code->();
+}
+sub write_raw { my ($f, $c) = @_; open(my $h, '>:raw', $f) or die "$f: $!"; print $h $c; close $h; }
+
+# getcfg legt weder telegram.json noch .default an
+$main::TG_CFGFILE = "$dir/fehlt.json";
+$main::TG_DEFAULT = "$dir/fehlt.json.default";
+%main::response = ();
+tgcgi_action('getcfg', {});
+is($main::response{error}, 0, 'getcfg ohne Dateien ok');
+is($main::response{NOTIFICATION}{TELEGRAM_SYSTEM_ERRORS}, 'true', 'getcfg ohne Dateien: eingebaute Defaults');
+ok(!-e $main::TG_CFGFILE, 'getcfg legt keine telegram.json an');
+ok(!-e $main::TG_DEFAULT, 'getcfg legt keine .default an');
+
+# Kaputte Vorlage -> eingebaute Defaults
+write_raw("$dir/kaputt.default", '{kaputt');
+$main::TG_DEFAULT = "$dir/kaputt.default";
+%main::response = ();
+my $lived = eval { quiet { tgcgi_action('getcfg', {}) }; 1 };
+ok($lived, 'kaputte .default: kein die') or diag($@);
+is($main::response{error}, 0, 'kaputte .default: eingebaute Defaults');
+
+# Kaputte telegram.json -> sauberes Fehler-JSON, Datei bleibt unveraendert
+write_raw("$dir/kaputt.json", '{kaputt');
+$main::TG_CFGFILE = "$dir/kaputt.json";
+for my $act ('getcfg', 'savecfg') {
+	%main::response = ();
+	$lived = eval { quiet { tgcgi_action($act, { %same }) }; 1 };
+	ok($lived, "kaputte telegram.json ($act): kein die") or diag($@);
+	is($main::response{error}, 1, "kaputte telegram.json ($act): error=1");
+	like($main::response{message} // '', qr/telegram\.json/, "kaputte telegram.json ($act): Meldung");
+	ok(!exists $main::response{BOT_TOKEN}, "kaputte telegram.json ($act): kein Token");
+}
+is(do { local (@ARGV, $/) = ("$dir/kaputt.json"); <> }, '{kaputt', 'kaputte telegram.json bleibt unveraendert');
+
+# Ende-zu-Ende mit echtem Provider (TG_PROVIDER): kaputte Konfig -> Fehler-JSON statt die
+SKIP: {
+	skip 'TG_PROVIDER nicht gesetzt', 2 if !$ENV{TG_PROVIDER};
+	$main::TG_PROVIDER = $ENV{TG_PROVIDER};
+	# Dieselben Bibliotheken wie dieser Test (z. B. -I Testordner mit neuer Log.pm)
+	my @libs = map { File::Spec->rel2abs($_) } grep { !ref($_) && -d "$_/LoxBerry" } @INC;
+	local $ENV{PERL5LIB} = join(':', grep { defined && length } (@libs, $ENV{PERL5LIB}));
+	my $r = decode_json(tgcgi_provider('--test', undef));
+	is($r->{ok}, 0, 'echter Provider, kaputte Konfig: ok=0');
+	ok($r->{error} && $r->{error} ne ($main::SL{'TELEGRAM.ERR_PROVIDER'} // 'Provider error'), 'echter Provider: eigene Fehlermeldung (kein Absturz)') or diag(encode_json($r));
+}
 
 done_testing();

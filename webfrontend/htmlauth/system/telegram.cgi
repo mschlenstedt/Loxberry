@@ -27,6 +27,8 @@ our $TG_PROVIDER = "$lbssbindir/notifyproviders/telegram.pl";
 our $cgi;
 our %response;
 our %SL;
+# Seitentitel, liest LoxBerry::Web::head() aus $main::template_title
+our $template_title;
 
 my @NOTIFY_KEYS = qw(TELEGRAM_SYSTEM_ERRORS TELEGRAM_SYSTEM_INFOS TELEGRAM_PLUGIN_ERRORS TELEGRAM_PLUGIN_INFOS);
 
@@ -64,7 +66,9 @@ sub tgcgi_action
 	my ($action, $in) = @_;
 
 	if ($action eq 'getcfg') {
-		my $pub = tgcgi_public(tgcgi_load());
+		my $cfg = tgcgi_load();
+		return tgcgi_config_broken() if !$cfg;
+		my $pub = tgcgi_public($cfg);
 		%response = ( %$pub, error => 0 );
 		return;
 	}
@@ -87,11 +91,22 @@ sub tgcgi_action
 # Konfiguration lesen / schreiben
 ##########################################################################
 
+# Rueckgabe: Konfig-Hash, oder undef wenn telegram.json beschaedigt ist.
+# Legt keine Datei an (LoxBerry::JSON->open wuerde fehlende Dateien auch mit readonly anlegen).
 sub tgcgi_load
 {
-	my $file = -e $TG_CFGFILE ? $TG_CFGFILE : $TG_DEFAULT;
-	my $obj = LoxBerry::JSON->new();
-	my $cfg = $obj->open(filename => $file, readonly => 1) || {};
+	my $cfg = {};
+	my $file = -e $TG_CFGFILE ? $TG_CFGFILE : (-e $TG_DEFAULT ? $TG_DEFAULT : undef);
+	if (defined $file) {
+		my $obj = LoxBerry::JSON->new();
+		# parse() stirbt bei kaputtem JSON
+		$cfg = eval { $obj->open(filename => $file, readonly => 1) };
+		if (ref $cfg ne 'HASH') {
+			# Kaputte Vorlage: eingebaute Defaults; kaputte telegram.json: Fehler
+			return undef if $file eq $TG_CFGFILE;
+			$cfg = {};
+		}
+	}
 	$cfg->{ACTIVATE_TELEGRAM} //= 0;
 	$cfg->{BOT_TOKEN} //= '';
 	$cfg->{RECIPIENTS} = [] if ref $cfg->{RECIPIENTS} ne 'ARRAY';
@@ -105,6 +120,7 @@ sub tgcgi_save
 	my ($in) = @_;
 
 	my $cfg = tgcgi_load();
+	return tgcgi_config_broken() if !$cfg;
 	my ($ok, $errkey) = tgcgi_validate($in, $cfg->{BOT_TOKEN});
 	if (!$ok) {
 		$response{error} = 1;
@@ -138,6 +154,13 @@ sub tgcgi_save
 	}
 	$response{error} = 0;
 	$response{message} = $SL{'TELEGRAM.SAVE_OK'};
+	return;
+}
+
+sub tgcgi_config_broken
+{
+	$response{error} = 1;
+	$response{message} = $SL{'TELEGRAM.ERR_CONFIG_BROKEN'} // 'telegram.json cannot be read';
 	return;
 }
 
@@ -252,12 +275,13 @@ sub tgcgi_provider
 			close($ph);
 		}
 	}
-	my $parsed = eval { from_json($out // '') };
+	# Provider-Ausgabe ist UTF-8: als Zeichen lesen, als UTF-8-Bytes weitergeben (genau einmal kodiert)
+	my $parsed = eval { decode_json($out // '') };
 	if (ref $parsed ne 'HASH') {
 		return to_json({ ok => 0, error => ($SL{'TELEGRAM.ERR_PROVIDER'} // 'Provider error') });
 	}
 	delete $parsed->{BOT_TOKEN};
-	return to_json($parsed);
+	return encode_json($parsed);
 }
 
 ##########################################################################
@@ -299,7 +323,7 @@ sub form
 
 	%SL = LoxBerry::System::readlanguage($maintemplate);
 
-	my $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'TELEGRAM.WIDGETLABEL'};
+	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'TELEGRAM.WIDGETLABEL'};
 	LoxBerry::Web::head();
 	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
 	print LoxBerry::Log::get_notifications_html("telegram");

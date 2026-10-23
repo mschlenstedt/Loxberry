@@ -273,8 +273,13 @@
 
 	function load() {
 		post({ action: 'getcfg' }).done(function(d) {
-			fillForm(d);
 			$('#tg_page').css('visibility', 'visible');
+			if (!d || d.error) {
+				// z. B. beschaedigte telegram.json
+				setStatus($('#tg_status'), 'tg-err', T.loadError + ' ' + ((d && d.message) ? d.message : ''));
+				return;
+			}
+			fillForm(d);
 			checkBot();
 		}).fail(function(xhr) {
 			$('#tg_page').css('visibility', 'visible');
