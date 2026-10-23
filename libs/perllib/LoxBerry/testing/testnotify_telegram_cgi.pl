@@ -12,6 +12,8 @@ use JSON;
 use Encode;
 no warnings "once";
 use File::Temp qw(tempdir);
+use File::Basename qw(dirname);
+use File::Spec;
 
 Test::More->builder->output(*STDOUT);
 Test::More->builder->failure_output(*STDERR);
@@ -70,7 +72,7 @@ is($p->{TOKEN_SET}, 1, 'public: TOKEN_SET');
 unlike(encode_json($p), qr/111:alt/, 'public: Token nicht im JSON');
 
 # savecfg: schreibt in ein Temp-Verzeichnis, Modus 0600, Token nur in der Datei
-my $dir = tempdir(CLEANUP => 1);
+my $dir = tempdir(DIR => dirname(File::Spec->rel2abs($0)), CLEANUP => 1);
 $main::TG_CFGFILE = "$dir/telegram.json";
 $main::TG_DEFAULT = "$dir/none.default";
 %main::response = ();
@@ -85,6 +87,46 @@ my $saved = decode_json(do { local (@ARGV, $/) = ("$dir/telegram.json"); <> });
 is($saved->{BOT_TOKEN}, $tok, 'savecfg: Token gespeichert');
 is($saved->{NOTIFICATION}{TELEGRAM_SYSTEM_INFOS}, 'false', 'savecfg: Flag');
 is($saved->{NOTIFICATION}{TELEGRAM_PLUGIN_ERRORS}, 'true', 'savecfg: Default-Flag');
+
+# Umlaute: UTF-8-Bytes rein -> UTF-8-Bytes raus (kein Doppel-Encoding)
+my $kueche = Encode::encode_utf8('K' . chr(252) . 'che');
+my $um = tgcgi_merge({}, { recipients_json => Encode::encode_utf8('[{"NAME":"K' . chr(252) . 'che","CHAT_ID":"1"}]') });
+is($um->{RECIPIENTS}[0]{NAME}, $kueche, 'umlaut_merge');
+
+# savecfg zweimal mit identischer Eingabe: beide Male Erfolg (write() meldet "unveraendert" leer)
+my %same = (
+	activate_telegram => 1, bot_token => $tok,
+	recipients_json => Encode::encode_utf8('[{"NAME":"K' . chr(252) . 'che","CHAT_ID":"7"}]'),
+);
+%main::response = ();
+tgcgi_action('savecfg', { %same });
+is($main::response{error}, 0, 'savecfg_1 ok');
+%main::response = ();
+tgcgi_action('savecfg', { %same });
+is($main::response{error}, 0, 'savecfg_unchanged ok');
+# Datei ist UTF-8: decode_json liefert Zeichen (u-Umlaut = chr 252), bei Doppel-Encoding kaeme mehr heraus
+my $s2 = decode_json(do { local (@ARGV, $/) = ("$dir/telegram.json"); <> });
+is($s2->{RECIPIENTS}[0]{NAME}, 'K' . chr(252) . 'che', 'umlaut gespeichert');
+
+# Round trip: getcfg -> Browser sendet zurueck -> save: Bytes unveraendert
+%main::response = ();
+tgcgi_action('getcfg', {});
+my $browser_json = to_json($main::response{RECIPIENTS});
+utf8::downgrade($browser_json);  # wie auf der Leitung: Bytes
+for (1 .. 2) {
+	%main::response = ();
+	tgcgi_action('savecfg', { bot_token => '', recipients_json => $browser_json });
+	is($main::response{error}, 0, 'roundtrip save ok');
+}
+my $s3 = decode_json(do { local (@ARGV, $/) = ("$dir/telegram.json"); <> });
+is($s3->{RECIPIENTS}[0]{NAME}, 'K' . chr(252) . 'che', 'roundtrip: Umlaute unveraendert');
+is(sprintf('%04o', (stat "$dir/telegram.json")[2] & 07777), '0600', 'chmod 0600 nach Mehrfach-Save');
+
+# Erstanlage: Datei darf nie fuer andere lesbar sein
+$main::TG_CFGFILE = "$dir/neu.json";
+%main::response = ();
+tgcgi_action('savecfg', { %same });
+is(sprintf('%04o', (stat "$dir/neu.json")[2] & 07777), '0600', 'neu angelegt mit 0600');
 
 # Provider: STDERR verworfen, kein Token in der Ausgabe, Nicht-JSON -> generischer Fehler
 my $fake = "$dir/fake.sh";

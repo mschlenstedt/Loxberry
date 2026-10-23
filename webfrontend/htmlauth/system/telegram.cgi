@@ -114,12 +114,21 @@ sub tgcgi_save
 	$cfg = tgcgi_merge($cfg, $in);
 
 	my $saved = eval {
+		# Datei nie fuer andere lesbar anlegen (Token)
+		my $oldumask = umask(077);
 		my $obj = LoxBerry::JSON->new();
 		my $data = $obj->open(filename => $TG_CFGFILE);
+		umask($oldumask);
 		die "open failed\n" if !$data;
+		chmod(0600, $TG_CFGFILE) or die "chmod failed\n";
 		%$data = %$cfg;
-		$obj->write() or die "write failed\n";
-		chmod 0600, $TG_CFGFILE;
+		# write() liefert bei unveraenderten Daten leer zurueck - Erfolg per Nachlesen pruefen
+		$obj->write();
+		my $check = LoxBerry::JSON->new()->open(filename => $TG_CFGFILE, readonly => 1);
+		die "verify failed\n" if !$check;
+		my $j = JSON->new->canonical(1);
+		die "verify failed\n" if $j->encode($check) ne $j->encode($cfg);
+		chmod(0600, $TG_CFGFILE) or die "chmod failed\n";
 		1;
 	};
 	if (!$saved) {
@@ -142,14 +151,16 @@ sub tgcgi_recipients
 {
 	my ($in) = @_;
 	return (undef, undef) if !defined $in->{recipients_json};
-	my $raw = eval { from_json($in->{recipients_json}) };
+	my $raw = eval { decode_json($in->{recipients_json}) };
 	return (undef, 'SAVE_ERROR') if ref $raw ne 'ARRAY';
 
 	my @list;
 	foreach my $r (@$raw) {
 		next if ref $r ne 'HASH';
 		my ($name, $id) = map { defined $_ ? $_ : '' } @$r{qw(NAME CHAT_ID)};
-		utf8::encode($name) if utf8::is_utf8($name);
+		# decode_json lieferte Zeichen; gespeichert wird UTF-8 als Bytes (wie LoxBerry::JSON)
+		utf8::encode($name);
+		utf8::encode($id);
 		$name =~ s/^\s+|\s+$//g;
 		$id =~ s/^\s+|\s+$//g;
 		next if $name eq '' and $id eq '';
