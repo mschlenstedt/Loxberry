@@ -8,6 +8,8 @@ is_deeply($p->({CHANNELS=>['mail']}),          {mail=>1},             'Array-Ref
 is_deeply($p->({'CHANNELS[0]'=>'telegram'}),   {telegram=>1},         'PHP-Array');
 is_deeply($p->({CHANNELS=>'pushover'}),        {mail=>1,telegram=>1}, 'nur unbekannt = alle');
 is_deeply($p->({CHANNELS=>'mail,pushover'}),   {mail=>1},             'unbekannt ignoriert');
+is_deeply($p->({CHANNELS=>"mail\0telegram"}),  {mail=>1,telegram=>1}, 'CGI::Vars-Wiederholfeld (\0)');
+is_deeply($p->({CHANNELS=>"telegram\0"}),      {telegram=>1},         'CGI::Vars mit leerem Teil');
 my %d = (PACKAGE=>'t', CHANNELS=>'mail', 'CHANNELS[0]'=>'x');
 my $c = LoxBerry::Log::notify_strip_channels(\%d);
 ok(!exists $c->{CHANNELS} && !exists $c->{'CHANNELS[0]'} && $c->{PACKAGE} eq 't', 'strip');
@@ -22,4 +24,30 @@ is($w->({SEVERITY=>3,_ISSYSTEM=>1}, {%$cfg, ACTIVATE_TELEGRAM=>0}), 0, 'deaktivi
 is($w->({SEVERITY=>3,_ISSYSTEM=>1}, {%$cfg, BOT_TOKEN=>''}), 0, 'ohne Token');
 is($w->({SEVERITY=>3,_ISSYSTEM=>1}, {%$cfg, RECIPIENTS=>[{NAME=>'a',CHAT_ID=>''}]}), 0, 'ohne Chat-ID');
 is($w->({SEVERITY=>3,_ISSYSTEM=>1}, undef), 0, 'keine Config');
+
+# notify_send_telegram: legt keine telegram.json an und stirbt nicht an kaputter Datei.
+# Konfigordner auf ein Temp-Verzeichnis umgebogen, Provider = /bin/false (es wird nichts versendet).
+use File::Temp qw(tempdir);
+use File::Basename qw(dirname);
+use File::Spec;
+{
+	my $tdir = tempdir(DIR => dirname(File::Spec->rel2abs($0)), CLEANUP => 1);
+	local $LoxBerry::System::lbsconfigdir = $tdir;
+	local $LoxBerry::Log::telegram_provider = '/bin/false';
+	my %n = (PACKAGE=>'t', NAME=>'n', MESSAGE=>'m', SEVERITY=>3, _ISSYSTEM=>1);
+	my $ok = eval { LoxBerry::Log::notify_send_telegram(\%n); 1 };
+	ok($ok, 'fehlende telegram.json: kein die') or diag($@);
+	ok(!-e "$tdir/telegram.json", 'fehlende telegram.json wird nicht angelegt');
+	open(my $fh, '>', "$tdir/telegram.json") or die; print $fh '{kaputt'; close $fh;
+	{
+		# parse() meldet den Fehler auf STDERR - hier unterdruecken
+		local *STDERR;
+		open(STDERR, '>', File::Spec->devnull());
+		$ok = eval { LoxBerry::Log::notify_send_telegram(\%n); 1 };
+		ok($ok, 'kaputte telegram.json: notify_send_telegram stirbt nicht') or diag($@);
+		$ok = eval { LoxBerry::Log::notify_send_channels({%n, CHANNELS=>'telegram'}); 1 };
+		ok($ok, 'kaputte telegram.json: Kanalverteiler stirbt nicht') or diag($@);
+	}
+	ok(-s "$tdir/telegram.json" == 7, 'kaputte telegram.json bleibt unverändert');
+}
 done_testing();

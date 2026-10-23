@@ -1491,7 +1491,8 @@ sub notify_parse_channels
 	foreach my $key (grep { /^CHANNELS(\[\d+\])?$/ } keys %$data) {
 		my $val = $data->{$key};
 		next if (!defined $val);
-		push @values, ref($val) eq 'ARRAY' ? @$val : split(/,/, $val);
+		# \0 separates repeated form fields joined by CGI::Vars (CHANNELS=mail&CHANNELS=telegram)
+		push @values, ref($val) eq 'ARRAY' ? @$val : split(/[,\0]/, $val);
 	}
 	my %set;
 	foreach my $v (@values) {
@@ -1519,7 +1520,10 @@ sub notify_send_channels
 	my ($data) = @_;
 	my $channels = notify_parse_channels($data);
 	notify_send_mail($data) if ($channels->{mail});
-	notify_send_telegram($data) if ($channels->{telegram});
+	if ($channels->{telegram}) {
+		# Telegram must never break notify() of the caller
+		eval { notify_send_telegram($data); 1; } or print STDERR "notify: telegram channel failed: $@";
+	}
 }
 
 # INTERNAL FUNCTION
@@ -1561,9 +1565,13 @@ sub notify_send_telegram
 {
 	my %p = %{shift()};
 	
+	# LoxBerry::JSON->open creates missing files even with readonly - only open an existing one
+	my $tfile = "$LoxBerry::System::lbsconfigdir/telegram.json";
+	return if (! -e $tfile);
 	require LoxBerry::JSON;
 	my $tcfgobj = LoxBerry::JSON->new();
-	my $tcfg = $tcfgobj->open(filename => "$LoxBerry::System::lbsconfigdir/telegram.json", readonly => 1);
+	# A damaged telegram.json makes parse() die - never let that reach the caller
+	my $tcfg = eval { $tcfgobj->open(filename => $tfile, readonly => 1) };
 	return if (!$tcfg);
 	return if (!notify_telegram_wanted(\%p, $tcfg));
 	
