@@ -287,7 +287,7 @@ sub form
 	require LoxBerry::Log;
 
 	my $helptemplate = "help_telegram.html";
-	my $helplink = "";    # Wiki-Seite folgt
+	my $helplink = "https://wiki.loxberry.de/";    # allgemeines Wiki, bis es eine eigene Telegram-Seite gibt
 
 	my $maintemplate = HTML::Template->new(
 		filename => "$lbstemplatedir/telegram.html",
