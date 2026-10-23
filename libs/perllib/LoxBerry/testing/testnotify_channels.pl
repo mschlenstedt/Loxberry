@@ -1,0 +1,25 @@
+use LoxBerry::Log; use Test::More;
+my $p = \&LoxBerry::Log::notify_parse_channels;
+is_deeply($p->({}),                            {mail=>1,telegram=>1}, 'fehlend = alle');
+is_deeply($p->({CHANNELS=>''}),                {mail=>1,telegram=>1}, 'leer = alle');
+is_deeply($p->({CHANNELS=>'Telegram'}),        {telegram=>1},         'Groß/klein egal');
+is_deeply($p->({CHANNELS=>'mail, telegram'}),  {mail=>1,telegram=>1}, 'kommagetrennt');
+is_deeply($p->({CHANNELS=>['mail']}),          {mail=>1},             'Array-Ref');
+is_deeply($p->({'CHANNELS[0]'=>'telegram'}),   {telegram=>1},         'PHP-Array');
+is_deeply($p->({CHANNELS=>'pushover'}),        {mail=>1,telegram=>1}, 'nur unbekannt = alle');
+is_deeply($p->({CHANNELS=>'mail,pushover'}),   {mail=>1},             'unbekannt ignoriert');
+my %d = (PACKAGE=>'t', CHANNELS=>'mail', 'CHANNELS[0]'=>'x');
+my $c = LoxBerry::Log::notify_strip_channels(\%d);
+ok(!exists $c->{CHANNELS} && !exists $c->{'CHANNELS[0]'} && $c->{PACKAGE} eq 't', 'strip');
+is($d{CHANNELS}, 'mail', 'Original unverändert');
+my $cfg = { ACTIVATE_TELEGRAM=>1, BOT_TOKEN=>'1:x', RECIPIENTS=>[{NAME=>'a',CHAT_ID=>'5'}],
+	NOTIFICATION=>{TELEGRAM_SYSTEM_ERRORS=>'true',TELEGRAM_SYSTEM_INFOS=>'true',TELEGRAM_PLUGIN_ERRORS=>'true',TELEGRAM_PLUGIN_INFOS=>'false'} };
+my $w = \&LoxBerry::Log::notify_telegram_wanted;
+is($w->({SEVERITY=>3,_ISSYSTEM=>1}, $cfg), 1, 'Systemfehler');
+is($w->({SEVERITY=>6,_ISPLUGIN=>1}, $cfg), 0, 'Plugininfo aus');
+is($w->({SEVERITY=>4,_ISSYSTEM=>1}, $cfg), 0, 'Warnung nie');
+is($w->({SEVERITY=>3,_ISSYSTEM=>1}, {%$cfg, ACTIVATE_TELEGRAM=>0}), 0, 'deaktiviert');
+is($w->({SEVERITY=>3,_ISSYSTEM=>1}, {%$cfg, BOT_TOKEN=>''}), 0, 'ohne Token');
+is($w->({SEVERITY=>3,_ISSYSTEM=>1}, {%$cfg, RECIPIENTS=>[{NAME=>'a',CHAT_ID=>''}]}), 0, 'ohne Chat-ID');
+is($w->({SEVERITY=>3,_ISSYSTEM=>1}, undef), 0, 'keine Config');
+done_testing();

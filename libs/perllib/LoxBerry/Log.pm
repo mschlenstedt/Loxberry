@@ -1243,7 +1243,7 @@ sub notify
 			chown $uid, $gid, $dbfile;
 		}
 	};
-	notify_send_mail(\%data);
+	notify_send_channels(\%data);
 	
 	print STDERR "<--- notify\n" if ($DEBUG);
 
@@ -1279,7 +1279,7 @@ sub notify_ext
 	
 	#require Encode;	
 	#$data->{MESSAGE} = Encode::encode("utf8", $data->{MESSAGE});
-	notify_insert_notification($dbh, $data);
+	notify_insert_notification($dbh, notify_strip_channels($data));
 	my $dbfile = $dbh->sqlite_db_filename();
 	$dbh->disconnect;
 	eval {
@@ -1291,7 +1291,7 @@ sub notify_ext
 		}
 	};
 
-	notify_send_mail($data);
+	notify_send_channels($data);
 
 	# Publish notification stats to MQTT (non-blocking background call)
 	my $publisher = "$LoxBerry::System::lbhomedir/sbin/mqtt-notify-publisher.pl";
@@ -1472,6 +1472,119 @@ sub notify_send_mail
 	}
 		
 		
+}
+
+
+################################################################
+# Channel dispatcher (mail / telegram)
+################################################################
+
+# Path of the telegram provider (overridable for tests)
+our $telegram_provider = "$LoxBerry::System::lbssbindir/notifyproviders/telegram.pl";
+
+# INTERNAL FUNCTION
+# Returns a hash of the requested channels. Missing/empty/unknown-only = all channels
+sub notify_parse_channels
+{
+	my ($data) = @_;
+	my @values;
+	foreach my $key (grep { /^CHANNELS(\[\d+\])?$/ } keys %$data) {
+		my $val = $data->{$key};
+		next if (!defined $val);
+		push @values, ref($val) eq 'ARRAY' ? @$val : split(/,/, $val);
+	}
+	my %set;
+	foreach my $v (@values) {
+		next if (!defined $v);
+		$v =~ s/^\s+|\s+$//g;
+		$v = lc($v);
+		$set{$v} = 1 if ($v eq 'mail' or $v eq 'telegram');
+	}
+	%set = (mail => 1, telegram => 1) if (!%set);
+	return \%set;
+}
+
+# INTERNAL FUNCTION
+# Returns a shallow copy without the CHANNELS fields (original stays untouched)
+sub notify_strip_channels
+{
+	my %copy = %{shift()};
+	delete $copy{$_} foreach (grep { /^CHANNELS(\[\d+\])?$/ } keys %copy);
+	return \%copy;
+}
+
+# INTERNAL FUNCTION
+sub notify_send_channels
+{
+	my ($data) = @_;
+	my $channels = notify_parse_channels($data);
+	notify_send_mail($data) if ($channels->{mail});
+	notify_send_telegram($data) if ($channels->{telegram});
+}
+
+# INTERNAL FUNCTION
+# Is a notification wanted via telegram according to the telegram.json config?
+sub notify_telegram_wanted
+{
+	my ($p, $tcfg) = @_;
+	return 0 if (!$tcfg);
+	return 0 if ($p->{SEVERITY} != 3 && $p->{SEVERITY} != 6);
+	return 0 if (!LoxBerry::System::is_enabled($tcfg->{ACTIVATE_TELEGRAM}));
+	return 0 if (!defined $tcfg->{BOT_TOKEN} or $tcfg->{BOT_TOKEN} eq '');
+	my $hasrecipient = 0;
+	foreach my $r (@{ $tcfg->{RECIPIENTS} || [] }) {
+		if (ref($r) eq 'HASH' and defined $r->{CHAT_ID} and $r->{CHAT_ID} ne '') {
+			$hasrecipient = 1;
+			last;
+		}
+	}
+	return 0 if (!$hasrecipient);
+	my $n = $tcfg->{NOTIFICATION} || {};
+	return 0 if (!LoxBerry::System::is_enabled($n->{TELEGRAM_SYSTEM_ERRORS}) && $p->{_ISSYSTEM} && $p->{SEVERITY} == 3);
+	return 0 if (!LoxBerry::System::is_enabled($n->{TELEGRAM_SYSTEM_INFOS}) && $p->{_ISSYSTEM} && $p->{SEVERITY} == 6);
+	return 0 if (!LoxBerry::System::is_enabled($n->{TELEGRAM_PLUGIN_ERRORS}) && $p->{_ISPLUGIN} && $p->{SEVERITY} == 3);
+	return 0 if (!LoxBerry::System::is_enabled($n->{TELEGRAM_PLUGIN_INFOS}) && $p->{_ISPLUGIN} && $p->{SEVERITY} == 6);
+	return 1;
+}
+
+# INTERNAL FUNCTION
+# Builds the command line for the telegram provider
+sub notify_telegram_command
+{
+	my ($p) = @_;
+	require JSON;
+	return "$telegram_provider " . quotemeta(JSON::to_json($p));
+}
+
+# INTERNAL FUNCTION
+sub notify_send_telegram
+{
+	my %p = %{shift()};
+	
+	require LoxBerry::JSON;
+	my $tcfgobj = LoxBerry::JSON->new();
+	my $tcfg = $tcfgobj->open(filename => "$LoxBerry::System::lbsconfigdir/telegram.json", readonly => 1);
+	return if (!$tcfg);
+	return if (!notify_telegram_wanted(\%p, $tcfg));
+	
+	my $plugintitle;
+	if (!$p{_ISSYSTEM}) {
+		my $plugin = LoxBerry::System::plugindata($p{PACKAGE});
+		$plugintitle = defined $plugin->{PLUGINDB_TITLE} ? $plugin->{PLUGINDB_TITLE} : $p{PACKAGE};
+	}
+	
+	$p{SEVERITY_STR} = "INFO" if ($p{SEVERITY} == 6);
+	$p{SEVERITY_STR} = "ERROR" if ($p{SEVERITY} == 3);
+	$p{PLUGINTITLE} = $plugintitle;
+	
+	if ($p{LOGFILE}) {
+		$p{LOGFILE_REL} = $p{LOGFILE};
+		$p{LOGFILE_REL} =~ s/^$LoxBerry::System::lbhomedir\///;
+		$p{LOGFILE_REL} =~ s/^log\///;
+	}
+	
+	# Run in background, the provider reports errors on its own
+	system(notify_telegram_command(\%p) . " >/dev/null 2>&1 &");
 }
 
 
