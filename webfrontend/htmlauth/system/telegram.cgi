@@ -54,7 +54,7 @@ sub main
 		jsonresponse();
 	}
 
-	# Keine Aktion: Seite (folgt)
+	# Keine Aktion: Seite
 	form();
 	exit(0);
 }
@@ -282,9 +282,30 @@ sub jsonresponse
 
 sub form
 {
-	# Platzhalter - die Seite folgt
-	print $cgi->header(-type => 'text/plain', -charset => 'utf-8', -status => '400 Bad Request');
-	print "Missing action\n";
+	no warnings 'once';
+	require LoxBerry::Web;
+	require LoxBerry::Log;
+
+	my $helptemplate = "help_telegram.html";
+	my $helplink = "";    # Wiki-Seite folgt
+
+	my $maintemplate = HTML::Template->new(
+		filename => "$lbstemplatedir/telegram.html",
+		global_vars => 1,
+		loop_context_vars => 1,
+		die_on_bad_params => 0,
+		%LoxBerry::Web::htmltemplate_options,
+	);
+
+	%SL = LoxBerry::System::readlanguage($maintemplate);
+
+	my $template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'TELEGRAM.WIDGETLABEL'};
+	LoxBerry::Web::head();
+	LoxBerry::Web::pagestart($template_title, $helplink, $helptemplate);
+	print LoxBerry::Log::get_notifications_html("telegram");
+	print $maintemplate->output();
+	LoxBerry::Web::pageend();
+	LoxBerry::Web::foot();
 	return;
 }
 

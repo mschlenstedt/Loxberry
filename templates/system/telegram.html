@@ -1,0 +1,376 @@
+<!-- ** START template/system/telegram.html ************************************************************************************ -->
+
+<style>
+	.tg-wrap { max-width: 900px; margin: 0 auto; }
+	.tg-wrap .lb-card { margin-bottom: var(--lb-space-lg); }
+	.tg-wrap .lb-card > .lb-section-title:first-child { margin-top: 0; }
+	.tg-wrap .lb-form-row { margin-bottom: var(--lb-space-md); }
+	.tg-rcpt { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) 44px; gap: 12px; align-items: center; margin-bottom: 10px; }
+	.tg-rcpt-head { font-size: 0.8rem; color: var(--lb-text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+	.tg-found { border: 1px dashed var(--lb-border-color); border-radius: var(--lb-radius); padding: 12px 16px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+	.tg-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+	.tg-status { margin-top: 10px; font-size: 0.9rem; min-height: 1.4em; }
+	.tg-ok { color: var(--lb-success); }
+	.tg-err { color: var(--lb-danger); }
+	.tg-muted { color: var(--lb-text-muted); }
+	@media (max-width: 600px) {
+		.tg-rcpt { grid-template-columns: minmax(0,1fr) 44px; }
+		.tg-rcpt .tg-rcpt-id { grid-column: 1; }
+		.tg-rcpt-head { display: none; }
+	}
+</style>
+
+<div class="tg-wrap" id="tg_page" style="visibility:hidden">
+
+<div class="lb-callout">
+	<p><TMPL_VAR TELEGRAM.INTRO></p>
+</div>
+
+<div class="lb-card">
+	<div class="lb-form-row">
+		<label class="lb-form-label" for="tg_activate"><TMPL_VAR TELEGRAM.LABEL_ACTIVATE></label>
+		<div class="lb-form-field">
+			<label class="lb-toggle">
+				<input type="checkbox" id="tg_activate">
+				<span class="lb-toggle-slider"></span>
+			</label>
+		</div>
+		<div class="lb-form-help"><TMPL_VAR TELEGRAM.HINT_ACTIVATE></div>
+	</div>
+</div>
+
+<div class="lb-card">
+	<div class="lb-section-title"><TMPL_VAR TELEGRAM.CARD_BOT></div>
+	<div class="lb-form-row">
+		<label class="lb-form-label" for="tg_token"><TMPL_VAR TELEGRAM.LABEL_TOKEN></label>
+		<div class="lb-form-field">
+			<input type="password" id="tg_token" class="lb-input" autocomplete="new-password" spellcheck="false" value="">
+			<div class="tg-status" id="tg_botstatus" role="status"></div>
+		</div>
+		<div class="lb-form-help"><TMPL_VAR TELEGRAM.HINT_TOKEN> <a href="#" id="tg_helplink"><TMPL_VAR TELEGRAM.LINK_HELP></a></div>
+	</div>
+</div>
+
+<div class="lb-card">
+	<div class="lb-section-title"><TMPL_VAR TELEGRAM.CARD_RECIPIENTS></div>
+	<div class="tg-rcpt tg-rcpt-head" id="tg_rcpt_head">
+		<div><TMPL_VAR TELEGRAM.COL_NAME></div>
+		<div><TMPL_VAR TELEGRAM.COL_CHATID></div>
+		<div></div>
+	</div>
+	<div id="tg_rcpt_list"></div>
+	<div id="tg_found"></div>
+	<div class="tg-actions">
+		<button type="button" class="lb-btn lb-btn-sm" id="tg_add">+ <TMPL_VAR TELEGRAM.BTN_ADD></button>
+		<button type="button" class="lb-btn lb-btn-sm" id="tg_find"><TMPL_VAR TELEGRAM.BTN_FIND></button>
+	</div>
+	<div class="lb-form-help tg-muted" style="margin-top:10px"><TMPL_VAR TELEGRAM.HINT_FIND></div>
+</div>
+
+<div class="lb-card">
+	<div class="lb-section-title"><TMPL_VAR TELEGRAM.CARD_WHAT></div>
+
+	<div class="lb-form-row">
+		<label class="lb-form-label" for="TELEGRAM_SYSTEM_ERRORS"><TMPL_VAR TELEGRAM.OPTION_SYSTEM_ERRORS></label>
+		<div class="lb-form-field">
+			<label class="lb-toggle">
+				<input type="checkbox" id="TELEGRAM_SYSTEM_ERRORS" class="tg-notify">
+				<span class="lb-toggle-slider"></span>
+			</label>
+		</div>
+		<div class="lb-form-help"><TMPL_VAR TELEGRAM.EXAMPLE_SYSTEM_ERRORS></div>
+	</div>
+
+	<div class="lb-form-row">
+		<label class="lb-form-label" for="TELEGRAM_SYSTEM_INFOS"><TMPL_VAR TELEGRAM.OPTION_SYSTEM_INFOS></label>
+		<div class="lb-form-field">
+			<label class="lb-toggle">
+				<input type="checkbox" id="TELEGRAM_SYSTEM_INFOS" class="tg-notify">
+				<span class="lb-toggle-slider"></span>
+			</label>
+		</div>
+		<div class="lb-form-help"><TMPL_VAR TELEGRAM.EXAMPLE_SYSTEM_INFOS></div>
+	</div>
+
+	<div class="lb-form-row">
+		<label class="lb-form-label" for="TELEGRAM_PLUGIN_ERRORS"><TMPL_VAR TELEGRAM.OPTION_PLUGIN_ERRORS></label>
+		<div class="lb-form-field">
+			<label class="lb-toggle">
+				<input type="checkbox" id="TELEGRAM_PLUGIN_ERRORS" class="tg-notify">
+				<span class="lb-toggle-slider"></span>
+			</label>
+		</div>
+		<div class="lb-form-help"><TMPL_VAR TELEGRAM.EXAMPLE_PLUGIN_ERRORS></div>
+	</div>
+
+	<div class="lb-form-row">
+		<label class="lb-form-label" for="TELEGRAM_PLUGIN_INFOS"><TMPL_VAR TELEGRAM.OPTION_PLUGIN_INFOS></label>
+		<div class="lb-form-field">
+			<label class="lb-toggle">
+				<input type="checkbox" id="TELEGRAM_PLUGIN_INFOS" class="tg-notify">
+				<span class="lb-toggle-slider"></span>
+			</label>
+		</div>
+		<div class="lb-form-help"><TMPL_VAR TELEGRAM.EXAMPLE_PLUGIN_INFOS></div>
+	</div>
+</div>
+
+<div class="lb-actions">
+	<button type="button" class="lb-btn" id="tg_test"><TMPL_VAR TELEGRAM.BTN_TEST></button>
+	<button type="button" class="lb-btn lb-btn-primary" id="tg_save"><TMPL_VAR COMMON.BUTTON_SAVE></button>
+</div>
+<div class="tg-status" id="tg_status" role="status" style="text-align:right"></div>
+<div id="tg_testresults"></div>
+
+</div>
+
+<script>
+(function() {
+
+	var T = {
+		tokenSet:    "<TMPL_VAR TELEGRAM.TOKEN_PLACEHOLDER_SET ESCAPE=JS>",
+		tokenEmpty:  "<TMPL_VAR TELEGRAM.TOKEN_PLACEHOLDER ESCAPE=JS>",
+		connected:   "<TMPL_VAR TELEGRAM.STATUS_CONNECTED ESCAPE=JS>",
+		namePh:      "<TMPL_VAR TELEGRAM.PLACEHOLDER_NAME ESCAPE=JS>",
+		chatidPh:    "<TMPL_VAR TELEGRAM.PLACEHOLDER_CHATID ESCAPE=JS>",
+		remove:      "<TMPL_VAR TELEGRAM.BTN_REMOVE ESCAPE=JS>",
+		colName:     "<TMPL_VAR TELEGRAM.COL_NAME ESCAPE=JS>",
+		colChatid:   "<TMPL_VAR TELEGRAM.COL_CHATID ESCAPE=JS>",
+		foundTitle:  "<TMPL_VAR TELEGRAM.FOUND_TITLE ESCAPE=JS>",
+		foundHint:   "<TMPL_VAR TELEGRAM.FOUND_HINT ESCAPE=JS>",
+		adopt:       "<TMPL_VAR TELEGRAM.BTN_ADOPT ESCAPE=JS>",
+		noChats:     "<TMPL_VAR TELEGRAM.NO_CHATS ESCAPE=JS>",
+		wait:        "<TMPL_VAR TELEGRAM.MSG_WAIT ESCAPE=JS>",
+		saveWait:    "<TMPL_VAR TELEGRAM.MSG_SAVE_WAIT ESCAPE=JS>",
+		testWait:    "<TMPL_VAR TELEGRAM.MSG_TEST_WAIT ESCAPE=JS>",
+		testSaveFirst: "<TMPL_VAR TELEGRAM.MSG_TEST_SAVE_FIRST ESCAPE=JS>",
+		testOk:      "<TMPL_VAR TELEGRAM.MSG_TEST_OK ESCAPE=JS>",
+		testFail:    "<TMPL_VAR TELEGRAM.MSG_TEST_FAIL ESCAPE=JS>",
+		loadError:   "<TMPL_VAR TELEGRAM.ERR_LOAD ESCAPE=JS>",
+		connError:   "<TMPL_VAR TELEGRAM.ERR_CONNECTION ESCAPE=JS>",
+		defaultName: "<TMPL_VAR TELEGRAM.DEFAULT_NAME ESCAPE=JS>"
+	};
+	var NOTIFY_KEYS = ['TELEGRAM_SYSTEM_ERRORS', 'TELEGRAM_SYSTEM_INFOS', 'TELEGRAM_PLUGIN_ERRORS', 'TELEGRAM_PLUGIN_INFOS'];
+	var tokenSet = false;
+
+	function isEnabled(v) {
+		return [true, "true", 1, "1", "on", "enabled"].indexOf(v) > -1;
+	}
+
+	function setStatus($el, cls, text) {
+		$el.removeClass('tg-ok tg-err tg-muted').addClass(cls).text(text);
+	}
+
+	function ajaxErrorText(xhr) {
+		// Fehlerantworten kommen auch mit HTTP 500 als JSON
+		try {
+			var j = xhr.responseJSON || JSON.parse(xhr.responseText);
+			if (j && j.message) return j.message;
+			if (j && j.error && typeof j.error === 'string') return j.error;
+		} catch (e) {}
+		return T.connError;
+	}
+
+	function post(data) {
+		return $.ajax({ type: 'POST', url: '/admin/system/telegram.cgi', data: data, dataType: 'json' });
+	}
+
+	// --- Empfaenger -------------------------------------------------------
+
+	function addRow(name, id) {
+		var $row = $('<div class="tg-rcpt tg-rcpt-row"></div>');
+		$('<input type="text" class="lb-input tg-rcpt-name">').attr({ 'aria-label': T.colName, placeholder: T.namePh }).val(name || '').appendTo($row);
+		$('<input type="text" class="lb-input tg-rcpt-id">').attr({ 'aria-label': T.colChatid, placeholder: T.chatidPh, inputmode: 'numeric' }).val(id || '').appendTo($row);
+		$('<button type="button" class="lb-btn lb-btn-sm lb-btn-icon tg-rcpt-del"><i class="pi pi-trash"></i></button>')
+			.attr({ 'aria-label': T.remove, title: T.remove }).appendTo($row);
+		$('#tg_rcpt_list').append($row);
+		return $row;
+	}
+
+	function collectRecipients() {
+		var list = [];
+		$('#tg_rcpt_list .tg-rcpt-row').each(function() {
+			list.push({ NAME: $(this).find('.tg-rcpt-name').val(), CHAT_ID: $(this).find('.tg-rcpt-id').val() });
+		});
+		return list;
+	}
+
+	// Uebernimmt einen gefundenen Chat in die erste leere Zeile, sonst in eine neue
+	function adoptChat(name, id) {
+		var $target = null;
+		$('#tg_rcpt_list .tg-rcpt-row').each(function() {
+			if ($.trim($(this).find('.tg-rcpt-id').val()) === '' && $.trim($(this).find('.tg-rcpt-name').val()) === '') {
+				$target = $(this);
+				return false;
+			}
+		});
+		if (!$target) $target = addRow('', '');
+		$target.find('.tg-rcpt-name').val(name || T.defaultName);
+		$target.find('.tg-rcpt-id').val(id);
+	}
+
+	function renderFound(chats) {
+		var $box = $('#tg_found').empty();
+		if (!chats.length) {
+			$('<div class="tg-found tg-muted"></div>').text(T.noChats).appendTo($box);
+			return;
+		}
+		$.each(chats, function(i, c) {
+			var $item = $('<div class="tg-found"></div>');
+			var $txt = $('<div></div>');
+			$('<b></b>').text(T.foundTitle + ' ').appendTo($txt);
+			$txt.append(document.createTextNode((c.NAME || '') + ' · ' + T.colChatid + ' ' + c.CHAT_ID));
+			$txt.append('<br>');
+			$('<span class="tg-muted" style="font-size:0.85rem"></span>').text(T.foundHint).appendTo($txt);
+			$item.append($txt);
+			$('<button type="button" class="lb-btn lb-btn-primary lb-btn-sm"></button>').text(T.adopt).on('click', function() {
+				adoptChat(c.NAME, String(c.CHAT_ID));
+				$item.remove();
+			}).appendTo($item);
+			$box.append($item);
+		});
+	}
+
+	// --- Formular fuellen / lesen ----------------------------------------
+
+	function fillForm(d) {
+		$('#tg_activate').prop('checked', isEnabled(d.ACTIVATE_TELEGRAM));
+		tokenSet = !!(d.TOKEN_SET && d.TOKEN_SET != 0);
+		$('#tg_token').val('').attr('placeholder', tokenSet ? T.tokenSet : T.tokenEmpty);
+		$('#tg_rcpt_list').empty();
+		var rc = d.RECIPIENTS || [];
+		if (rc.length) {
+			$.each(rc, function(i, r) { addRow(r.NAME, r.CHAT_ID); });
+		} else {
+			addRow('', '');
+		}
+		var n = d.NOTIFICATION || {};
+		$.each(NOTIFY_KEYS, function(i, k) {
+			$('#' + k).prop('checked', isEnabled(n[k]));
+		});
+	}
+
+	function checkBot() {
+		var $s = $('#tg_botstatus');
+		if (!tokenSet && $.trim($('#tg_token').val()) === '') {
+			$s.text('');
+			return;
+		}
+		setStatus($s, 'tg-muted', T.wait);
+		var data = { action: 'getme' };
+		var tok = $.trim($('#tg_token').val());
+		if (tok !== '') data.bot_token = tok;
+		post(data).done(function(r) {
+			if (r && r.ok) {
+				setStatus($s, 'tg-ok', T.connected + ' @' + r.username);
+			} else {
+				setStatus($s, 'tg-err', (r && r.error) ? r.error : T.connError);
+			}
+		}).fail(function(xhr) {
+			setStatus($s, 'tg-err', ajaxErrorText(xhr));
+		});
+	}
+
+	function load() {
+		post({ action: 'getcfg' }).done(function(d) {
+			fillForm(d);
+			$('#tg_page').css('visibility', 'visible');
+			checkBot();
+		}).fail(function(xhr) {
+			$('#tg_page').css('visibility', 'visible');
+			setStatus($('#tg_status'), 'tg-err', T.loadError + ' ' + ajaxErrorText(xhr));
+		});
+	}
+
+	function save() {
+		var $s = $('#tg_status');
+		setStatus($s, 'tg-muted', T.saveWait);
+		var data = {
+			action: 'savecfg',
+			activate_telegram: $('#tg_activate').is(':checked') ? 1 : 0,
+			bot_token: $.trim($('#tg_token').val()),
+			recipients_json: JSON.stringify(collectRecipients())
+		};
+		$.each(NOTIFY_KEYS, function(i, k) {
+			data[k] = $('#' + k).is(':checked') ? 'true' : 'false';
+		});
+		post(data).done(function(r) {
+			if (r && r.error == 0) {
+				setStatus($s, 'tg-ok', r.message);
+				// Token ist jetzt gespeichert; neu laden, damit Platzhalter und Empfaenger stimmen
+				post({ action: 'getcfg' }).done(function(d) { fillForm(d); checkBot(); });
+			} else {
+				setStatus($s, 'tg-err', (r && r.message) ? r.message : T.connError);
+			}
+		}).fail(function(xhr) {
+			setStatus($s, 'tg-err', ajaxErrorText(xhr));
+		});
+	}
+
+	function sendTest() {
+		var $s = $('#tg_status');
+		var $res = $('#tg_testresults').empty();
+		setStatus($s, 'tg-muted', T.testWait);
+		post({ action: 'test' }).done(function(r) {
+			$s.removeClass('tg-ok tg-err tg-muted').text('');
+			var results = (r && r.results) || [];
+			if (!results.length) {
+				setStatus($s, 'tg-err', (r && r.error) ? r.error : T.testSaveFirst);
+				return;
+			}
+			var $ul = $('<ul style="list-style:none;padding:0;margin:10px 0 0;text-align:right"></ul>');
+			$.each(results, function(i, x) {
+				var $li = $('<li></li>');
+				if (x.ok) {
+					$li.addClass('tg-ok').text(x.NAME + ' (' + x.CHAT_ID + '): ' + T.testOk);
+				} else {
+					$li.addClass('tg-err').text(x.NAME + ' (' + x.CHAT_ID + '): ' + T.testFail + ' ' + (x.error || ''));
+				}
+				$ul.append($li);
+			});
+			$res.append($ul);
+			$('<div class="tg-muted" style="text-align:right;font-size:0.85rem;margin-top:6px"></div>').text(T.testSaveFirst).appendTo($res);
+		}).fail(function(xhr) {
+			setStatus($s, 'tg-err', ajaxErrorText(xhr));
+		});
+	}
+
+	function findChats() {
+		var $box = $('#tg_found').empty();
+		$('<div class="tg-muted"></div>').text(T.wait).appendTo($box);
+		var data = { action: 'getchats' };
+		var tok = $.trim($('#tg_token').val());
+		if (tok !== '') data.bot_token = tok;
+		post(data).done(function(r) {
+			if (r && r.ok) {
+				renderFound(r.chats || []);
+			} else {
+				$box.empty();
+				$('<div class="tg-err"></div>').text((r && r.error) ? r.error : T.connError).appendTo($box);
+			}
+		}).fail(function(xhr) {
+			$box.empty();
+			$('<div class="tg-err"></div>').text(ajaxErrorText(xhr)).appendTo($box);
+		});
+	}
+
+	$(function() {
+		$('#tg_add').on('click', function() { addRow('', ''); });
+		$('#tg_find').on('click', findChats);
+		$('#tg_save').on('click', save);
+		$('#tg_test').on('click', sendTest);
+		$('#tg_token').on('change', checkBot);
+		$('#tg_rcpt_list').on('click', '.tg-rcpt-del', function() {
+			$(this).closest('.tg-rcpt-row').remove();
+			if (!$('#tg_rcpt_list .tg-rcpt-row').length) addRow('', '');
+		});
+		$('#tg_helplink').on('click', function(e) {
+			e.preventDefault();
+			if (typeof toggleHelpPanel === 'function') toggleHelpPanel();
+		});
+		load();
+	});
+
+})();
+</script>
+<!-- ** END template/system/telegram.html ************************************************************************************ -->
