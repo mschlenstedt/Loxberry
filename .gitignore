@@ -3,6 +3,7 @@ config/system/general.cfg
 config/system/general.json
 config/system/mail.cfg
 config/system/mail.json
+config/system/telegram.json
 
 # Planning and project files
 .planning/

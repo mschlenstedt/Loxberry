@@ -1,0 +1,11 @@
+{
+	"ACTIVATE_TELEGRAM" : 0,
+	"BOT_TOKEN" : "",
+	"RECIPIENTS" : [],
+	"NOTIFICATION" : {
+		"TELEGRAM_PLUGIN_ERRORS" : "true",
+		"TELEGRAM_PLUGIN_INFOS" : "true",
+		"TELEGRAM_SYSTEM_ERRORS" : "true",
+		"TELEGRAM_SYSTEM_INFOS" : "true"
+	}
+}
