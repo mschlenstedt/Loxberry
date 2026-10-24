@@ -1,135 +1,457 @@
 <!-- ** START template/system/get_notification_html.html ************************************************************************************ -->
-<div id="notificationBlock" style="margin-bottom:20px;">
-
-	<TMPL_IF SHOW_HEADER>
-	<h2 class="lb-section-title" style="margin-bottom:10px;">Notifications</h2>
-	</TMPL_IF>
+<div id="notificationBlock" class="lb-notify-block" data-lbnotify="<TMPL_VAR RAND>"<TMPL_IF SHOW_HEADER> data-grouped="1"</TMPL_IF> data-filter="all">
 
 	<div id="notificationItems">
 	<TMPL_IF NOTIFICATIONCOUNT>
 	<div style="display:none" id="notificationCount"><TMPL_VAR NOTIFICATIONCOUNT></div>
 
+	<TMPL_IF SHOW_HEADER>
+	<div class="lb-notify-toolbar">
+		<div class="lb-notify-filter" role="group" aria-label="<TMPL_VAR NOTIFY.FILTER_LABEL>">
+			<button type="button" class="lb-notify-filterbtn is-active" data-filter="all" aria-pressed="true"><TMPL_VAR NOTIFY.FILTER_ALL> <span class="lb-notify-count" data-count="all"></span></button>
+			<button type="button" class="lb-notify-filterbtn" data-filter="error" aria-pressed="false"><TMPL_VAR NOTIFY.FILTER_ERRORS> <span class="lb-notify-count" data-count="error"></span></button>
+			<button type="button" class="lb-notify-filterbtn" data-filter="info" aria-pressed="false"><TMPL_VAR NOTIFY.FILTER_INFOS> <span class="lb-notify-count" data-count="info"></span></button>
+		</div>
+		<span class="lb-notify-spacer"></span>
+		<a class="lb-btn lb-btn-sm lb-notify-deleteall" href="#" id="notifdeleteall" role="button"><i class="pi pi-trash"></i> <TMPL_VAR NOTIFY.DELETE_ALL_MESSAGES></a>
+	</div>
+	</TMPL_IF>
+
+	<div class="lb-notify-list">
 	<TMPL_LOOP NAME="NOTIFICATIONS">
 	<div class="lb-notify-box <TMPL_IF ISINFO>lb-notify-info<TMPL_ELSE>lb-notify-error</TMPL_IF>"
-	     id="notifyrow<TMPL_VAR KEY>" data-notifykey="<TMPL_VAR KEY>">
+	     id="notifyrow<TMPL_VAR KEY>" data-notifykey="<TMPL_VAR KEY>"
+	     data-sev="<TMPL_IF ISINFO>info<TMPL_ELSE>error</TMPL_IF>" data-title="<TMPL_VAR TITLE ESCAPE=HTML>">
 
 		<div class="lb-notify-icon">
 			<TMPL_IF ISINFO>
-			<img src="/system/images/notification_info_small.svg" width="20" height="20">
+			<img src="/system/images/notification_info_small.svg" width="18" height="18" alt="Info">
 			<TMPL_ELSE>
-			<img src="/system/images/notification_error_small.svg" width="20" height="20">
+			<img src="/system/images/notification_error_small.svg" width="18" height="18" alt="Error">
 			</TMPL_IF>
 		</div>
 
-		<TMPL_IF SHOW_HEADER>
-		<div class="lb-notify-title"><TMPL_VAR TITLE></div>
-		</TMPL_IF>
-
-		<div class="lb-notify-message">
-			<b><TMPL_VAR DATESTR>:</b> <TMPL_VAR CONTENTHTML>
+		<div class="lb-notify-main">
+			<div class="lb-notify-meta">
+				<span class="lb-notify-date"><TMPL_VAR DATESTR></span>
+				<TMPL_IF SHOW_HEADER>
+				<span class="lb-notify-title"><TMPL_VAR TITLE></span>
+				</TMPL_IF>
+			</div>
+			<div class="lb-notify-message"><TMPL_VAR CONTENTHTML></div>
 		</div>
 
 		<div class="lb-notify-actions">
 			<TMPL_IF LOGFILEPATH>
-			<a class="lb-btn lb-btn-sm lb-btn-icon btnlogs"
+			<a class="lb-notify-link btnlogs"
 			   href="/admin/system/tools/logfile.cgi?logfile=<TMPL_VAR LOGFILEPATH>&header=html&format=template"
-			   target="_blank"><i class="pi pi-arrow-down"></i> Logfile</a>
+			   target="_blank" title="Logfile" aria-label="Logfile"><i class="pi pi-file"></i><span class="lb-notify-linktext">Logfile</span></a>
 			</TMPL_IF>
 			<TMPL_IF LINK>
-			<a class="lb-btn lb-btn-sm lb-btn-icon btnlink"
-			   href="<TMPL_VAR LINK>" target="<TMPL_VAR LINKTARGET>"><i class="pi pi-external-link"></i> Details</a>
+			<a class="lb-notify-link btnlink"
+			   href="<TMPL_VAR LINK>" target="<TMPL_VAR LINKTARGET>" title="Details" aria-label="Details"><i class="pi pi-external-link"></i><span class="lb-notify-linktext">Details</span></a>
 			</TMPL_IF>
-			<a href="#" class="lb-btn lb-btn-sm lb-btn-icon notifdelete"
+			<a href="#" class="lb-notify-iconbtn notifdelete"
 			   id="notifdelete<TMPL_VAR KEY>" data-notifykey="<TMPL_VAR KEY>"
-			   title="Schließen" aria-label="Schließen"><i class="pi pi-times"></i></a>
+			   title="<TMPL_VAR NOTIFY.DELETE>" aria-label="<TMPL_VAR NOTIFY.DELETE>"><i class="pi pi-times"></i></a>
 		</div>
 	</div>
 	</TMPL_LOOP>
+	</div>
 
+	<TMPL_UNLESS SHOW_HEADER>
 	<div style="display:flex;justify-content:flex-end;margin-top:4px;">
 		<a class="lb-btn lb-btn-sm lb-btn-icon" href="#" id="notifdeleteall"
 		   style="display:none;" role="button"><i class="pi pi-times"></i> <TMPL_VAR NOTIFY.DELETE_ALL_MESSAGES></a>
 	</div>
+	</TMPL_UNLESS>
 	</TMPL_IF>
 	</div><!-- end notificationItems -->
 
 	<TMPL_IF SHOW_HEADER>
-	<p id="noNotificationsMsg"<TMPL_IF NOTIFICATIONCOUNT> style="display:none;"</TMPL_IF>><TMPL_VAR NOTIFY.NO_NOTIFICATIONS></p>
+	<p id="noNotificationsMsg" class="lb-notify-empty"<TMPL_IF NOTIFICATIONCOUNT> style="display:none;"</TMPL_IF>><TMPL_VAR NOTIFY.NO_NOTIFICATIONS></p>
 	</TMPL_IF>
 
+	<template class="lb-notify-group-tpl">
+		<section class="lb-notify-group">
+			<div class="lb-notify-group-head">
+				<span class="lb-notify-group-title"></span>
+				<span class="lb-notify-badge lb-notify-badge-error"></span>
+				<span class="lb-notify-badge lb-notify-badge-info"></span>
+				<span class="lb-notify-spacer"></span>
+				<button type="button" class="lb-notify-textbtn lb-notify-group-delete" aria-label="<TMPL_VAR NOTIFY.DELETE_GROUP>" title="<TMPL_VAR NOTIFY.DELETE_GROUP>"><i class="pi pi-trash"></i><span class="lb-notify-linktext"><TMPL_VAR NOTIFY.DELETE_GROUP></span></button>
+				<button type="button" class="lb-notify-iconbtn lb-notify-group-toggle" aria-expanded="true" aria-label="<TMPL_VAR NOTIFY.TOGGLE_GROUP>" title="<TMPL_VAR NOTIFY.TOGGLE_GROUP>"><i class="pi pi-chevron-up"></i></button>
+			</div>
+			<div class="lb-notify-group-body"></div>
+			<button type="button" class="lb-notify-more"></button>
+		</section>
+	</template>
+	<span class="lb-notify-i18n" hidden
+	      data-today="<TMPL_VAR NOTIFY.TODAY>"
+	      data-error="<TMPL_VAR NOTIFY.COUNT_ERROR>" data-errors="<TMPL_VAR NOTIFY.COUNT_ERRORS>"
+	      data-info="<TMPL_VAR NOTIFY.COUNT_INFO>" data-infos="<TMPL_VAR NOTIFY.COUNT_INFOS>"
+	      data-more="<TMPL_VAR NOTIFY.SHOW_MORE>"></span>
 </div>
 
 <style>
-#notificationItems {
-	width: 80%;
-	margin: 0 auto;
+.lb-notify-block {
+	width: 100%;
+	max-width: 1100px;
+	margin: 0 auto 20px;
+	box-sizing: border-box;
 }
+.lb-notify-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 12px;
+	margin-bottom: 12px;
+}
+.lb-notify-spacer { flex: 1 1 auto; }
+.lb-notify-filter {
+	display: flex;
+	gap: 2px;
+	padding: 3px;
+	background: var(--lb-card-bg, #fff);
+	border: var(--lb-card-border, 1px solid #e5e5e5);
+	border-radius: 10px;
+}
+.lb-notify-filterbtn {
+	border: 0;
+	background: transparent;
+	color: var(--lb-text, #171717);
+	font: inherit;
+	font-size: 0.875rem;
+	font-weight: 600;
+	padding: 6px 14px;
+	min-height: 34px;
+	border-radius: 7px;
+	cursor: pointer;
+}
+.lb-notify-filterbtn.is-active {
+	background: var(--lb-primary, #6dac20);
+	color: #fff;
+}
+.lb-notify-deleteall { white-space: nowrap; }
+
+/* Liste (ohne Gruppen) und Gruppenkarten */
+.lb-notify-list:not(:empty),
+.lb-notify-group {
+	background: var(--lb-card-bg, #fff);
+	border: var(--lb-card-border, 1px solid #e5e5e5);
+	border-radius: 10px;
+	box-shadow: var(--lb-card-shadow, none);
+	overflow: hidden;
+	backdrop-filter: var(--lb-backdrop-blur, none);
+}
+.lb-notify-block[data-grouped="1"].is-grouped .lb-notify-list { display: none; }
+.lb-notify-group { margin-bottom: 12px; }
+.lb-notify-group-head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px 10px;
+	padding: 4px 6px 4px 16px;
+	min-height: 44px;
+	box-sizing: border-box;
+	background: color-mix(in srgb, var(--lb-text, #171717) 3%, transparent);
+}
+.lb-notify-group-title { font-weight: 700; }
+.lb-notify-badge {
+	font-size: 0.75rem;
+	font-weight: 600;
+	padding: 2px 8px;
+	border-radius: 10px;
+	color: var(--lb-text, #171717);
+}
+.lb-notify-badge:empty { display: none; }
+.lb-notify-badge-error { background: color-mix(in srgb, var(--lb-danger, #dc2626) 16%, transparent); }
+.lb-notify-badge-info  { background: color-mix(in srgb, #1a73e8 16%, transparent); }
+.lb-notify-group.is-collapsed .lb-notify-group-body,
+.lb-notify-group.is-collapsed .lb-notify-more { display: none; }
+.lb-notify-group.is-collapsed .lb-notify-group-toggle i { transform: rotate(180deg); }
+
+/* Eine Meldung */
 .lb-notify-box {
 	display: flex;
 	align-items: center;
-	gap: 10px;
-	padding: 10px 14px;
-	margin-bottom: 6px;
+	gap: 12px;
+	min-height: 42px;
+	padding: 4px 6px 4px 16px;
+	box-sizing: border-box;
+	border-top: 1px solid var(--lb-border-color, #e5e5e5);
+	font-size: 0.875rem;
+	color: var(--lb-text, #171717);
+}
+.lb-notify-list > .lb-notify-box:first-child { border-top: 0; }
+.lb-notify-box.is-hidden { display: none; }
+.lb-notify-icon { flex: 0 0 18px; display: flex; }
+.lb-notify-main {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+.lb-notify-meta {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	color: var(--lb-text-secondary, #404040);
+	font-size: 0.8125rem;
+}
+.lb-notify-date { flex: 0 0 auto; min-width: 7.5em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lb-notify-title {
+	max-width: 14em;
+	font-weight: 600;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.lb-notify-block.is-grouped .lb-notify-title { font-weight: 400; max-width: 11em; width: 11em; }
+.lb-notify-title:empty { display: none; }
+.lb-notify-message {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 1;
+	line-clamp: 1;
+	overflow-wrap: anywhere;
+}
+.lb-notify-message.is-clamped { cursor: pointer; }
+.lb-notify-message.is-expanded { display: block; -webkit-line-clamp: unset; line-clamp: unset; }
+.lb-notify-actions { flex: 0 0 auto; display: flex; align-items: center; gap: 2px; }
+.lb-notify-link,
+.lb-notify-textbtn,
+.lb-notify-more {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	border: 0;
+	background: transparent;
+	font: inherit;
+	font-size: 0.8125rem;
+	font-weight: 600;
+	color: var(--lb-primary-dark, #4a7a12);
+	text-decoration: none;
+	padding: 6px 8px;
 	border-radius: 6px;
-	box-shadow: 1px 2px 5px rgba(0,0,0,.10);
-	font-size: 0.95em;
+	cursor: pointer;
+	white-space: nowrap;
 }
-.lb-notify-info {
-	background: #fffde7;
-	border-left: 4px solid #f9c800;
+.lb-notify-textbtn { color: var(--lb-text-secondary, #404040); }
+.lb-notify-more { display: block; width: 100%; text-align: left; padding: 10px 16px; border-top: 1px solid var(--lb-border-color, #e5e5e5); border-radius: 0; }
+.lb-notify-more:empty { display: none; }
+.lb-notify-iconbtn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	border: 0;
+	background: transparent;
+	color: var(--lb-text-secondary, #404040);
+	border-radius: 6px;
+	text-decoration: none;
+	cursor: pointer;
 }
-.lb-notify-error {
-	background: #fff3f0;
-	border-left: 4px solid #e53935;
+.lb-notify-iconbtn:hover,
+.lb-notify-link:hover,
+.lb-notify-textbtn:hover,
+.lb-notify-more:hover { background: color-mix(in srgb, var(--lb-text, #171717) 7%, transparent); }
+.lb-notify-empty { color: var(--lb-text-secondary, #404040); }
+body.theme-glass .lb-notify-link,
+body.theme-glass .lb-notify-more { color: var(--lb-primary, #6dac20); }
+
+/* Handy: zwei Zeilen pro Meldung, grosse Touchflaechen */
+@media (max-width: 640px) {
+	.lb-notify-filter { flex: 1 1 100%; }
+	.lb-notify-filterbtn { flex: 1 1 0; min-height: 40px; }
+	.lb-notify-deleteall { margin-left: auto; }
+	.lb-notify-box { align-items: flex-start; gap: 10px; padding: 8px 0 8px 14px; }
+	.lb-notify-icon { padding-top: 2px; }
+	.lb-notify-main { flex-direction: column; align-items: stretch; gap: 2px; }
+	.lb-notify-meta { gap: 6px; font-size: 0.75rem; min-width: 0; }
+	.lb-notify-date { min-width: 0; }
+	.lb-notify-block.is-grouped .lb-notify-title { width: auto; max-width: none; }
+	.lb-notify-title { flex: 1 1 auto; min-width: 0; max-width: none; }
+	.lb-notify-message { -webkit-line-clamp: 2; line-clamp: 2; }
+	.lb-notify-linktext { display: none; }
+	.lb-notify-link { width: 44px; height: 44px; justify-content: center; padding: 0; }
+	.lb-notify-iconbtn { width: 44px; height: 44px; }
+	.lb-notify-actions { margin-top: -6px; }
+	.lb-notify-group-head { flex-wrap: nowrap; padding: 0 0 0 14px; gap: 6px; }
+	.lb-notify-group-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+	.lb-notify-badge { flex: 0 0 auto; }
+	.lb-notify-group-delete { width: 44px; height: 44px; justify-content: center; padding: 0; flex: 0 0 auto; }
+	.lb-notify-group-toggle { flex: 0 0 auto; }
 }
-.lb-notify-icon  { flex: 0 0 24px; }
-.lb-notify-title { flex: 0 0 auto; font-weight: bold; padding-right: 8px; white-space: nowrap; }
-.lb-notify-message { flex: 1 1 auto; }
-.lb-notify-actions { flex: 0 0 auto; display: flex; gap: 4px; }
 </style>
 
 <TMPL_IF NOTIFICATIONCOUNT>
 <script>
-var notificationCount;
-updateNotificationCount();
+(function() {
+	var block = document.querySelector('.lb-notify-block[data-lbnotify="<TMPL_VAR RAND>"]');
+	if (!block || block.getAttribute('data-ready')) return;
+	block.setAttribute('data-ready', '1');
+	var $block = $(block);
+	var grouped = block.getAttribute('data-grouped') === '1';
+	var i18n = $block.find('.lb-notify-i18n').data() || {};
+	var ROWS_VISIBLE = 3;
 
-$("#notifdeleteall").click(async function() {
-	$('.lb-notify-box').each(function(){
+	// Datum "24.10.2026 18:55" -> "Heute 18:55" bzw. "22.10. 04:24" im laufenden Jahr
+	var now = new Date();
+	$block.find('.lb-notify-date').each(function() {
+		var m = $(this).text().trim().match(/^(\d{2})\.(\d{2})\.(\d{4}) (\d{2}:\d{2})$/);
+		if (!m) return;
+		if (+m[1] === now.getDate() && +m[2] === now.getMonth() + 1 && +m[3] === now.getFullYear()) {
+			$(this).text((i18n.today || 'Today') + ' ' + m[4]);
+		} else if (+m[3] === now.getFullYear()) {
+			$(this).text(m[1] + '.' + m[2] + '. ' + m[4]);
+		}
+		$(this).attr('title', m[0]);
+	});
+
+	if (grouped) buildGroups();
+	markClamped();
+	refresh();
+
+	// Lange Texte per Klick auf- und zuklappen
+	$block.on('click', '.lb-notify-message.is-clamped', function(e) {
+		if ($(e.target).closest('a').length) return;
+		$(this).toggleClass('is-expanded');
+	});
+
+	$block.on('click', '.lb-notify-filterbtn', function() {
+		block.setAttribute('data-filter', $(this).data('filter'));
+		$block.find('.lb-notify-filterbtn').removeClass('is-active').attr('aria-pressed', 'false');
+		$(this).addClass('is-active').attr('aria-pressed', 'true');
+		refresh();
+	});
+
+	$block.on('click', '.lb-notify-group-toggle', function() {
+		var $g = $(this).closest('.lb-notify-group').toggleClass('is-collapsed');
+		$(this).attr('aria-expanded', $g.hasClass('is-collapsed') ? 'false' : 'true');
+	});
+
+	$block.on('click', '.lb-notify-more', function() {
+		$(this).closest('.lb-notify-group').addClass('is-showall');
+		refresh();
+	});
+
+	$block.on('click', '.lb-notify-group-delete', function() {
+		$(this).closest('.lb-notify-group').find('.lb-notify-box').each(function() {
+			deleteKey($(this).data('notifykey'));
+		});
+	});
+
+	$block.on('click', '#notifdeleteall', function(e) {
+		e.preventDefault();
+		$block.find('.lb-notify-box').each(function() {
+			deleteKey($(this).data('notifykey'));
+		});
+	});
+
+	$block.on('click', '.notifdelete', function(e) {
+		e.preventDefault();
 		deleteKey($(this).data('notifykey'));
 	});
-});
-$(".notifdelete").click(function() {
-	deleteKey($(this).data('notifykey'));
-});
 
-function deleteKey(delid) {
-	$("#notifyrow"+delid).fadeOut(400, function(){ $(this).remove(); });
-	$.post('/admin/system/ajax/ajax-notification-handler.cgi',
-		{ action: 'notify-deletekey', value: delid })
-	.done(function(data) {
-		updateNotificationCount(1);
-		if (typeof btnnotifies_setStorage === 'function') btnnotifies_setStorage(data[0], data[1]);
-	})
-	.always(function() {
-		if (typeof navbarglobal !== 'undefined') navbarglobal.$forceUpdate();
-	});
-}
-
-function updateNotificationCount(reduce) {
-	reduce = reduce || 0;
-	notificationCount = parseInt($("#notificationCount").text()) || 0;
-	if (reduce > 0) {
-		notificationCount -= reduce;
-		$("#notificationCount").text(notificationCount);
+	// Meldungen nach Herkunft gruppieren ("Paket / Name" -> Gruppe "Paket", Unterzeile "Name")
+	function buildGroups() {
+		var tpl = $block.find('.lb-notify-group-tpl')[0];
+		var $list = $block.find('.lb-notify-list');
+		var groups = {};
+		$list.children('.lb-notify-box').each(function() {
+			var title = String($(this).data('title') || '');
+			var pos = title.indexOf(' / ');
+			var key = pos > 0 ? title.substring(0, pos) : title;
+			$(this).find('.lb-notify-title').text(pos > 0 ? title.substring(pos + 3) : '');
+			if (!groups[key]) {
+				var $g = $(document.importNode(tpl.content, true).firstElementChild);
+				$g.find('.lb-notify-group-title').text(key);
+				$g.insertBefore($list);
+				groups[key] = $g;
+			}
+			groups[key].find('.lb-notify-group-body').append(this);
+		});
+		block.classList.add('is-grouped');
 	}
-	if (notificationCount > 1) $("#notifdeleteall").fadeIn();
-	else                        $("#notifdeleteall").fadeOut();
-	if (notificationCount <= 0) {
-		$("#notificationItems").fadeOut(400, function() {
-			$("#noNotificationsMsg").show();
+
+	function markClamped() {
+		$block.find('.lb-notify-message').each(function() {
+			$(this).toggleClass('is-clamped', this.scrollHeight > this.clientHeight + 1);
 		});
 	}
-}
+
+	function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
+
+	// Filter, Zaehler und "weitere anzeigen" neu berechnen
+	function refresh() {
+		var filter = block.getAttribute('data-filter') || 'all';
+		var $all = $block.find('.lb-notify-box');
+		$block.find('.lb-notify-count[data-count="all"]').text($all.length);
+		$block.find('.lb-notify-count[data-count="error"]').text($all.filter('[data-sev="error"]').length);
+		$block.find('.lb-notify-count[data-count="info"]').text($all.filter('[data-sev="info"]').length);
+
+		if (!grouped) return;
+		$block.find('.lb-notify-group').each(function() {
+			var $g = $(this);
+			var $rows = $g.find('.lb-notify-box');
+			if (!$rows.length) { $g.remove(); return; }
+			var nerr = $rows.filter('[data-sev="error"]').length;
+			var ninf = $rows.length - nerr;
+			$g.find('.lb-notify-badge-error').text(nerr ? plural(nerr, i18n.error, i18n.errors) : '');
+			$g.find('.lb-notify-badge-info').text(ninf ? plural(ninf, i18n.info, i18n.infos) : '');
+			var shown = 0, hidden = 0, showall = $g.hasClass('is-showall');
+			$rows.each(function() {
+				var match = filter === 'all' || $(this).data('sev') === filter;
+				var visible = match && (showall || shown < ROWS_VISIBLE);
+				$(this).toggleClass('is-hidden', !visible);
+				if (visible) shown++;
+				else if (match) hidden++;
+			});
+			$g.toggle(shown > 0);
+			$g.find('.lb-notify-more').text(hidden ? hidden + ' ' + i18n.more : '');
+		});
+		markClamped();
+	}
+
+	function deleteKey(delid) {
+		$block.find('#notifyrow' + delid).fadeOut(300, function() {
+			$(this).remove();
+			refresh();
+		});
+		$.post('/admin/system/ajax/ajax-notification-handler.cgi',
+			{ action: 'notify-deletekey', value: delid })
+		.done(function(data) {
+			updateNotificationCount(1);
+			if (typeof btnnotifies_setStorage === 'function') btnnotifies_setStorage(data[0], data[1]);
+		})
+		.always(function() {
+			if (typeof navbarglobal !== 'undefined') navbarglobal.$forceUpdate();
+		});
+	}
+
+	function updateNotificationCount(reduce) {
+		var $cnt = $block.find('#notificationCount');
+		var count = (parseInt($cnt.text()) || 0) - (reduce || 0);
+		$cnt.text(count);
+		if (!grouped) {
+			if (count > 1) $block.find('#notifdeleteall').fadeIn();
+			else           $block.find('#notifdeleteall').fadeOut();
+		}
+		if (count <= 0) {
+			$block.find('#notificationItems').fadeOut(300, function() {
+				$block.find('#noNotificationsMsg').show();
+			});
+		}
+	}
+	if (!grouped && $block.find('.lb-notify-box').length > 1) $block.find('#notifdeleteall').show();
+})();
 </script>
 </TMPL_IF>
 

@@ -15,12 +15,13 @@ use strict;
 $LoxBerry::Log::DEBUG = 1;
 
 our $helplink = "https://wiki.loxberry.de/";
-our $template_title = "Notifications";
+our $template_title;
 
 # Version of this script
 my $version = "3.0.0.1";
 
 our %SL = LoxBerry::System::readlanguage();
+$template_title = $SL{'NOTIFY.PAGE_TITLE'} || "Notifications";
 
 our %navbar;
 $navbar{1}{Name} = $SL{'HEADER.TITLE_PAGE_PLUGINS'};
