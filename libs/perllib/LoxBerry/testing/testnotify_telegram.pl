@@ -120,7 +120,10 @@ write_bytes($cfgfile, '{"ACTIVATE_TELEGRAM":1,"BOT_TOKEN":"1:x","RECIPIENTS":[{"
 		: Encode::encode_utf8(qq([TELEGRAM]\nMSG_ERROR="Fehler"\nMSG_SYSTEM="System"\nMSG_LOGFILE="Logdatei öffnen"\n));
 	LoxBerry::System::_parse_lang_file($content, \%SLb);
 	is($SLb{'TELEGRAM.MSG_LOGFILE'}, Encode::encode_utf8('Logdatei öffnen'), 'Sprachdatei liefert Bytes' . (defined $langfile ? " ($langfile)" : ''));
-	my ($SLc, $hostc) = tg_prepare(\%SLb, { friendlyname => Encode::encode_utf8('Küche'), hostname => 'loxberry', port => 80 });
+	# Friendlyname wie lbfriendlyname() ihn liefert: JSON::from_json auf die rohen Bytes von general.json
+	my $fnraw = JSON::from_json('{"x":"' . Encode::encode_utf8('Küche') . '"}')->{x};
+	ok(utf8::is_utf8($fnraw) && length($fnraw) == 6, 'Friendlyname-Eingabe in Form von lbfriendlyname (geflaggt, Bytes als Zeichen)');
+	my ($SLc, $hostc) = tg_prepare(\%SLb, { friendlyname => $fnraw, hostname => 'loxberry', port => 80 });
 	my $u = tg_format({SEVERITY=>3, _ISSYSTEM=>1, PACKAGE=>'t', NAME=>'n', MESSAGE=>'m', LOGFILE_REL=>'system/x.log'}, $SLc, $hostc);
 	like($u, qr{>Logdatei öffnen</a>}, 'Umlaut aus Sprachdatei als Zeichen');
 	like($u, qr{· Küche LoxBerry</b>}, 'Friendlyname mit Umlaut als Zeichen');
@@ -128,6 +131,8 @@ write_bytes($cfgfile, '{"ACTIVATE_TELEGRAM":1,"BOT_TOKEN":"1:x","RECIPIENTS":[{"
 	my (undef, $h2) = tg_prepare({}, { friendlyname => '', hostname => 'lb' });
 	is($h2->{friendlyname}, 'lb', 'leerer Friendlyname -> Hostname');
 	is(tg_chars('Küche'), 'Küche', 'Zeichen bleiben unverändert');
+	is(tg_chars(Encode::encode_utf8('Küche')), 'Küche', 'UTF-8-Bytes werden dekodiert');
+	is(tg_chars("Gr\x{fc}n \x{263a}"), "Gr\x{fc}n \x{263a}", 'Zeichen über 0xFF bleiben unverändert');
 }
 
 # --test: Empfaengername mit Umlaut steht genau einmal UTF-8-kodiert in der Ausgabe.

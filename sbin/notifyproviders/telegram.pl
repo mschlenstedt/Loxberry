@@ -379,10 +379,19 @@ sub tg_api
 
 # Byte string (UTF-8) -> characters. Strings that already are characters stay untouched;
 # invalid UTF-8 falls back to Latin-1 (e.g. a downgraded string from the caller).
+# Flagged strings without characters above 0xFF may still hold UTF-8 bytes as Latin-1
+# characters (lbfriendlyname: JSON::from_json on the raw general.json) - decode those too.
 sub tg_chars
 {
 	my ($s) = @_;
-	return $s if (!defined $s or ref($s) or utf8::is_utf8($s));
+	return $s if (!defined $s or ref($s));
+	if (utf8::is_utf8($s)) {
+		return $s if ($s =~ /[^\x00-\xFF]/);
+		my $bytes = $s;
+		utf8::downgrade($bytes);
+		my $chars = eval { Encode::decode('UTF-8', $bytes, Encode::FB_CROAK() | Encode::LEAVE_SRC()) };
+		return defined $chars ? $chars : $s;
+	}
 	my $copy = $s;
 	my $chars = eval { Encode::decode('UTF-8', $copy, Encode::FB_CROAK() | Encode::LEAVE_SRC()) };
 	return defined $chars ? $chars : Encode::decode('ISO-8859-1', $s);
