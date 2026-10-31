@@ -23,6 +23,7 @@ use LoxBerry::System;
 use LoxBerry::System::General;
 use LoxBerry::Web;
 use LoxBerry::Log;
+use JSON;
 use Time::Piece;
 
 
@@ -199,48 +200,19 @@ sub form {
 	$maintemplate->param ("SELFURL", $ENV{REQUEST_URI});
 
 
-	our $unattended_val = get_unattended_upgrades_days();
-	our $unattended_reboot_bool = get_unattended_upgrades_autoreboot();
+	# Debian/PHP updates by sbin/osupdate.pl (DietPi based LoxBerrys only)
+	my %osupdate = get_osupdate_settings();
+	$maintemplate->param("OSUPDATE_DIETPI", -e '/boot/dietpi/.version' ? 1 : 0);
+	$maintemplate->param("SECUPDATE_IS_$_", $osupdate{Interval} eq $_ ? 1 : 0) foreach ('0', '1', '7', '30');
+	$maintemplate->param("OSUPDATE_TYPE_ALL", $osupdate{Type} eq 'all' ? 1 : 0);
+	$maintemplate->param("AUTOREBOOT_BOOL", $osupdate{Reboot} eq 'true' ? 1 : 0);
 
-	print STDERR "OFF: $SL{'UPDATES.SECUPDATE_RADIO_OFF'}\n";
-
-	our $cgi = new CGI;
-	our %labels = (		'0'=>  $SL{'UPDATES.SECUPDATE_RADIO_OFF'},
-						'1'=> $SL{'UPDATES.SECUPDATE_RADIO_DAILY'},
-						'7'=> $SL{'UPDATES.SECUPDATE_RADIO_WEEKLY'},
-						'30'=> $SL{'UPDATES.SECUPDATE_RADIO_MONTHLY'});
-					 
-	our $update_radio = $cgi->radio_group(
-			-name 	 => 'option-secupdates',
-			-values  => ['0', '1', '7', '30'],
-			-labels  => \%labels,
-			-default => $unattended_val,
-		);
-	$maintemplate->param("UPDATE_RADIO", $update_radio);
-	$maintemplate->param("SECUPDATE_IS_0",  ($unattended_val eq '0')  ? 1 : 0);
-	$maintemplate->param("SECUPDATE_IS_1",  ($unattended_val eq '1')  ? 1 : 0);
-	$maintemplate->param("SECUPDATE_IS_7",  ($unattended_val eq '7')  ? 1 : 0);
-	$maintemplate->param("SECUPDATE_IS_30", ($unattended_val eq '30') ? 1 : 0);
-	$maintemplate->param("AUTOREBOOT_BOOL", $unattended_reboot_bool);
-
-	my %uustatus = get_unattended_upgrades_status();
-	my %intervals = ( 0 => 'SECUPDATE_RADIO_OFF', 1 => 'SECUPDATE_RADIO_DAILY', 7 => 'SECUPDATE_RADIO_WEEKLY', 30 => 'SECUPDATE_RADIO_MONTHLY' );
-	my $interval = $intervals{$uustatus{days}} ? $SL{'UPDATES.' . $intervals{$uustatus{days}}} : "$uustatus{days} $SL{'UPDATES.STATUS_DAYS'}";
-	$maintemplate->param("UU_TIMER", $uustatus{timer});
-	$maintemplate->param("UU_INTERVAL", $interval);
-	$maintemplate->param("UU_INTERVAL_ON", $uustatus{days} > 0 ? 1 : 0);
-	$maintemplate->param("UU_INTERVAL_MISMATCH", $uustatus{days} ne $unattended_val ? 1 : 0);
-	$maintemplate->param("UU_SECURITY", $uustatus{security});
-	$maintemplate->param("UU_SURY", $uustatus{sury});
-	$maintemplate->param("UU_LASTRUN", $uustatus{lastrun});
-
-	our $update_reboot_checkbox = $cgi->checkbox( -name => 'updates-autoreboot',
-												  -checked => $unattended_reboot_bool,
-												  #-checked => 1,
-												  #-value => '1',
-												  -label => $SL{'UPDATES.SECUPDATE_REBOOT_ENABLED'}
-		);
-	$maintemplate->param("UPDATE_REBOOT_CHECKBOX", $update_reboot_checkbox);
+	my %osstatus = get_osupdate_status();
+	$maintemplate->param("OSUPDATE_LASTRUN", $osstatus{lastrun});
+	$maintemplate->param("OSUPDATE_RESULT_OK", $osstatus{result} eq 'ok' ? 1 : 0);
+	$maintemplate->param("OSUPDATE_RESULT_ERROR", $osstatus{result} eq 'error' ? 1 : 0);
+	$maintemplate->param("OSUPDATE_PACKAGES", $osstatus{packages});
+	$maintemplate->param("OSUPDATE_REBOOT", -e '/run/reboot-required' ? 1 : 0);
 		
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'UPDATES.WIDGETLABEL'};
 
@@ -328,6 +300,7 @@ sub lbuhistory
 
 	$maintemplate->param("UPDATELOGS_HTML", loglist_html( PACKAGE => 'LoxBerry Update', NAME => 'update' ));
 	$maintemplate->param("UPDATECHECKLOGS_HTML", loglist_html( PACKAGE => 'LoxBerry Update', NAME => 'check' ));
+	$maintemplate->param("OSUPDATELOGS_HTML", loglist_html( PACKAGE => 'LoxBerry Update', NAME => 'osupdate' ));
 	
 	
 	# Print Template
@@ -407,64 +380,33 @@ sub is_folder_empty {
 }
 
 ###################################################################
-# Returns the current days of unattended-upgrades
+# Settings of sbin/osupdate.pl from general.json
 ###################################################################
 
-sub get_unattended_upgrades_days
+sub get_osupdate_settings
 {
-	my $aptfile = "$lbhomedir/system/unattended-upgrades/periodic.conf";
-	if (!-f $aptfile) {
-		return 0; 
+	my $cfg = LoxBerry::System::General->new()->open( readonly => 1 );
+	my %settings = ( Interval => '7', Type => 'security', Reboot => 'false' );
+	foreach my $key ( keys %settings ) {
+		$settings{$key} = $cfg->{Osupdate}->{$key} if ( defined $cfg->{Osupdate}->{$key} );
 	}
-	open(FILE, $aptfile) || die "File not found";
-	my @lines = <FILE>;
-	close(FILE);
-
-	my $querystring;
-	my $queryresult;
-	
-	foreach(@lines) {
-		if (begins_with($_, "APT::Periodic::Unattended-Upgrade"))
-			{   my ($querystring, $queryresult) = split / /;
-				$queryresult =~ s/\R//g;
-				$queryresult =~ s/[\$"#@~!&*()\[\];.,:?^ `\\\/]+//g; #" Highlighting fix for Ultra Edit
-				return $queryresult;
-			}
-	}
-return 0;
+	return %settings;
 }
 
 ###################################################################
-# Returns if unattended-upgrades is set to automatically reboot
+# Result of the last run of sbin/osupdate.pl
 ###################################################################
 
-sub get_unattended_upgrades_autoreboot
+sub get_osupdate_status
 {
-	# Automatic-Reboot decides about the reboot (default false), not WithUsers
-	my $aptfile = "$lbhomedir/system/unattended-upgrades/unattended-upgrades.conf";
-	open(my $fh, '<', $aptfile) or return 0;
-	my $reboot = grep { /^\s*Unattended-Upgrade::Automatic-Reboot\s+"true"/ } <$fh>;
+	my %status = ( lastrun => '', result => '', packages => 0 );
+	my $statusfile = "$lbsdatadir/osupdate.json";
+	open( my $fh, '<', $statusfile ) or return %status;
+	my $data = eval { decode_json( do { local $/; <$fh> } ) };
 	close($fh);
-	return $reboot ? 1 : 0;
-}
-
-###################################################################
-# What apt really does - the settings above can be overruled by
-# other files in /etc/apt/apt.conf.d, and DietPi masks the timers
-###################################################################
-
-sub get_unattended_upgrades_status
-{
-	my %status = ( days => 0, security => 0, sury => 0, timer => 0, lastrun => '' );
-	foreach (`apt-config dump 2>/dev/null`) {
-		$status{days} = $1 if (/^APT::Periodic::Unattended-Upgrade "(\d+)";/);
-		$status{security} = 1 if (/^Unattended-Upgrade::Origins-Pattern:: ".*-security.*";/);
-		$status{sury} = 1 if (/^Unattended-Upgrade::Origins-Pattern:: ".*deb\.sury\.org.*";/);
-	}
-	my $timer = `systemctl is-active apt-daily-upgrade.timer 2>/dev/null`;
-	chomp($timer);
-	$status{timer} = 1 if ($timer eq 'active');
-	my $stamp = "/var/lib/apt/periodic/unattended-upgrades-stamp";
-	$status{lastrun} = localtime((stat($stamp))[9])->strftime("%d.%m.%Y %H:%M") if (-e $stamp);
+	return %status if ( ref($data) ne 'HASH' || !$data->{lastrun} );
+	$status{lastrun} = localtime( $data->{lastrun} )->strftime("%d.%m.%Y %H:%M");
+	$status{result} = $data->{result} // '';
+	$status{packages} = ref( $data->{packages} ) eq 'ARRAY' ? scalar @{ $data->{packages} } : 0;
 	return %status;
 }

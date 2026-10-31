@@ -37,8 +37,7 @@ my $value = $R::value;
 # print STDERR "| Value: $value" if $value;
 # print STDERR "\n";
 
-if    ($action eq 'secupdates') { &secupdates; }
-elsif ($action eq 'secupdates-autoreboot') { &secupdatesautoreboot; }
+if    ($action eq 'osupdate') { &osupdate; }
 elsif ($action eq 'poweroff') { &poweroff; }
 elsif ($action eq 'reboot') { &reboot; }
 elsif ($action eq 'ping') { $response{message} = "pong"; $response{error} = 0; exit; }
@@ -72,101 +71,30 @@ else   {
 exit;
 
 ################################
-# unattended-upgrades setting
+# Debian/PHP updates (sbin/osupdate.pl)
 ################################
-sub secupdates
+sub osupdate
 {
-	# print STDERR "ajax-config-handler: ajax secupdates\n";
-	# print STDERR "Value is: $value\n";
-	
-	if ($value !~ /^(0|1|7|30)$/) {
-		$response{message} = "<red>Value $value not supported.</red>";
-		$response{error} = 1;
-		return();
-	}
+	my $interval = $cgi->param('interval') // '';
+	my $type = $cgi->param('type') // '';
+	my $reboot = $cgi->param('reboot') // '';
 
-	# LoxBerry's own file, linked to /etc/apt/apt.conf.d (99loxberry-periodic, older systems 02periodic)
-	my $aptfile = "$lbhomedir/system/unattended-upgrades/periodic.conf";
-	write_aptconf($aptfile, {
-		'APT::Periodic::Unattended-Upgrade' => $value,
-		'APT::Periodic::Update-Package-Lists' => $value,
-	});
-}
-
-############################################
-# Sets "Key "value";" lines in an apt config file. A key that is missing
-# (or only commented out) is appended. Errors are answered with HTTP 500.
-############################################
-sub write_aptconf
-{
-	my ($aptfile, $settings) = @_;
-
-	my $fh;
-	if (!open($fh, '+<', $aptfile)) {
-		$response{message} = "ERROR: Could not open $aptfile: $!";
-		return;
-	}
-	flock($fh, 2);
-	my @lines = <$fh>;
-
-	my %found;
-	foreach (@lines) {
-		foreach my $key (keys %$settings) {
-			if (/^\s*\Q$key\E\s/) {
-				$_ = "$key \"$settings->{$key}\";\n";
-				$found{$key} = 1;
-			}
-		}
-	}
-	foreach my $key (sort keys %$settings) {
-		push(@lines, "$key \"$settings->{$key}\";\n") if (!$found{$key});
-	}
-
-	seek($fh, 0, 0);
-	truncate($fh, 0);
-	my $ok = print $fh @lines;
-	$ok = close($fh) && $ok;
-	if ($ok) {
-		$response{message} = "Settings written to $aptfile";
-		$response{error} = 0;
-	} else {
-		$response{message} = "ERROR: Could not write $aptfile: $!";
-	}
-}
-
-############################################
-# unattended-upgrades auto-reboot setting
-############################################
-sub secupdatesautoreboot
-{
-	# print STDERR "ajax-config-handler: secupdates-autoreboot\n";
-	# print STDERR "Value is: $value\n";
-	
-	if ($value ne "true" && $value ne "false") {
+	if ($interval !~ /^(0|1|7|30)$/ || $type !~ /^(security|all)$/ || $reboot !~ /^(true|false)$/) {
 		$response{message} = "<red>Value not supported.</red>";
 		$response{error} = 1;
 		return();
 	}
 
-	# Automatic-Reboot decides about the reboot, WithUsers only allows it while
-	# someone is logged in. Systems without the 4.0.1.2 configuration get the
-	# missing lines appended.
-	my $aptfile = "$lbhomedir/system/unattended-upgrades/unattended-upgrades.conf";
-	my %settings = (
-		'Unattended-Upgrade::Automatic-Reboot' => $value,
-		'Unattended-Upgrade::Automatic-Reboot-WithUsers' => 'true',
-	);
-	$settings{'Unattended-Upgrade::Automatic-Reboot-Time'} = '02:00' if (!has_aptconf_key($aptfile, 'Unattended-Upgrade::Automatic-Reboot-Time'));
-	write_aptconf($aptfile, \%settings);
-}
-
-sub has_aptconf_key
-{
-	my ($aptfile, $key) = @_;
-	open(my $fh, '<', $aptfile) or return 0;
-	my $found = grep { /^\s*\Q$key\E\s/ } <$fh>;
-	close($fh);
-	return $found;
+	# change_generaljson() deletes keys with a false value like "0"
+	require LoxBerry::System::General;
+	my $jsonobj = LoxBerry::System::General->new();
+	my $cfg = $jsonobj->open() or return;
+	$cfg->{Osupdate}->{Interval} = $interval;
+	$cfg->{Osupdate}->{Type} = $type;
+	$cfg->{Osupdate}->{Reboot} = $reboot;
+	$jsonobj->write();
+	$response{error} = 0;
+	$response{message} = "OK";
 }
 
 ############################################

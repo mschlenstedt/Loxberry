@@ -6,7 +6,7 @@
       "Startsetup" : "1",
       "Systemloglevel" : "6",
       "Theme" : "classic",
-      "Version" : "4.0.1.2"
+      "Version" : "4.0.1.3"
    },
    "Healthcheck" : null,
    "Miniserver" : {
@@ -78,6 +78,11 @@
       "Keepupdatefiles" : null,
       "Latestsha" : null,
       "Releasetype" : "release"
+   },
+   "Osupdate" : {
+      "Interval" : "7",
+      "Reboot" : "true",
+      "Type" : "security"
    },
    "Watchdog" : {
       "Maxtemp" : "85"
