@@ -25,6 +25,24 @@
 					<label><input type="checkbox" name="updates-autoreboot" <TMPL_IF AUTOREBOOT_BOOL>checked</TMPL_IF>> <TMPL_VAR UPDATES.SECUPDATE_REBOOT_ENABLED></label>
 				</div>
 			</div>
+			<!-- Status of unattended-upgrades as apt sees it -->
+			<div class="lb-updates-grid" style="display:grid; grid-template-columns:1fr 40%; gap:var(--lb-space-md); align-items:start; margin-bottom:var(--lb-space-lg);">
+				<div><TMPL_VAR UPDATES.STATUS_LABEL></div>
+				<div style="display:flex; flex-direction:column; gap:4px;">
+					<TMPL_IF UU_TIMER>
+					<span><i class="pi pi-check-circle" style="color:var(--lb-success)"></i> <TMPL_VAR UPDATES.STATUS_TIMER_ON></span>
+					<TMPL_ELSE>
+					<span><i class="pi pi-times-circle" style="color:var(--lb-danger)"></i> <TMPL_VAR UPDATES.STATUS_TIMER_OFF></span>
+					</TMPL_IF>
+					<span><i class="pi <TMPL_IF UU_INTERVAL_ON>pi-check-circle<TMPL_ELSE>pi-times-circle</TMPL_IF>" style="color:var(<TMPL_IF UU_INTERVAL_ON>--lb-success<TMPL_ELSE>--lb-danger</TMPL_IF>)"></i> <TMPL_VAR UPDATES.STATUS_INTERVAL>: <TMPL_VAR UU_INTERVAL></span>
+					<TMPL_IF UU_INTERVAL_MISMATCH>
+					<span><i class="pi pi-exclamation-triangle" style="color:var(--lb-warning)"></i> <TMPL_VAR UPDATES.STATUS_MISMATCH></span>
+					</TMPL_IF>
+					<span><i class="pi <TMPL_IF UU_SECURITY>pi-check-circle<TMPL_ELSE>pi-times-circle</TMPL_IF>" style="color:var(<TMPL_IF UU_SECURITY>--lb-success<TMPL_ELSE>--lb-danger</TMPL_IF>)"></i> <TMPL_VAR UPDATES.STATUS_SOURCE_DEBIAN></span>
+					<span><i class="pi <TMPL_IF UU_SURY>pi-check-circle<TMPL_ELSE>pi-times-circle</TMPL_IF>" style="color:var(<TMPL_IF UU_SURY>--lb-success<TMPL_ELSE>--lb-danger</TMPL_IF>)"></i> <TMPL_VAR UPDATES.STATUS_SOURCE_PHP></span>
+					<span><i class="pi pi-clock"></i> <TMPL_VAR UPDATES.STATUS_LASTRUN>: <TMPL_IF UU_LASTRUN><TMPL_VAR UU_LASTRUN><TMPL_ELSE><TMPL_VAR UPDATES.STATUS_NEVER></TMPL_IF></span>
+				</div>
+			</div>
 			<div class="lb-actions">
 				<a href="/admin/system/index.cgi?form=system" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-times"></i> <TMPL_VAR COMMON.BUTTON_CANCEL></a>
 				<button type="button" id="btn-save-secupdates" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_SAVE></button>
@@ -88,6 +106,8 @@
 				$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates-autoreboot", value: reboot}})
 			).done(function(){
 				$("#savehint-secupdates").attr("style","color:green").html("<TMPL_VAR COMMON.MSG_SAVEOK>");
+				// Show the new status
+				setTimeout(function(){ location.reload(); }, 1000);
 			}).fail(function(){
 				$("#savehint-secupdates").attr("style","color:red").html("<TMPL_VAR COMMON.MESSAGE_GENERIC_ERROR>");
 			});

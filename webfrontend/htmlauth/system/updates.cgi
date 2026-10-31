@@ -223,6 +223,17 @@ sub form {
 	$maintemplate->param("SECUPDATE_IS_30", ($unattended_val eq '30') ? 1 : 0);
 	$maintemplate->param("AUTOREBOOT_BOOL", $unattended_reboot_bool);
 
+	my %uustatus = get_unattended_upgrades_status();
+	my %intervals = ( 0 => 'SECUPDATE_RADIO_OFF', 1 => 'SECUPDATE_RADIO_DAILY', 7 => 'SECUPDATE_RADIO_WEEKLY', 30 => 'SECUPDATE_RADIO_MONTHLY' );
+	my $interval = $intervals{$uustatus{days}} ? $SL{'UPDATES.' . $intervals{$uustatus{days}}} : "$uustatus{days} $SL{'UPDATES.STATUS_DAYS'}";
+	$maintemplate->param("UU_TIMER", $uustatus{timer});
+	$maintemplate->param("UU_INTERVAL", $interval);
+	$maintemplate->param("UU_INTERVAL_ON", $uustatus{days} > 0 ? 1 : 0);
+	$maintemplate->param("UU_INTERVAL_MISMATCH", $uustatus{days} ne $unattended_val ? 1 : 0);
+	$maintemplate->param("UU_SECURITY", $uustatus{security});
+	$maintemplate->param("UU_SURY", $uustatus{sury});
+	$maintemplate->param("UU_LASTRUN", $uustatus{lastrun});
+
 	our $update_reboot_checkbox = $cgi->checkbox( -name => 'updates-autoreboot',
 												  -checked => $unattended_reboot_bool,
 												  #-checked => 1,
@@ -401,7 +412,7 @@ sub is_folder_empty {
 
 sub get_unattended_upgrades_days
 {
-	my $aptfile = "/etc/apt/apt.conf.d/02periodic";
+	my $aptfile = "$lbhomedir/system/unattended-upgrades/periodic.conf";
 	if (!-f $aptfile) {
 		return 0; 
 	}
@@ -429,29 +440,31 @@ return 0;
 
 sub get_unattended_upgrades_autoreboot
 {
-	my $aptfile = "/etc/apt/apt.conf.d/50unattended-upgrades";
-	if (!-f $aptfile) {
-		return 0; 
-	}
-	open(FILE, $aptfile) || die "File not found";
-	my @lines = <FILE>;
-	close(FILE);
+	# Automatic-Reboot decides about the reboot (default false), not WithUsers
+	my $aptfile = "$lbhomedir/system/unattended-upgrades/unattended-upgrades.conf";
+	open(my $fh, '<', $aptfile) or return 0;
+	my $reboot = grep { /^\s*Unattended-Upgrade::Automatic-Reboot\s+"true"/ } <$fh>;
+	close($fh);
+	return $reboot ? 1 : 0;
+}
 
-	my $querystring;
-	my $queryresult;
-	
-	foreach(@lines) {
-		if (begins_with($_, "Unattended-Upgrade::Automatic-Reboot-WithUsers "))
-			{   my ($querystring, $queryresult) = split / /;
-				# print STDERR "AUTOREBOOT QUERYRESULT: " . $queryresult . "\n";
-				$queryresult =~ s/\R//g;
-				#print STDERR "AUTOREBOOT QUERYRESULT: " . $queryresult . "\n";
-				$queryresult =~ s/[\$"#@~!&*()\[\];.,:?^ `\\\/]+//g;
-				#print STDERR "AUTOREBOOT QUERYRESULT: #" . $queryresult . "#\n";
-				return $queryresult eq 'true' ? 1 : 0;
-				#print STDERR "AUTOREBOOT RETURNVAL: " . $returnval . "\n";
-				#return $returnval;
-			}
+###################################################################
+# What apt really does - the settings above can be overruled by
+# other files in /etc/apt/apt.conf.d, and DietPi masks the timers
+###################################################################
+
+sub get_unattended_upgrades_status
+{
+	my %status = ( days => 0, security => 0, sury => 0, timer => 0, lastrun => '' );
+	foreach (`apt-config dump 2>/dev/null`) {
+		$status{days} = $1 if (/^APT::Periodic::Unattended-Upgrade "(\d+)";/);
+		$status{security} = 1 if (/^Unattended-Upgrade::Origins-Pattern:: ".*-security.*";/);
+		$status{sury} = 1 if (/^Unattended-Upgrade::Origins-Pattern:: ".*deb\.sury\.org.*";/);
 	}
-return 0;
+	my $timer = `systemctl is-active apt-daily-upgrade.timer 2>/dev/null`;
+	chomp($timer);
+	$status{timer} = 1 if ($timer eq 'active');
+	my $stamp = "/var/lib/apt/periodic/unattended-upgrades-stamp";
+	$status{lastrun} = localtime((stat($stamp))[9])->strftime("%d.%m.%Y %H:%M") if (-e $stamp);
+	return %status;
 }

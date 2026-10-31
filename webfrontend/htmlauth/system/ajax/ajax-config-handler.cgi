@@ -79,54 +79,58 @@ sub secupdates
 	# print STDERR "ajax-config-handler: ajax secupdates\n";
 	# print STDERR "Value is: $value\n";
 	
-	if (!looks_like_number($value) && $value ne 'query') 
-		{ $response{message} = "<red>Value $value not supported.</red>"; 
-		  $response{error} = 1;
-		  return();}
-	
-	my $aptfile = "/etc/apt/apt.conf.d/02periodic";
-	open(FILE, $aptfile) || die "File not found";
-	flock(FILE,1);
-	my @lines = <FILE>;
-	close(FILE);
-
-	my $querystring;
-	my $queryresult;
-	
-	my @newlines;
-	foreach(@lines) {
-		if (begins_with($_, "APT::Periodic::Unattended-Upgrade"))
-			{   # print STDERR "############ FOUND #############";
-				# if ($value eq 'query') {
-					# my ($querystring, $queryresult) = split / /;
-					# print STDERR "### QUERY result: " . $queryresult . "\n";
-					# $queryresult =~ s/[\$"#@~!&*()\[\];.,:?^ `\\\/]+//g;
-					# # print "option-secupdates-" . $queryresult;
-				# } else {
-				$_ = "APT::Periodic::Unattended-Upgrade \"$value\";\n"; 
-				#}
-			}
-		if (begins_with($_, "APT::Periodic::Update-Package-Lists") && $value ne 'query')
-			{   # print STDERR "############ FOUND #############";
-				$_ = "APT::Periodic::Update-Package-Lists \"$value\";\n";
-			}
-		push(@newlines,$_);
+	if ($value !~ /^(0|1|7|30)$/) {
+		$response{message} = "<red>Value $value not supported.</red>";
+		$response{error} = 1;
+		return();
 	}
 
-	if ($value ne 'query') {
-		eval {
-			open(FILE, '>', $aptfile);
-			flock(FILE,2);
-			print FILE @newlines;
-			close(FILE);
-			$response{message} = "Change of APT::Periodic::Unattended-Upgrade to $value written successfully";
-			$response{error} = 0;
-		};
-		if ($@) {
-			$response{message} = "ERROR: Change of APT::Periodic::Unattended-Upgrade to $value: $!";
-			$response{error} = 1;
+	# LoxBerry's own file, linked to /etc/apt/apt.conf.d (99loxberry-periodic, older systems 02periodic)
+	my $aptfile = "$lbhomedir/system/unattended-upgrades/periodic.conf";
+	write_aptconf($aptfile, {
+		'APT::Periodic::Unattended-Upgrade' => $value,
+		'APT::Periodic::Update-Package-Lists' => $value,
+	});
+}
+
+############################################
+# Sets "Key "value";" lines in an apt config file. A key that is missing
+# (or only commented out) is appended. Errors are answered with HTTP 500.
+############################################
+sub write_aptconf
+{
+	my ($aptfile, $settings) = @_;
+
+	my $fh;
+	if (!open($fh, '+<', $aptfile)) {
+		$response{message} = "ERROR: Could not open $aptfile: $!";
+		return;
+	}
+	flock($fh, 2);
+	my @lines = <$fh>;
+
+	my %found;
+	foreach (@lines) {
+		foreach my $key (keys %$settings) {
+			if (/^\s*\Q$key\E\s/) {
+				$_ = "$key \"$settings->{$key}\";\n";
+				$found{$key} = 1;
+			}
 		}
-		
+	}
+	foreach my $key (sort keys %$settings) {
+		push(@lines, "$key \"$settings->{$key}\";\n") if (!$found{$key});
+	}
+
+	seek($fh, 0, 0);
+	truncate($fh, 0);
+	my $ok = print $fh @lines;
+	$ok = close($fh) && $ok;
+	if ($ok) {
+		$response{message} = "Settings written to $aptfile";
+		$response{error} = 0;
+	} else {
+		$response{message} = "ERROR: Could not write $aptfile: $!";
 	}
 }
 
@@ -138,51 +142,31 @@ sub secupdatesautoreboot
 	# print STDERR "ajax-config-handler: secupdates-autoreboot\n";
 	# print STDERR "Value is: $value\n";
 	
-	if ($value ne "true" && $value ne "false" && $value ne "query") { 
-		$response{message} = "<red>Value not supported.</red>"; 
+	if ($value ne "true" && $value ne "false") {
+		$response{message} = "<red>Value not supported.</red>";
 		$response{error} = 1;
 		return();
 	}
-	
-	my $aptfile = "/etc/apt/apt.conf.d/50unattended-upgrades";
-	open(FILE, $aptfile) || die "File not found";
-	flock(FILE,1);
-	my @lines = <FILE>;
-	close(FILE);
 
-	my $querystring;
-	my $queryresult;
-	
-	my @newlines;
-	foreach(@lines) {
-		if (begins_with($_, "Unattended-Upgrade::Automatic-Reboot-WithUsers")) { 
-			# print STDERR "############ FOUND #############";
-			# if ($value eq 'query') {
-				# my ($querystring, $queryresult) = split / /;
-				# # print STDERR "### QUERY result: " . $queryresult . "\n";
-				# $queryresult =~ s/[\$"#@~!&*()\[\];.,:?^ `\\\/]+//g; #" Syntax highlighting fix for UltraEdit
-				# print "secupdates-autoreboot-" . $queryresult;
-			# } else {
-				$_ = $value eq "false" ? "Unattended-Upgrade::Automatic-Reboot-WithUsers \"false\";\n" : "Unattended-Upgrade::Automatic-Reboot-WithUsers \"true\";\n";
-			# }
-		}
-		push(@newlines,$_);
-	}
+	# Automatic-Reboot decides about the reboot, WithUsers only allows it while
+	# someone is logged in. Systems without the 4.0.1.2 configuration get the
+	# missing lines appended.
+	my $aptfile = "$lbhomedir/system/unattended-upgrades/unattended-upgrades.conf";
+	my %settings = (
+		'Unattended-Upgrade::Automatic-Reboot' => $value,
+		'Unattended-Upgrade::Automatic-Reboot-WithUsers' => 'true',
+	);
+	$settings{'Unattended-Upgrade::Automatic-Reboot-Time'} = '02:00' if (!has_aptconf_key($aptfile, 'Unattended-Upgrade::Automatic-Reboot-Time'));
+	write_aptconf($aptfile, \%settings);
+}
 
-	if ($value ne 'query') {
-		eval {
-			open(FILE, '>', $aptfile);
-			flock(FILE,2);
-			print FILE @newlines;
-			close(FILE);
-			$response{message} = "Change of Unattended-Upgrade::Automatic-Reboot-WithUsers to $value written successfully";
-			$response{error} = 0;
-		};
-		if ($@) {
-			$response{message} = "ERROR: Change of Unattended-Upgrade::Automatic-Reboot-WithUsers to $value: $!";
-			$response{error} = 1;
-		}
-	}
+sub has_aptconf_key
+{
+	my ($aptfile, $key) = @_;
+	open(my $fh, '<', $aptfile) or return 0;
+	my $found = grep { /^\s*\Q$key\E\s/ } <$fh>;
+	close($fh);
+	return $found;
 }
 
 ############################################
