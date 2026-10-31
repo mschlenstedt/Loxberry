@@ -46,7 +46,7 @@ use POSIX qw(strftime);
 use strict;
 use warnings;
 
-my $version = "4.0.1.3";
+my $version = "4.0.1.4";
 
 my %args = map { split(/=/, $_, 2) } grep { /=/ } @ARGV;
 my $cron = ($args{cron} // '') eq 'daily';
@@ -143,7 +143,8 @@ sub run_update
 	my $tmpdir = tempdir( CLEANUP => 1 );
 	my $pinopts = "";
 	if ( $type eq 'security' ) {
-		$pinopts = "-o Dir::Etc::Preferences=$tmpdir/preferences";
+		mkdir("$tmpdir/preferences.d");
+		$pinopts = "-o Dir::Etc::Preferences=$tmpdir/preferences -o Dir::Etc::PreferencesParts=$tmpdir/preferences.d";
 		write_pinfile("$tmpdir/preferences") or do {
 			LOGCRIT "Could not write the APT pin file: $!";
 			save_status( 'error', 'pinfile', [] );
@@ -190,8 +191,9 @@ sub run_update
 	return $errors;
 }
 
-# Our pin comes first - for "Package: *" entries the first match counts.
-# An existing /etc/apt/preferences is appended, preferences.d stays active.
+# Only this pin file counts for "security": a plugin pinning its own package
+# with priority 1000 (e.g. "grafana 13.1.*") would otherwise get it upgraded
+# from a third-party repository. Packages on hold stay untouched (dpkg).
 sub write_pinfile
 {
 	my ($file) = @_;
@@ -211,12 +213,16 @@ sub write_pinfile
 		print $fh "Package: *\nPin: $origin\nPin-Priority: 500\n\n";
 	}
 	print $fh "Package: *\nPin: release o=*\nPin-Priority: 50\n\n";
-	if ( open( my $sys, '<', '/etc/apt/preferences' ) ) {
-		print $fh $_ while ( <$sys> );
-		close($sys);
-	}
+	# Repositories without an Origin field are not matched by o=*
+	my ($iexitcode, $sites) = execute( command => "apt-get indextargets --format '\$(SITE)'" );
+	my %hosts = map { m{^\w+://([^/:]+)} ? ( $1 => 1 ) : () } split( /\n/, $sites );
+	print $fh "Package: *\nPin: origin \"$_\"\nPin-Priority: 50\n\n" foreach ( sort keys %hosts );
 	close($fh) or return 0;
 	LOGINF "Allowed origins: " . join( ', ', @origins );
+	if ( open( my $pin, '<', $file ) ) {
+		LOGDEB "APT pin file:\n" . do { local $/; <$pin> };
+		close($pin);
+	}
 	return 1;
 }
 
