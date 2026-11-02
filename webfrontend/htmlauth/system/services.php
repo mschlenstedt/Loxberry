@@ -74,14 +74,8 @@ header("Cache-Control: max-age=0");
 header("Pragma: no-cache");
 
 # Menu
-if (isset($_GET['check_webport'])) {
-	check_webport();
-} else if (isset($_GET['webport_success'])) {
-	webport_success();
-} else if (isset($_GET['check_sslport'])) {
-	check_sslport();
-} else if (isset($_GET['sslport_success'])) {
-	sslport_success();
+if (isset($_GET['finalize'])) {
+	webserver_finalize_page();
 } else if (isset($_POST['saveformdata'])) {
   save();
 } else {
@@ -271,18 +265,10 @@ function form() {
 			<label for="sslenabled"><?=$SL['SERVICES.LABEL_SSLENABLED'];?></label>
 		</div>
 		<div class="lb-form-field">
-			<?php if (isset($_SERVER['HTTPS'])): ?>
-				<label class="lb-toggle"><input type="checkbox" id="sslenabled" name="sslenabled" <?=$checkedssl;?> value="disabled" disabled="disabled"><span class="lb-toggle-slider"></span></label>
-			<?php else: ?>
 			<label class="lb-toggle"><input type="checkbox" id="sslenabled" name="sslenabled" <?=$checkedssl;?> value="enabled"><span class="lb-toggle-slider"></span></label>
-			<?php endif; ?>
 		</div>
 		<div class="lb-form-help">
-			<div class="hint"><?=$SL['SERVICES.HINT_SSL'];?>
-			<?php if (isset($_SERVER['HTTPS'])): ?>
-			<?=$SL['SERVICES.HINT_SSL_ENABLED'];?>
-			<?php endif; ?>
-			</div>
+			<div class="hint"><?=$SL['SERVICES.HINT_SSL'];?></div>
 		</div>
 	</div>
 
@@ -310,9 +296,19 @@ function form() {
 		</div>
 	</div>
 
-	<div id="changed_hint" class="hint" style="display:none;color:green;">
-		<b><?=$SL['SERVICES.HINT_PORT_CHANGED'];?></b>
+	<?php $pending = webserver_pending();
+	if ($pending): ?>
+	<div class="lb-form-row">
+		<div class="lb-form-label"></div>
+		<div class="lb-form-field" style="min-width:0">
+			<div class="hint" style="color:var(--lb-color-warning, #b36b00)"><?=$SL['SERVICES.WEBSERVER_PENDING'];?></div>
+			<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+				<a class="lb-btn lb-btn-sm lb-btn-primary lb-btn-icon" href="<?=htmlspecialchars($pending['finalizeurl']);?>"><i class="pi pi-check"></i> <?=$SL['SERVICES.BUTTON_FINALIZE'];?></a>
+				<button type="submit" form="main_form" name="webrevert" value="1" class="lb-btn lb-btn-sm lb-btn-icon"><i class="pi pi-undo"></i> <?=$SL['SERVICES.BUTTON_REVERT'];?></button>
+			</div>
+		</div>
 	</div>
+	<?php endif; ?>
 
 	</form>
 	<div class="lb-actions">
@@ -324,45 +320,11 @@ function form() {
 	
 <script>
 
-var Webport;
-var Sslport;
-
 $(document).ready( function () {
-
-	Webport = $('#webport').val();
-	Sslport = $('#sslport').val();	
-
 	validate_enable('#sslport');
 	validate_chk_object(['#sslport']);
 	validate_enable('#webport');
 	validate_chk_object(['#webport']);
-	
-});
-
-$('#webport').on("input", function ()
-{
-	if( $('#webport').val() !== Webport ) {
-		$('#sslport').addClass("ui-state-disabled");
-		$('#web').val("webport");
-		$('#changed_hint').show();
-	} else {
-		$('#sslport').removeClass("ui-state-disabled");
-		$('#web').val("0");
-		$('#changed_hint').hide();
-	}
-});
-
-$('#sslport').on('input', function ()
-{
-	if( $('#sslport').val() !== Sslport ) {
-		$('#webport').addClass("ui-state-disabled");
-		$('#web').val("sslport");
-		$('#changed_hint').show();
-	} else {
-		$('#webport').removeClass("ui-state-disabled");
-		$('#web').val("0");
-		$('#changed_hint').hide();
-	}
 });
 
 </script>
@@ -483,47 +445,12 @@ function save()
 	}
 
 	/* Apache */
-
-	if (isset($_POST['web'])) {
-		if (isset($_POST['sslenabled'])) {
-			$sslon = true;
-		} else {
-			$sslon = false;
-		}
-		if (is_enabled($cfg->Webserver->Sslenabled) != $sslon) {
-			$ssl_changed = true;
-		}
+	$web = null;
+	if (isset($_POST['webrevert'])) {
+		$web = webserver_revert();
+	} else if (isset($_POST['web'])) {
+		$web = webserver_save();
 	}
-	if (isset($_POST['web']) && ($_POST['web'] === "webport")) {
-		error_log("webport changed");
-		if ($_POST['webport'] > 0 && $_POST['webport'] < 65535) {
-			$tmp = exec("netstat -tnap | egrep ':".$_POST['webport']." .*LISTEN'");
-			if ( $tmp === "" ) {
-				$webport = $_POST['webport'];
-				if ( $webport != $cfg->Webserver->Port ) {
-					$webserver_changed = True;
-					$weboldport = $cfg->Webserver->Port;
-				}
-			} else {
-				$webport = 'inuse';
-			}
- 		}
-	}
-        if (isset($_POST['web']) && ($_POST['web'] === "sslport")) {
-		error_log("SSL Port changed");
-                if ($_POST['sslport'] > 0 && $_POST['sslport'] < 65535) {
-                        $tmp = exec("netstat -tnap | egrep ':".$_POST['sslport']." .*LISTEN'");
-                        if ( $tmp === "" ) {
-                                $sslport = $_POST['sslport'];
-                                if ( $sslport != $cfg->Webserver->Sslport ) {
-                                        $webserver_changed = True;
-                                        $weboldsslport = $cfg->Webserver->Sslport;
-                                }
-                        } else {
-                                $sslport = 'inuse';
-                        }
-                }
-        }
 
 	// Print Template
 	# Return URL
@@ -538,67 +465,25 @@ function save()
 	if ( isset($ssdpoff) && $ssdpoff != is_disabled( $cfg->Ssdp->Disabled ) ) {
 		$ssdpstate_changed = 1;
 	}
-	
-	if ($ssl_changed) {
-		$cfg->Webserver->Sslenabled = $sslon;
-		$cfg->write();
-		recreate_generalcfg();
-		$headermsg = $SL['COMMON.MSG_ALLOK'];
-		$resmsg = $SL['SERVICES.CHANGE_SUCCESS'];
-		$waitmsg = "";
-		$href=$returnurl;
-	}
+
+	$headermsg = $SL['COMMON.MSG_ALLOK'];
+	$resmsg = $SL['SERVICES.CHANGE_SUCCESS'];
+	$href = $returnurl;
+	$redirect = "";
+	$oldurl = "";
 	if (isset($ssdpoff)){
 		$cfg->Ssdp->Disabled = $ssdpoff;
 		$cfg->write();
 		recreate_generalcfg();
-		$headermsg = $SL['COMMON.MSG_ALLOK'];
-		$resmsg = $SL['SERVICES.CHANGE_SUCCESS'];
-		$waitmsg = "";
-		$href=$returnurl;
-	} else if (isset($webport)) {
-		if ($webport === "inuse" ) {
-			$headermsg = $SL['SERVICES.ERR_PORT_IN_USE'];
-			$resmsg = $SL['SERVICES.CHANGE_ABORTED'];
-			$waitmsg = "";
-			$href=$returnurl;
-		} else {
-			$cfg->Webserver->Port = $webport;
-			$cfg->Webserver->Oldport = $weboldport;
-			$cfg->write();
-			recreate_generalcfg();
-			$headermsg = $SL['SERVICES.MSG_STEP1'];
-			$resmsg = $SL['SERVICES.CHANGE_SUCCESS'];
-			$waitmsg = $SL['SERVICES.WAITWEBSERVER1'];
-			$waitmsg2 = $SL['SERVICES.WAITWEBSERVER2'];
-			$sucheadermsg = $SL['SERVICES.MSG_STEP2'];
-			$sucresmsg = $SL['SERVICES.CHANGE_WEBPORTCHANGED'];
-			$href="/admin/system/services.php?check_webport=1";
+	}
+	if ($web) {
+		$headermsg = $web['header'];
+		$resmsg = $web['msg'];
+		if (!empty($web['redirect'])) {
+			$redirect = $web['redirect'];
+			$oldurl = $web['oldurl'];
+			$href = $redirect;
 		}
-	} else if (isset($sslport)) {
-		if ($sslport === "inuse") {
-			$headermsg = $SL['SERVICES.ERR_PORT_IN_USE'];
-			$resmsg = $SL['SERVICES.CHANGE_ABORTED'];
-			$waitmsg = "";
-			$href=$returnurl;
-		} else {
-			$cfg->Webserver->Sslport = $sslport;
-			$cfg->Webserver->Oldsslport = $weboldsslport;
-			$cfg->write();
-			recreate_generalcfg();
-			$headermsg = $SL['SERVICES.MSG_STEP1'];
-                        $resmsg = $SL['SERVICES.CHANGE_SUCCESS'];
-                        $waitmsg = $SL['SERVICES.WAITWEBSERVER1'];
-                        $waitmsg2 = $SL['SERVICES.WAITWEBSERVER2'];
-                        $sucheadermsg = $SL['SERVICES.MSG_STEP2'];
-                        $sucresmsg = $SL['SERVICES.CHANGE_WEBPORTCHANGED'];
-                        $href="/admin/system/services.php?check_sslport=1";
-                }
-	} else if (isset($sslport) || isset($webport)) {
-		$headermsg = $SL['SERVICES.ERR_WRONG_PORT'];
-		$resmsg = $SL['SERVICES.CHANGE_ABORTED'];
-		$waitmsg = "";
-		$href=$returnurl;
 	}
 		?>
 		<div style="text-align:center;">
@@ -607,166 +492,272 @@ function save()
 				<tr>
 					<td align="center">
 						<h2 id="headermsg"><?=$headermsg;?></h2>
-						<p id="resmsg">
-							<?=$resmsg?>
-							<br/>
-							<br/>
-						</p>
-						<p id="waitmsg">
-							<?=$waitmsg;?>
-						</p>
+						<p id="resmsg"><?=$resmsg?></p>
+						<?php if ($redirect): ?>
+						<p><?=$SL['SERVICES.WEBSERVER_REDIRECT'];?></p>
+						<p><?=$SL['SERVICES.WEBSERVER_NEWADDRESS'];?>: <a href="<?=htmlspecialchars($redirect);?>"><?=htmlspecialchars(webserver_baseurl($redirect));?></a></p>
+						<p class="hint"><?=$SL['SERVICES.WEBSERVER_OLDADDRESS'];?>: <a href="<?=htmlspecialchars($oldurl);?>"><?=htmlspecialchars(webserver_baseurl($oldurl));?></a></p>
+						<?php endif; ?>
 					</td>
 				</tr>
 				<tr>
 					<td align="center">
 						<p>
-							<a id="btnok" class="lb-btn lb-btn-primary lb-btn-icon" href="<?=$href;?>"><i class="pi pi-check"></i> <?=$SL['COMMON.BUTTON_OK'];?></a>
-							<h2 id="moment" style="display: none"><?=$SL['COMMON.MSG_PLEASEWAIT'];?></h2>
+							<a id="btnok" class="lb-btn lb-btn-primary lb-btn-icon" href="<?=htmlspecialchars($href);?>"><i class="pi pi-check"></i> <?=$SL['COMMON.BUTTON_OK'];?></a>
 						</p>
 					</td>
 				</tr>
 			</table>
 			</center>
 		</div>
-	<?php
-	if ($ssl_changed) {
-		if ($sslon) {
-			exec("sudo ".LBHOMEDIR."/sbin/serviceshelper enable_ssl");
-		} else {
-			exec("sudo ".LBHOMEDIR."/sbin/serviceshelper disable_ssl");
-		}
-	}
+		<?php if ($redirect): ?>
+		<script>
+			// Apache reloads 2 s after the change - then load the new address in the browser
+			// (a real navigation, so the browser can show its certificate warning and ask for the login)
+			setTimeout(function() { window.location.href = <?=json_encode($redirect);?>; }, 6000);
+		</script>
+		<?php endif;
 	if (isset($ssdpstate_changed) && $ssdpstate_changed == 1) {
 		if ($ssdpoff) {
 			exec("sudo ".LBHOMEDIR."/sbin/serviceshelper ssdpd stop");
 		} else {
 			exec("sudo ".LBHOMEDIR."/sbin/serviceshelper ssdpd restart");
 		}
-	} else if (isset($webserver_changed) && $webserver_changed == True) {
-		$newhref = "http";
-		if ($_SERVER['HTTPS']) { $newhref .= "s"; }
-		$newhref .= "://".$_SERVER['SERVER_NAME'];
-		if (!$_SERVER['HTTPS'] && $cfg->Webserver->Port != 80) {$newhref .= ":".$cfg->Webserver->Port; }
-		if ($_SERVER ['HTTPS'] && $cfg->Webserver->Sslport != 443) {$newhref .= ":".$cfg->Webserver->Sslport; }
-		$chkhref = $newhref."/system/servicehelper.php";
-		if (isset($webport)) $cnthref = "/admin/system/services.php?check_webport=1";
-		if (isset($sslport)) $cnthref = "/admin/system/services.php?check_sslport=1";
-		$suchref = $newhref."/admin/system/services.php";
-		echo "
-		<script>
-			sucheadermsg = \"$sucheadermsg\";
-			sucresmsg = \"$sucresmsg\";
-			waitmsg2 = \"$waitmsg2\";
-			btnok = document.getElementById('btnok');
-			btnok.style.display = 'none';
-			document.getElementById('moment').style.display='';
-			setTimeout(function(){
-				$.get(\"$chkhref\")
-	    		.done(function(data){
-	    		console.log('chkhref aufgerufen');
-	    			if(data.ok == -1) {
-	    			console.log('chkhref hat -1 zurückgegeben');
-    					$.get(\"$cnthref\")
-    						.done(function(data){
-    						console.log('cnthref aufgerufen');
-    							if (data.ok == -1) {
-    							console.log('cnthref hat -1 zurückgegeben');
-    								document.getElementById('headermsg').innerHTML = sucheadermsg;
-    								document.getElementById('resmsg').innerHTML = sucresmsg;
-    								document.getElementById('waitmsg').innerHTML = waitmsg2;
-    								setTimeout(function(){
-    								  document.getElementById('moment').style.display='none';
-											btnok.style.display = '';
-											btnok.href = \"$suchref\";
-										}, 6000);
-    							}
-    					})
-    					.fail(function(){
-    						console.log('Fehler beim Laden der cnthref');
-    					});
-	    			}
-	    	});
-	    }, 6000);
-		</script>
-		";
-		if (isset($webport)) exec("sudo ".LBHOMEDIR."/sbin/serviceshelper webport_change ".$webport." ".$weboldport." 2>/dev/null >/dev/null &");
-		if (isset($sslport)) exec("sudo ".LBHOMEDIR."/sbin/serviceshelper sslport_change ".$sslport." ".$weboldsslport." 2>/dev/null >/dev/null &");
 	}
 	LBWeb::lbfooter();
 	exit;
 }
 
 #####################################################
-# check_webport
+# Web server: HTTP port, HTTPS on/off, HTTPS port
+#
+# All three are applied together by sbin/webserverconfig.pl (via
+# serviceshelper), in two steps:
+#  apply     on "Save": Apache serves the old AND the new ports, the
+#            browser is sent to the new address
+#  finalize  when the page is loaded from the new address (?finalize=1):
+#            the old ports are removed
+# Until it is finalized, LoxBerry stays reachable on the old address.
 #####################################################
-function check_webport() {
-	
-	global $navbar;
-	global $SL;
-	global $template_title;
-	global $helplink;
-	global $helptemplate;
+
+// Current web server settings from general.json
+function webserver_settings()
+{
 	global $cfg;
+	$port = (string)$cfg->Webserver->Port;
+	$sslport = (string)$cfg->Webserver->Sslport;
+	return array(
+		'port' => ctype_digit($port) ? (int)$port : 80,
+		'ssl' => is_enabled($cfg->Webserver->Sslenabled) ? 1 : 0,
+		'sslport' => ctype_digit($sslport) ? (int)$sslport : 443,
+	);
+}
 
-	// Print Template
-	$headermsg = $SL['SERVICES.MSG_STEP2'];
-	$resmsg = $SL['SERVICES.CHANGE_WEBPORTCHANGED'];
-	$waitmsg = $SL['SERVICES.WEBSERVERCLEANING'];
-	$webport = $cfg->Webserver->Port;
-	$weboldport = $cfg->Webserver->Oldport;
+function webserver_valid_port($p)
+{
+	return ctype_digit((string)$p) && (int)$p >= 1 && (int)$p <= 65535;
+}
 
-	header('Content-Type: application/json');
-	echo "{ \"ok\": \"-1\" }";
-	exec("sudo ".LBHOMEDIR."/sbin/serviceshelper webport_success ".$webport." ".$weboldport." 2>/dev/null >/dev/null &");
+// Host the browser used, without port (IPv6 in brackets)
+function webserver_host()
+{
+	$host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_ADDR'];
+	if (preg_match('/^(\[[^\]]+\])(:\d+)?$/', $host, $m)) {
+		return $m[1];
+	}
+	return preg_replace('/:\d+$/', '', $host);
+}
 
+function webserver_url($https, $port, $path)
+{
+	$url = ($https ? "https" : "http") . "://" . webserver_host();
+	if (($https && $port != 443) || (!$https && $port != 80)) {
+		$url .= ":" . $port;
+	}
+	return $url . $path;
+}
+
+function webserver_baseurl($url)
+{
+	return preg_replace('#^(https?://[^/]+).*$#', '$1', $url);
+}
+
+function webserver_request_https()
+{
+	return !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+}
+
+// Address to finalize a change: HTTPS if it was switched on or its port changed,
+// HTTP if HTTPS was switched off, otherwise the protocol of this page
+function webserver_finalize_url($old, $new)
+{
+	if (!$new['ssl']) {
+		$https = false;
+	} else if (!$old['ssl'] || $old['sslport'] != $new['sslport']) {
+		$https = true;
+	} else {
+		$https = webserver_request_https();
+	}
+	return webserver_url($https, $https ? $new['sslport'] : $new['port'], "/admin/system/services.php?finalize=1");
+}
+
+// Runs the root helper; returns array(exitcode, result line)
+// The result line starts with OK, ERROR or INUSE - other output (warnings) is ignored.
+function webserver_helper($action, $s)
+{
+	$out = array();
+	$rc = 0;
+	exec("sudo ".LBHOMEDIR."/sbin/serviceshelper webserver_".$action." ".(int)$s['port']." ".(int)$s['ssl']." ".(int)$s['sslport']." 2>&1", $out, $rc);
+	$result = "";
+	foreach ($out as $line) {
+		if (preg_match('/^(OK|ERROR|INUSE)\b/', $line)) {
+			$result = $line;
+		}
+	}
+	if ($result === "") {
+		$result = implode(" ", $out);
+	}
+	return array($rc, $result);
+}
+
+function webserver_result($header, $msg)
+{
+	return array('header' => $header, 'msg' => $msg);
+}
+
+function webserver_save()
+{
+	global $cfg, $SL;
+	$old = webserver_settings();
+	$new = array(
+		'port' => trim(isset($_POST['webport']) ? $_POST['webport'] : ''),
+		'ssl' => isset($_POST['sslenabled']) ? 1 : 0,
+		'sslport' => trim(isset($_POST['sslport']) ? $_POST['sslport'] : ''),
+	);
+	if (!webserver_valid_port($new['port'])) {
+		return webserver_result($SL['SERVICES.ERR_WRONG_PORT'], $SL['SERVICES.CHANGE_ABORTED']);
+	}
+	if (!webserver_valid_port($new['sslport'])) {
+		return webserver_result($SL['SERVICES.ERR_WRONG_SSLPORT'], $SL['SERVICES.CHANGE_ABORTED']);
+	}
+	$new['port'] = (int)$new['port'];
+	$new['sslport'] = (int)$new['sslport'];
+	if ($new['port'] == $new['sslport']) {
+		return webserver_result($SL['SERVICES.ERR_SAME_PORT'], $SL['SERVICES.CHANGE_ABORTED']);
+	}
+	if ($new == $old && !webserver_pending()) {
+		return null;
+	}
+	return webserver_change($old, $new);
+}
+
+// Discard a change that was not finalized: back to the previous settings
+function webserver_revert()
+{
+	global $cfg, $SL;
+	$cur = webserver_settings();
+	$prev = array(
+		'port' => webserver_valid_port((string)$cfg->Webserver->Oldport) ? (int)$cfg->Webserver->Oldport : $cur['port'],
+		'ssl' => isset($cfg->Webserver->Oldsslenabled) ? (is_enabled($cfg->Webserver->Oldsslenabled) ? 1 : 0) : $cur['ssl'],
+		'sslport' => webserver_valid_port((string)$cfg->Webserver->Oldsslport) ? (int)$cfg->Webserver->Oldsslport : $cur['sslport'],
+	);
+	return webserver_change($cur, $prev);
+}
+
+function webserver_change($old, $new)
+{
+	global $cfg, $SL;
+	list($rc, $out) = webserver_helper("apply", $new);
+	if ($rc == 3) {
+		return webserver_result($SL['SERVICES.ERR_PORT_IN_USE'], $SL['SERVICES.CHANGE_ABORTED']);
+	}
+	if ($rc != 0 || strpos($out, "OK") !== 0) {
+		// no "OK" line: the helper failed or does not know the action
+		error_log("webserver apply failed ($rc): $out");
+		return webserver_result($SL['SERVICES.ERR_PORTCHANGE'], $SL['SERVICES.CHANGE_ABORTED']." ".htmlspecialchars($out));
+	}
+	$cfg->Webserver->Oldport = (string)$old['port'];
+	$cfg->Webserver->Oldsslport = (string)$old['sslport'];
+	$cfg->Webserver->Oldsslenabled = $old['ssl'] ? true : false;
+	$cfg->Webserver->Port = (string)$new['port'];
+	$cfg->Webserver->Sslport = (string)$new['sslport'];
+	$cfg->Webserver->Sslenabled = $new['ssl'] ? true : false;
+	$cfg->write();
+	recreate_generalcfg();
+
+	$r = webserver_result($SL['SERVICES.WEBSERVER_SWITCHING'], $SL['SERVICES.CHANGE_SUCCESS']);
+	$r['redirect'] = webserver_finalize_url($old, $new);
+	$r['oldurl'] = webserver_url(webserver_request_https(), (int)$_SERVER['SERVER_PORT'], "/admin/system/services.php");
+	return $r;
+}
+
+// Ports of the first <VirtualHost ...> line of a file
+function webserver_vhost_ports($file)
+{
+	$c = @file_get_contents($file);
+	if ($c === false || !preg_match('/^[ \t]*<VirtualHost\b([^>]*)>/mi', $c, $m)) {
+		return array();
+	}
+	preg_match_all('/:(\d+)\b/', $m[1], $p);
+	$ports = array_map('intval', $p[1]);
+	sort($ports);
+	return array_values(array_unique($ports));
+}
+
+// A change that is not finalized yet: Apache serves other ports than general.json says.
+// Returns false or array('finalizeurl' => ...)
+function webserver_pending()
+{
+	$s = webserver_settings();
+	$dir = LBHOMEDIR."/system/apache2";
+	$http = webserver_vhost_ports("$dir/sites-available/000-default.conf");
+	$sslon = file_exists("$dir/sites-enabled/001-default-ssl.conf");
+	$https = webserver_vhost_ports("$dir/sites-available/001-default-ssl.conf");
+	$pending = ($http != array($s['port']))
+		|| ($sslon != (bool)$s['ssl'])
+		|| ($s['ssl'] && $https != array($s['sslport']));
+	if (!$pending) {
+		return false;
+	}
+	$https_target = $s['ssl'] && webserver_request_https();
+	return array('finalizeurl' => webserver_url($https_target, $https_target ? $s['sslport'] : $s['port'], "/admin/system/services.php?finalize=1"));
+}
+
+// ?finalize=1 - the browser arrived on the new address
+function webserver_finalize_page()
+{
+	global $SL, $template_title, $helplink, $helptemplate, $navbar;
+	$s = webserver_settings();
+	$https = webserver_request_https();
+	$reqport = (int)$_SERVER['SERVER_PORT'];
+	$ontarget = (!$https && $reqport == $s['port']) || ($https && $s['ssl'] && $reqport == $s['sslport']);
+	$headermsg = $SL['COMMON.MSG_ALLOK'];
+	$resmsg = $SL['SERVICES.WEBSERVER_FINALIZED'];
+	$href = "/admin/system/services.php?load=1";
+	if (!webserver_pending()) {
+		// nothing to do (e.g. page reloaded)
+	} else if (!$ontarget) {
+		$headermsg = $SL['SERVICES.WEBSERVER_SWITCHING'];
+		$resmsg = $SL['SERVICES.WEBSERVER_NOTTARGET'];
+		$href = $s['ssl'] ? webserver_url(true, $s['sslport'], "/admin/system/services.php?finalize=1") : webserver_url(false, $s['port'], "/admin/system/services.php?finalize=1");
+	} else {
+		list($rc, $out) = webserver_helper("finalize", $s);
+		if ($rc != 0 || strpos($out, "OK") !== 0) {
+			error_log("webserver finalize failed ($rc): $out");
+			$headermsg = $SL['SERVICES.ERR_PORTCHANGE'];
+			$resmsg = htmlspecialchars($out);
+		}
+	}
+	LBWeb::lbheader($template_title, $helplink, $helptemplate);
+	?>
+	<div style="text-align:center;">
+		<h2><?=$headermsg;?></h2>
+		<p><?=$resmsg;?></p>
+		<p><a class="lb-btn lb-btn-primary lb-btn-icon" href="<?=htmlspecialchars($href);?>"><i class="pi pi-check"></i> <?=$SL['COMMON.BUTTON_OK'];?></a></p>
+	</div>
+	<?php
+	LBWeb::lbfooter();
 	exit;
-}
-
-#####################################################
-# check_sslport
-#####################################################
-function check_sslport() {
-
-        global $navbar;
-        global $SL;
-        global $template_title;
-        global $helplink;
-        global $helptemplate;
-        global $cfg;
-
-        // Print Template
-        $headermsg = $SL['SERVICES.MSG_STEP2'];
-        $resmsg = $SL['SERVICES.CHANGE_WEBPORTCHANGED'];
-        $waitmsg = $SL['SERVICES.WEBSERVERCLEANING'];
-        $sslport = $cfg->Webserver->Sslport;
-        $weboldsslport = $cfg->Webserver->Oldsslport;
-
-        header('Content-Type: application/json');
-        echo "{ \"ok\": \"-1\" }";
-        exec("sudo ".LBHOMEDIR."/sbin/serviceshelper sslport_success ".$sslport." ".$weboldsslport." 2>/dev/null >/dev/null &");
-
-        exit;
-}
-
-
-#####################################################
-# webport_success
-#####################################################
-function webport_success() {
-	
-	header('Content-Type: application/json');
-	echo "{ \"ok\":\"-1\" }";
-	exit;
-}
-
-#####################################################
-# sslport_success
-#####################################################
-function sslport_success() {
-
-        header('Content-Type: application/json');
-        echo "{ \"ok\":\"-1\" }";
-        exit;
 }
 
 #####################################################
