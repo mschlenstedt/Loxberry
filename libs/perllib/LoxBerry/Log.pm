@@ -1093,6 +1093,7 @@ sub log_db_recreate_session
 # get_logs
 # Input: (optional) package, name
 # Output: Array with hashref to log entries
+# Sorted by package/name, then modification time, start time and key descending.
 ################################################################
 # PUBLIC FUNCTION
 sub get_logs
@@ -1112,7 +1113,7 @@ sub get_logs
 	$qu .= "WHERE " if ($package);
 	$qu .= "PACKAGE = '$package' AND NAME = '$name' " if ($package && $name);
 	$qu .= "PACKAGE = '$package' " if ($package && !$name);
-	$qu .= "ORDER BY PACKAGE, NAME, LASTMODIFIED DESC ";
+	$qu .= "ORDER BY PACKAGE, NAME, LASTMODIFIED DESC, LOGSTART DESC, LOGKEY DESC ";
 	print STDERR "   Query: $qu\n" if ($DEBUG);
 	
 	my $logshr = $dbh->selectall_arrayref($qu, { Slice => {} });
