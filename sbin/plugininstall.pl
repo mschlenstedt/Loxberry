@@ -281,7 +281,8 @@ sub install {
 		name => 'Install',
 		filename => $logfile,
 		loglevel => 7,
-		addtime => 1
+		addtime => 1,
+		append => $is_cgi
 	);
 
 	if ($is_cgi eq 0) {
@@ -1271,7 +1272,7 @@ sub install {
 		my $phpversion = `cat /etc/apache2/mods-enabled/php*.load | grep LoadModule | sed -e 's/^.*libphp\\(.*\\)\\.so\$/\\1/g'`;
 		chomp($phpversion);
 		if ($phpversion != "" && -e "/etc/php/$phpversion/apache2/php.ini") {
-			$aptpackages =~ s/(^|\s)php-(\S+)/\1php$phpversion-\2/g;
+			$aptpackages =~ s/(^|\s)php-(\S+)/${1}php$phpversion-${2}/g;
 		}
 
 		$errors = 0;

@@ -327,12 +327,20 @@ sub plugininstall_status
 		$response{message} = "Invalid request";
 		exit;
 	}
-	if (! -e "/tmp/$R::value") {
+	# The CGI owns download/handoff state; installer status is used after it exits.
+	my $statusfile = "/tmp/$R::value";
+	$statusfile .= ".download" if -e "$statusfile.download";
+	if (! -e $statusfile) {
 		$response{error} = -1;
 		$response{message} = "File not found";
 		exit;
 	}
-	open (my $fh, "<", "/tmp/$R::value");
+	my $fh;
+	if (!open($fh, "<", $statusfile)) {
+		$response{error} = -1;
+		$response{message} = "Could not open status file: $!";
+		exit;
+	}
 	flock($fh, 1);
 	my $status = <$fh>;
 	close ($fh);

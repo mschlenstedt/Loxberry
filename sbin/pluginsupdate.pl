@@ -23,6 +23,7 @@ use LoxBerry::System;
 use LoxBerry::Web;
 use LoxBerry::Log;
 use LoxBerry::System::PluginDB;
+use LoxBerry::PluginDownload qw(download_plugin_archive);
 
 use strict;
 use warnings;
@@ -393,10 +394,11 @@ foreach (@plugins) {
 	if ($installarchive) {
 
 		# Randomly file naming
-        $tempfile = generate(10);
-		$resp = `$bins->{CURL} -q --connect-timeout 10 --max-time 60 --retry 5 -LfksSo /tmp/pluginsupdate/$tempfile.zip $installarchive 2>&1`;
-		if ($? ne 0) {
-			LOGCRIT "$pluginname: Could not fetch archive file. Error: $resp. Skipping this plugin...";
+		$tempfile = generate(10);
+		my ($downloaded, $downloaderror) = download_plugin_archive(
+			$bins->{CURL}, $installarchive, "$update_path/$tempfile.zip");
+		if (!$downloaded) {
+			LOGCRIT "$pluginname: Could not fetch archive file. Error: $downloaderror. Skipping this plugin...";
 			next;
 
 		} else {
