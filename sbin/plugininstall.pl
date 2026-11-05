@@ -92,6 +92,16 @@ my $remove_dbentry_on_fail = 0;
 my $cgi = CGI->new;
 $cgi->import_names('R');
 
+# pin=- : read the SecurePIN from stdin (one line), so that it does not show
+# up in the process list. pin=<PIN> on the command line keeps working.
+if ( defined $R::pin && $R::pin eq '-' ) {
+	my $stdinpin = <STDIN>;
+	$stdinpin = '' if !defined $stdinpin;
+	chomp $stdinpin;
+	$R::pin = $stdinpin;
+	open( STDIN, '<', '/dev/null' );
+}
+
 # Remove 'only used once' warnings
 $R::cgi if 0;
 

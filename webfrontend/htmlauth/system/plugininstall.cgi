@@ -332,8 +332,14 @@ sub install {
 			# File is already there
 		}
 
-		# Do the installation
-		system ("sudo $lbhomedir/sbin/plugininstall.pl action=install file=$lbsdatadir/tmp/uploads/$tempfile.zip pin=$securepin tempfile=$tempfile cgi=1 >> $logfile 2>&1");
+		# Do the installation. The SecurePIN goes to the installer on stdin
+		# (pin=-), not on the command line, where every local user could read
+		# it with ps for as long as the installation runs.
+		local $SIG{PIPE} = 'IGNORE';
+		if ( open( my $installer, '|-', "sudo $lbhomedir/sbin/plugininstall.pl action=install file=$lbsdatadir/tmp/uploads/$tempfile.zip pin=- tempfile=$tempfile cgi=1 >> $logfile 2>&1" ) ) {
+			print $installer "$securepin\n";
+			close $installer;
+		}
 
 	} # End Child process
 
