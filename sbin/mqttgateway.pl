@@ -367,9 +367,8 @@ sub udpin
 				LOGERR "Catched exception on publishing (retain) to MQTT: $!";
 			}
 		} elsif($command eq 'reconnect') {
-			LOGOK "Forcing reconnection and retransmission to Miniserver";
+			LOGOK "Forcing retransmission to Miniserver";
 			$nextconfigpoll = 0;
-			undef %plugindirs;
 			$LoxBerry::MQTTGateway::IO::mem_sendall = 1;
 			foreach( keys %relayed_topics_http ) {
 				delete $relayed_topics_http{$_}{toMS};
