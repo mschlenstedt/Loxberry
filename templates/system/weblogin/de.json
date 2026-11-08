@@ -11,7 +11,7 @@
   "login": "Anmelden",
   "logout": "Abmelden",
   "continue": "LoxBerry öffnen",
-  "note": "Verwende dein bestehendes LoxBerry-Konto. Dein Passwort-Manager kann diese Felder ausfüllen.",
+  "note": "Verwende dein bestehendes LoxBerry-Konto.",
   "secure": "Verschlüsselte Verbindung",
   "signed_in_title": "Du bist angemeldet",
   "signed_in_intro": "Verwalte deinen LoxBerry oder beende diese Browser-Sitzung.",

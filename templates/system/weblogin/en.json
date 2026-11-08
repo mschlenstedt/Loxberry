@@ -11,7 +11,7 @@
   "login": "Sign in",
   "logout": "Sign out",
   "continue": "Open LoxBerry",
-  "note": "Use your existing LoxBerry account. Your password manager can fill in these fields.",
+  "note": "Use your existing LoxBerry account.",
   "secure": "Encrypted connection",
   "signed_in_title": "You're signed in",
   "signed_in_intro": "Manage your LoxBerry or end this browser session.",

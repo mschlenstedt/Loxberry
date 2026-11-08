@@ -68,8 +68,9 @@ guard correctly rejects. Opaque and cross-origin requests remain forbidden.
 Validation must include actual browser submission of both login and logout;
 HTTP tests that manually set Origin alone cannot establish browser behavior.
 
-Plugin compatibility has been proven with representative HTTP/CGI/proxy fixtures,
-not every third-party plugin. A plugin that directly reads `PHP_AUTH_PW` or
+Plugin compatibility was tested with representative HTTP/CGI/proxy fixtures and
+selected real plugins on a dedicated LoxBerry, not every third-party plugin.
+A plugin that directly reads `PHP_AUTH_PW` or
 `HTTP_AUTHORIZATION`, invents additional auth rules, embeds cross-origin pages or
 depends on cross-origin cookie POSTs needs separate testing. Such callers may
 continue to use Basic Auth. This implementation does not claim to resolve every
@@ -184,17 +185,67 @@ Validated locally on macOS, Apache 2.4.67/mod_perl 2.0.12, Perl 5.34, SQLite,
 plus PHP and JavaScript syntax checks. Desktop and mobile static renderings
 were inspected in a browser, including the show/hide password control.
 
-Before a release or live installation, still verify on Debian/LoxBerry hardware:
+Additional validation on 8-9 November 2026 used a dedicated ARM64 LoxBerry
+4.0.1.1 with Apache 2.4.67. All 109 unit assertions, 15 isolated Apache scenarios,
+and 43 live HTTP checks passed. The live checks covered core pages, PHP, CGI,
+protected assets, the terminal proxy, both aliases, session and Basic Auth,
+unmodified POST bodies, invalid credentials, and rejected cross-origin writes.
+Rollback was exercised before re-enabling the feature. Temporary web accounts
+were removed and the original credential file was verified unchanged.
 
-- Full core and installed-plugin UI, real PHP requests and Miniserver outputs.
-- Actual autofill **and save/update prompts** in Bitwarden, 1Password and Apple
-  Passwords, including iOS/Safari. HTML semantics were checked; password-manager
-  extensions themselves were not exercised in this environment.
-- Custom HTTP/HTTPS ports, trusted certificate setup, upgrade, restart, and rollback.
-- Existing logged-in Basic Auth browser behavior, third-party AJAX/cross-origin
-  flows, additional translations and maintainer review of the new dependency.
+Real login/logout forms worked in Vivaldi and the in-app test browser. Bitwarden
+offered to save the submitted test login in Vivaldi; the offer was declined.
+This verifies form recognition, not a complete saved-password autofill/update
+workflow. A native-form Origin regression was reproduced and fixed: tests that
+manually set the Origin header had not caught the original 403.
 
-2FA is intentionally deferred at the user's request. It must not be bolted onto
+| Plugin | Tested behavior |
+| --- | --- |
+| Stats4Lox 1.0.4 | Pages, live status/graphs, read-only AJAX, SecurePIN and validation, session and Basic Auth |
+| Samsung Local 0.2.24 | Pages, CSV/JSON downloads, actual language save and restore using its PHP session and multipart AJAX |
+| Renault Plugin 1.0 | History and setup pages only; no vehicle commands or cloud-account changes |
+| PHP Test | Existing settings page |
+| Maintainer Sample Plugin 4.0.0 | Session-authenticated ZIP upload/install; four Perl/PHP forms with DS/jQuery Mobile; JSON read/write/restore; uninstall |
+| blacksun80 Docker NG 1.1 prerelease | Install, container listing, links, port validation, browser port change/reload/restore, logout, session and Basic Auth |
+
+The existing-plugin HTTP suite passed 80/81 checks. The remaining check exposed
+the old Docker 2.1.0 plugin copying the page's HTTPS scheme to its HTTP-only
+Portainer port; that link needs separate HTTPS support. The sample plugin passed
+24/24 checks, and Docker NG passed 35/35. These are targeted checks, not a random
+sample from which to infer a percentage of compatible plugins. The plugin code
+needed no authentication changes for these tests. Existing plugin configuration
+files and existing Docker container IDs, state and start times were preserved.
+
+Docker NG was pinned to `716f8b6ce5af38790d9151abed38f89ad68a2546`; only its
+installer dependency list was pinned to already-installed package versions to
+avoid unrelated system upgrades. Its new Portainer instance was rebuilt for the
+port test; existing containers were not restarted. Portainer's separate admin
+API login worked, but its initial environment setup and browser HTTPS trust were
+not validated. No physical-device commands, statistics restores, or Miniserver
+virtual outputs were exercised.
+
+The test host had mixed Debian 11/12 package versions. Its matching official
+mod_perl package was extracted into a private staging directory instead of
+upgrading the host's Perl/Apache packages. This is a test arrangement, not a
+distribution installation strategy. The feature has no automatic activation or
+dependency migration yet.
+
+Before release, still verify:
+
+- Broader core/plugin coverage and actual Miniserver virtual outputs.
+- Saved-password autofill and update flows in Bitwarden, 1Password and Apple
+  Passwords, including iOS/Safari.
+- Supported clean Debian/LoxBerry images, dependency packaging, custom ports,
+  upgrade/restart behavior, and certificate lifecycle.
+- Existing logged-in Basic Auth browser behavior, third-party cross-origin
+  flows, additional translations, and maintainer security/dependency review.
+
+Basic Auth retains its original transport and access policy, including HTTP if
+the installation enables it. The form-login rate limiter and logout do not apply
+to Basic Auth. This is not installation-wide brute-force protection or an
+enforcement of HTTPS for all clients.
+
+2FA is intentionally out of scope. It must not be bolted onto
 the browser flow while leaving the same password usable through Basic Auth as
 an unrestricted bypass. Any later MFA design needs separate machine credentials
 or an explicit compatibility policy.
