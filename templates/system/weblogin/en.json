@@ -1,0 +1,20 @@
+{
+  "welcome": "Your home. Your possibilities.",
+  "tagline": "One place for your plugins, connections and ideas.",
+  "local": "At home on your network.",
+  "title": "Welcome back",
+  "intro": "Sign in to your LoxBerry.",
+  "username": "Username",
+  "password": "Password",
+  "show": "Show",
+  "hide": "Hide",
+  "login": "Sign in",
+  "logout": "Sign out",
+  "continue": "Open LoxBerry",
+  "note": "Use your existing LoxBerry account. Your password manager can fill in these fields.",
+  "secure": "Encrypted connection",
+  "signed_in_title": "You're signed in",
+  "signed_in_intro": "Manage your LoxBerry or end this browser session.",
+  "login_error": "The username or password is incorrect. Please try again.",
+  "rate_error": "Too many attempts. Please wait five minutes and try again."
+}

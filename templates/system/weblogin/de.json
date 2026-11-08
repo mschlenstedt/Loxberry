@@ -1,0 +1,20 @@
+{
+  "welcome": "Dein Zuhause. Deine Möglichkeiten.",
+  "tagline": "Ein Ort für deine Plugins, Verbindungen und Ideen.",
+  "local": "Zuhause in deinem Netzwerk.",
+  "title": "Willkommen zurück",
+  "intro": "Melde dich bei deinem LoxBerry an.",
+  "username": "Benutzername",
+  "password": "Passwort",
+  "show": "Anzeigen",
+  "hide": "Verbergen",
+  "login": "Anmelden",
+  "logout": "Abmelden",
+  "continue": "LoxBerry öffnen",
+  "note": "Verwende dein bestehendes LoxBerry-Konto. Dein Passwort-Manager kann diese Felder ausfüllen.",
+  "secure": "Verschlüsselte Verbindung",
+  "signed_in_title": "Du bist angemeldet",
+  "signed_in_intro": "Verwalte deinen LoxBerry oder beende diese Browser-Sitzung.",
+  "login_error": "Benutzername oder Passwort ist falsch. Bitte versuche es erneut.",
+  "rate_error": "Zu viele Versuche. Bitte warte fünf Minuten und versuche es erneut."
+}
