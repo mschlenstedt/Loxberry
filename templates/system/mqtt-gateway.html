@@ -2160,14 +2160,60 @@ $(function () {
                        grp: grp, short: short});
         }
       });
+      updateColumnWidths();
       renderBoth();
+    });
+  }
+
+  // Re-measure once web fonts are loaded: before that the canvas measures
+  // with fallback fonts and the columns could come out too narrow/wide.
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () {
+      if (viRows.length) updateColumnWidths();
+    });
+  }
+
+  // Size the VI/command and topic columns to their content (+ a little slack);
+  // the value column takes the rest. Rows are separate grids, so the widths
+  // are measured once here and shared via CSS custom properties.
+  function updateColumnWidths() {
+    var ctx = document.createElement('canvas').getContext('2d');
+    var monoFont = '11px ' + (getComputedStyle(document.documentElement)
+                     .getPropertyValue('--lb-font-mono').trim() || 'monospace');
+    var textFont = 'italic 11px ' + (getComputedStyle(document.documentElement)
+                     .getPropertyValue('--lb-font').trim() || 'sans-serif');
+    var maxVi = 0, maxCmd = 0, maxTopic = 0;
+    function w(font, s) { ctx.font = font; return ctx.measureText(s).width; }
+    viRows.forEach(function (r) {
+      maxVi = Math.max(maxVi, w(monoFont, r.vi));
+      maxCmd = Math.max(maxCmd, w(monoFont,
+        'MQTT:\\i' + (r.jp ? r.topic + '/' + r.jp : r.topic) + '=\\i\\v'));
+      maxTopic = Math.max(maxTopic, w(textFont,
+        r.topic + (r.jp ? ' • ' + r.jp : '')));
+    });
+    // + copy button (~24px) + gap + extra breathing room
+    var viW    = Math.ceil(maxVi + 56) + 'px';
+    var cmdW   = Math.ceil(maxCmd + 56) + 'px';
+    var topicW = Math.ceil(maxTopic + 40) + 'px';
+    [['v2-http-panel', viW], ['v2-udp-panel', cmdW]].forEach(function (p) {
+      var el = document.getElementById(p[0]);
+      if (!el) return;
+      el.style.setProperty('--mqttgw-vi-w', p[1]);
+      el.style.setProperty('--mqttgw-topic-w', topicW);
     });
   }
 
   function poll() {
     $.get('ajax/ajax-mqtt.php', {ajax: 'get_status_v2'}, function (resp) {
       v2St = resp || {};
-      renderBoth();
+      // Keep selected detail text stable while the user is copying it. The
+      // newest status is already cached and is rendered on the next poll.
+      if (useHttp && !detailHasSelection('http')) {
+        renderPanel('http', httpFilter, httpSearch);
+      }
+      if (useUdp && !detailHasSelection('udp')) {
+        renderPanel('udp', udpFilter, udpSearch);
+      }
     }).always(function () {
       pollTimer = setTimeout(poll, 3000);
     });
@@ -2212,9 +2258,11 @@ $(function () {
     statusWarn:   '<TMPL_VAR MQTT.V2_STATUS_WARN>',
     statusError:  '<TMPL_VAR MQTT.V2_STATUS_ERROR>',
     statusNew:    '<TMPL_VAR MQTT.V2_STATUS_NEW>',
-    timeNow:      '<TMPL_VAR MQTT.V2_TIME_NOW>',
-    timeMinAgo:   '<TMPL_VAR MQTT.V2_TIME_MIN_AGO>',
-    resendOne:    '<TMPL_VAR MQTT.V2_BTN_RESEND>'
+    timeNow:          '<TMPL_VAR MQTT.V2_TIME_NOW>',
+    timeMinAgo:       '<TMPL_VAR MQTT.V2_TIME_MIN_AGO>',
+    resendOne:        '<TMPL_VAR MQTT.V2_BTN_RESEND>',
+    valueDetailHint:  '<TMPL_VAR MQTT.V2_VALUE_DETAIL_HINT>',
+    valueDetailClose: '<TMPL_VAR MQTT.V2_VALUE_DETAIL_CLOSE>'
   };
 
   function relTime(epoch) {
@@ -2240,6 +2288,41 @@ $(function () {
     error: _lang.statusError,
     new:   _lang.statusNew
   };
+
+  // One detail panel per transport table. Store the VI name as plain state;
+  // never interpolate it into a selector (backslashes and other characters stay safe).
+  var openValueDetail = { http: null, udp: null };
+
+  function formatTrafficValue(value) {
+    var raw = String(value == null ? '' : value);
+    try {
+      return JSON.stringify(JSON.parse(raw), null, 2);
+    } catch (e) {
+      return raw;
+    }
+  }
+
+  function detailHasSelection(transport) {
+    if (!window.getSelection) return false;
+    var selection = window.getSelection();
+    if (!selection || selection.isCollapsed || !selection.rangeCount) return false;
+
+    var detail = document.querySelector('#v2-' + transport + '-content .mqttgw-traffic-detail');
+    if (!detail) return false;
+    return (selection.anchorNode && detail.contains(selection.anchorNode)) ||
+           (selection.focusNode && detail.contains(selection.focusNode));
+  }
+
+  function findValueDetail($content, vi) {
+    var $match = $();
+    $content.find('.mqttgw-traffic-detail').each(function () {
+      if ($(this).attr('data-detail-vi') === vi) {
+        $match = $(this);
+        return false;
+      }
+    });
+    return $match;
+  }
 
   function renderPanel(transport, filter, search) {
     var isHttp = (transport === 'http');
@@ -2285,9 +2368,15 @@ $(function () {
       groups[r.grp].push(r);
     });
 
+    var $content = $('#v2-' + transport + '-content');
+    var $oldDetail = $content.find('.mqttgw-traffic-detail').first();
+    var oldDetailVi = $oldDetail.attr('data-detail-vi') || '';
+    var oldDetailText = $oldDetail.find('pre').text();
+    var oldDetailScrollTop = $oldDetail.find('pre').scrollTop() || 0;
+
     // Zustand (offen/zu) vor Re-Render speichern
     var savedClosed = {};
-    $('#v2-' + transport + '-content .mqttgw-tgroup').each(function () {
+    $content.find('.mqttgw-tgroup').each(function () {
       if (!this.open) savedClosed[$(this).data('grp')] = true;
     });
 
@@ -2329,11 +2418,15 @@ $(function () {
           }).join('') : '&mdash;';
           var pms = e && e.last_processing_ms != null
                       ? (+e.last_processing_ms).toFixed(1) + 'ms' : '&mdash;';
-          var valDisp = val
-            ? (val.length > 28
-                ? '<span title="' + esc(val) + '">' + esc(val.slice(0, 28)) + '&hellip;</span>'
-                : esc(val))
-            : '&mdash;';
+          var hasVal = e && e.value != null && String(e.value) !== '';
+          val = hasVal ? String(e.value) : '';
+          var valueOpen = openValueDetail[transport] === r.vi;
+          var valueCls = 'mqttgw-traffic-value'
+                       + (hasVal ? ' mqttgw-traffic-value-has-full' : '')
+                       + (valueOpen ? ' mqttgw-traffic-value-open' : '');
+          var valueTitle = hasVal ? ' title="' + esc(_lang.valueDetailHint) + '"' : '';
+          var valueData = hasVal ? ' data-vi="' + esc(r.vi) + '" tabindex="0" role="button" aria-expanded="' + (valueOpen ? 'true' : 'false') + '"' : '';
+          var valDisp = hasVal ? esc(val) : '&mdash;';
           html += '<div class="' + rowCls + '">';
           html += '<img src="' + _iconImg[sc] + '" class="mqttgw-traffic-icon" title="' + esc(_titles[sc]) + '" width="14" height="14">';
           if (isHttp) {
@@ -2350,20 +2443,48 @@ $(function () {
             html += '</span>';
           }
           html += '<span class="mqttgw-traffic-topic" title="' + esc(r.topic) + (r.jp ? ' &bull; ' + esc(r.jp) : '') + '">' + esc(r.topic) + (r.jp ? ' <em>&bull;&nbsp;' + esc(r.jp) + '</em>' : '') + '</span>';
-          html += '<span class="mqttgw-traffic-value">' + valDisp + '</span>';
+          html += '<span class="' + valueCls + '"' + valueData + valueTitle + '>' + valDisp + '</span>';
           html += '<button class="mqttgw-resend-btn" type="button" data-resend="' + esc(r.vi) + '" title="' + esc(_lang.resendOne) + '">' + _svgResend + '</button>';
           html += '<span class="mqttgw-traffic-ms-label">' + ms + '</span>';
           html += '<span class="mqttgw-traffic-time">' + relTime(ts) + '</span>';
           html += '<span class="mqttgw-traffic-proc">' + pms + '</span>';
           html += '</div>';
+          if (valueOpen && hasVal) {
+            html += '<section class="mqttgw-traffic-detail" data-detail-vi="' + esc(r.vi) + '">';
+            html += '<button class="mqttgw-traffic-detail-close" type="button" data-transport="' + transport
+                 + '" title="' + esc(_lang.valueDetailClose) + '" aria-label="' + esc(_lang.valueDetailClose) + '">&times;</button>';
+            html += '<pre>' + esc(formatTrafficValue(val)) + '</pre>';
+            html += '</section>';
+          }
         });
         html += '</details>';
       });
     }
-    $('#v2-' + transport + '-content').html(html);
+    // Preserve an unchanged open detail node. This keeps its scroll position
+    // and avoids replacing selectable text on every three-second poll.
+    var $preservedDetail = $();
+    if ($oldDetail.length && oldDetailVi === openValueDetail[transport]) {
+      var currentEntry = v2St[oldDetailVi];
+      var currentText = currentEntry && currentEntry.value != null
+                      ? formatTrafficValue(currentEntry.value) : null;
+      if (currentText !== null && currentText === oldDetailText) {
+        $preservedDetail = $oldDetail.detach();
+      }
+    }
+
+    $content.html(html);
+
+    if (oldDetailVi) {
+      var $newDetail = findValueDetail($content, oldDetailVi);
+      if ($preservedDetail.length && $newDetail.length) {
+        $newDetail.replaceWith($preservedDetail);
+      } else if ($newDetail.length) {
+        $newDetail.find('pre').scrollTop(oldDetailScrollTop);
+      }
+    }
 
     // Gespeicherten Zustand wiederherstellen
-    $('#v2-' + transport + '-content .mqttgw-tgroup').each(function () {
+    $content.find('.mqttgw-tgroup').each(function () {
       if (savedClosed[$(this).data('grp')]) this.open = false;
     });
   }
@@ -2419,7 +2540,7 @@ $(function () {
     e.preventDefault();
     e.stopPropagation();
     var $b = $(this);
-    var vi = $b.data('resend');
+    var vi = $b.attr('data-resend');
     if (!vi) return;
     $.post('ajax/ajax-mqtt.php', {ajax: 'resend_one', udpinport: udpinport, vi: vi}, function () {
       $b.addClass('mqttgw-resend-ok');
@@ -2427,10 +2548,50 @@ $(function () {
     });
   });
 
+  // Double-click (or Enter/Space when focused) toggles a value's formatted/raw
+  // detail panel. CSS disables selection on clickable values, so a double-click
+  // does not mark a word.
+  function toggleValueDetail(el) {
+    var transport = $(el).closest('#v2-http-content').length ? 'http' : 'udp';
+    var vi = $(el).attr('data-vi') || '';
+    if (!vi) return;
+    openValueDetail[transport] = openValueDetail[transport] === vi ? null : vi;
+    if (transport === 'http') renderPanel('http', httpFilter, httpSearch);
+    else renderPanel('udp', udpFilter, udpSearch);
+    // The panel is re-rendered: put keyboard focus back on the same value.
+    var $content = $(transport === 'http' ? '#v2-http-content' : '#v2-udp-content');
+    $content.find('.mqttgw-traffic-value-has-full').filter(function () {
+      return $(this).attr('data-vi') === vi;
+    }).first().trigger('focus');
+  }
+
+  $('#v2-http-content, #v2-udp-content').on('dblclick', '.mqttgw-traffic-value-has-full', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleValueDetail(this);
+  });
+
+  $('#v2-http-content, #v2-udp-content').on('keydown', '.mqttgw-traffic-value-has-full', function (e) {
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleValueDetail(this);
+    }
+  });
+
+  $('#v2-http-content, #v2-udp-content').on('click', '.mqttgw-traffic-detail-close', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var transport = $(this).data('transport') === 'http' ? 'http' : 'udp';
+    openValueDetail[transport] = null;
+    if (transport === 'http') renderPanel('http', httpFilter, httpSearch);
+    else renderPanel('udp', udpFilter, udpSearch);
+  });
+
   $(document).on('click', '.mqttgw-copy-btn', function (e) {
     e.preventDefault();
     e.stopPropagation();
-    var txt = $(this).data('copy');
+    var txt = $(this).attr('data-copy');
     var btn = this;
     var isIcon = $(btn).hasClass('mqttgw-copy-icon');
     var origHtml = isIcon ? $(btn).html() : null;
