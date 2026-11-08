@@ -3,7 +3,8 @@
 This change adds a responsive, password-manager-friendly login at `/login`.
 It is **off by default**: the new Apache configuration is not linked into
 `conf-enabled`. Existing installations keep their original authentication.
-No live LoxBerry was modified or used for these tests. No 2FA is included.
+The automated suite uses an isolated fixture; the prototype has additionally
+been deployed to a dedicated test LoxBerry. No 2FA is included.
 
 ## Existing upstream discussion (checked 2026-11-08)
 
@@ -60,6 +61,12 @@ The standard form has associated labels, stable names, `autocomplete="username"`
 and `autocomplete="current-password"`. Paste is allowed. Login and logout work
 without JavaScript; JS only toggles password visibility. There are no external
 fonts, CDN assets, browser storage credentials or cloud services.
+
+Login/session pages use `Referrer-Policy: same-origin`. Using `no-referrer`
+instead causes native browser form POSTs to send `Origin: null`, which the CSRF
+guard correctly rejects. Opaque and cross-origin requests remain forbidden.
+Validation must include actual browser submission of both login and logout;
+HTTP tests that manually set Origin alone cannot establish browser behavior.
 
 Plugin compatibility has been proven with representative HTTP/CGI/proxy fixtures,
 not every third-party plugin. A plugin that directly reads `PHP_AUTH_PW` or

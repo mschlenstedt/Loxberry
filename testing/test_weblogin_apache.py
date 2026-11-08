@@ -379,6 +379,37 @@ class WebLoginTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertIn('type=Basic', body)
 
+    def test_14_native_form_origin_and_opaque_origin_rejection(self):
+        _, headers, html = self.s.request('/login')
+        cookie = headers['Set-Cookie'].split(';', 1)[0]
+        csrf = re.search(r'name="csrf" value="([a-f0-9]+)"', html).group(1)
+        body = urlencode({'csrf': csrf, 'username': 'admin', 'password': PASSWORD})
+        form_headers = {'Cookie': cookie, 'Content-Type': 'application/x-www-form-urlencoded',
+                        'Sec-Fetch-Mode': 'navigate', 'Sec-Fetch-Site': 'same-origin'}
+        # An opaque Origin must remain forbidden, even with an otherwise valid
+        # form and same-origin Referer. Do not fix browser POSTs by accepting null.
+        self.assertEqual(self.s.request('/login', 'POST', {
+            **form_headers, 'Origin': 'null', 'Referer': self.s.origin + '/login'
+        }, body)[0], 403)
+        # Model the browser's Origin for a same-origin native POST, unlike fetch
+        # (cors mode), which preserves Origin even under no-referrer.
+        policy = headers.get('Referrer-Policy', '').split(',')[-1].strip()
+        browser_origin = 'null' if policy == 'no-referrer' else self.s.origin
+        status, h, _ = self.s.request('/login', 'POST', {
+            **form_headers, 'Origin': browser_origin
+        }, body)
+        self.assertEqual(status, 303, 'Referrer policy must permit native form login')
+        cookie = h['Set-Cookie'].split(';', 1)[0]
+        _, headers, html = self.s.request('/login', headers={'Cookie': cookie})
+        token = re.search(r'name="csrf" value="([a-f0-9]+)"', html).group(1)
+        policy = headers.get('Referrer-Policy', '').split(',')[-1].strip()
+        browser_origin = 'null' if policy == 'no-referrer' else self.s.origin
+        status, _, _ = self.s.request('/login/logout', 'POST', {
+            **form_headers, 'Cookie': cookie, 'Origin': browser_origin
+        }, urlencode({'csrf': token}))
+        self.assertEqual(status, 303, 'Referrer policy must permit native form logout')
+        self.assertEqual(self.s.request('/admin/system/probe.cgi', headers={'Cookie': cookie})[0], 401)
+
 
 class DisabledTests(unittest.TestCase):
     def test_disabled_configuration_keeps_native_auth(self):

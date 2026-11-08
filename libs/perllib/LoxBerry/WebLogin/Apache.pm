@@ -53,7 +53,9 @@ sub no_cache {
     my ($r) = @_;
     $r->err_headers_out->set('Cache-Control' => 'no-store');
     $r->err_headers_out->set('Pragma' => 'no-cache');
-    $r->err_headers_out->set('Referrer-Policy' => 'no-referrer');
+    # Native form POSTs use Origin: null under no-referrer. Preserve the origin
+    # for our login/logout forms while withholding referrers from other sites.
+    $r->err_headers_out->set('Referrer-Policy' => 'same-origin');
 }
 
 sub set_cookie {
