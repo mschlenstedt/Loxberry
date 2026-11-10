@@ -1,0 +1,2 @@
+#!/bin/bash
+sudo $LBHOMEDIR/sbin/osupdate.pl cron=daily
