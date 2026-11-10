@@ -1098,6 +1098,11 @@ sub check_rootfssize
 			$result{result} = "LoxBerry's RootFS has more than 10% free discspace (AVAL ".LoxBerry::System::bytes_humanreadable($folderinfo{available}, "K")."/SIZE ".LoxBerry::System::bytes_humanreadable($folderinfo{size}, "K").").";
 			$result{status} = '5';
 		}
+		# On large disks a few percent are still plenty of space (#1572)
+		elsif ( $folderinfo{available} > 4*1024*1024 ) {
+			$result{result} = "LoxBerry's RootFS has more than 4 GB free discspace (AVAL ".LoxBerry::System::bytes_humanreadable($folderinfo{available}, "K")."/SIZE ".LoxBerry::System::bytes_humanreadable($folderinfo{size}, "K").").";
+			$result{status} = '5';
+		}
 		elsif ( $folderinfo{available}/$folderinfo{size}*100 <= 5 ) {
 			$result{result} = "$folderinfo{mountpoint} is below limit of 5% discspace (AVAL ".LoxBerry::System::bytes_humanreadable($folderinfo{available}, "K")."/SIZE ".LoxBerry::System::bytes_humanreadable($folderinfo{size}, "K")."). Please reboot your LoxBerry.";
 			$result{status} = '3';

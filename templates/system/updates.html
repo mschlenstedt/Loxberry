@@ -1,9 +1,10 @@
 <TMPL_IF form>
 		<!-- ** START template/system/de/updates_menu.html 07.12.2018 21:13:12 ************************************************************************************ -->
-		<!-- START Form for unattended-upgrades -->
+		<!-- START Form for Debian/PHP updates -->
 		
 		<div class="lb-section-title"><TMPL_VAR UPDATES.WIDGETLABEL_UPDATES></div>
 		<div style="max-width:80%;margin:0 auto">
+		<TMPL_IF OSUPDATE_DIETPI>
 			<div class="lb-updates-grid" style="display:grid; grid-template-columns:1fr 40%; gap:var(--lb-space-md); align-items:start; margin-bottom:var(--lb-space-lg);">
 				<div><TMPL_VAR UPDATES.LABEL_ENABLE_UPDATES></div>
 				<div>
@@ -19,10 +20,37 @@
 					</div>
 				</div>
 			</div>
+			<div class="lb-updates-grid" style="display:grid; grid-template-columns:1fr 40%; gap:var(--lb-space-md); align-items:start; margin-bottom:var(--lb-space-lg);">
+				<div><TMPL_VAR UPDATES.LABEL_UPDATE_TYPE></div>
+				<div>
+					<div class="lb-btn-group" style="flex-direction:column; width:100%;">
+						<input type="radio" name="option-updatetype" id="updtype-security" value="security" <TMPL_UNLESS OSUPDATE_TYPE_ALL>checked</TMPL_UNLESS>>
+						<label for="updtype-security"><TMPL_VAR UPDATES.TYPE_SECURITY></label>
+						<input type="radio" name="option-updatetype" id="updtype-all" value="all" <TMPL_IF OSUPDATE_TYPE_ALL>checked</TMPL_IF>>
+						<label for="updtype-all"><TMPL_VAR UPDATES.TYPE_ALL></label>
+					</div>
+				</div>
+			</div>
 			<div class="lb-updates-grid" style="display:grid; grid-template-columns:1fr 40%; gap:var(--lb-space-md); align-items:center; margin-bottom:var(--lb-space-lg);">
 				<div><TMPL_VAR UPDATES.LABEL_AUTOMATIC_REBOOT></div>
 				<div class="lb-form-field">
 					<label><input type="checkbox" name="updates-autoreboot" <TMPL_IF AUTOREBOOT_BOOL>checked</TMPL_IF>> <TMPL_VAR UPDATES.SECUPDATE_REBOOT_ENABLED></label>
+				</div>
+			</div>
+			<!-- Result of the last run of sbin/osupdate.pl -->
+			<div class="lb-updates-grid" style="display:grid; grid-template-columns:1fr 40%; gap:var(--lb-space-md); align-items:start; margin-bottom:var(--lb-space-lg);">
+				<div><TMPL_VAR UPDATES.STATUS_LABEL></div>
+				<div style="display:flex; flex-direction:column; gap:4px;">
+					<span><i class="pi pi-clock"></i> <TMPL_VAR UPDATES.STATUS_LASTRUN>: <TMPL_IF OSUPDATE_LASTRUN><TMPL_VAR OSUPDATE_LASTRUN><TMPL_ELSE><TMPL_VAR UPDATES.STATUS_NEVER></TMPL_IF></span>
+					<TMPL_IF OSUPDATE_RESULT_OK>
+					<span><i class="pi pi-check-circle" style="color:var(--lb-success)"></i> <TMPL_VAR OSUPDATE_PACKAGES> <TMPL_VAR UPDATES.STATUS_RESULT_OK></span>
+					</TMPL_IF>
+					<TMPL_IF OSUPDATE_RESULT_ERROR>
+					<span><i class="pi pi-times-circle" style="color:var(--lb-danger)"></i> <a href="/admin/system/updates.cgi?do=lbuhistory"><TMPL_VAR UPDATES.STATUS_RESULT_ERROR></a></span>
+					</TMPL_IF>
+					<TMPL_IF OSUPDATE_REBOOT>
+					<span><i class="pi pi-exclamation-triangle" style="color:var(--lb-warning)"></i> <TMPL_VAR UPDATES.STATUS_REBOOT_PENDING></span>
+					</TMPL_IF>
 				</div>
 			</div>
 			<div class="lb-actions">
@@ -30,8 +58,11 @@
 				<button type="button" id="btn-save-secupdates" class="lb-btn lb-btn-primary lb-btn-sm lb-btn-icon"><i class="pi pi-check"></i> <TMPL_VAR COMMON.BUTTON_SAVE></button>
 			</div>
 			<div style="margin-top:8px;"><span id="savehint-secupdates">&nbsp;</span></div>
+		<TMPL_ELSE>
+			<p><i class="pi pi-info-circle"></i> <TMPL_VAR UPDATES.STATUS_NOT_DIETPI></p>
+		</TMPL_IF>
 		</div>
-		<!-- END Form for unattended-upgrades -->
+		<!-- END Form for Debian/PHP updates -->
 		<!-- START Form for system upgrade -->
 <!--		<div class="lb-section-title"><TMPL_VAR UPDATES.WIDGETLABEL_UPGRADE></div>
 		<form method="post" data-ajax="false" name="main_form" id="main_form" action="/admin/system/updates.cgi?do=install" enctype="multipart/form-data">
@@ -80,13 +111,17 @@
 	// AJAX Handler for Updates setting
 	$(document).ready(function(){
 		$("#btn-save-secupdates").click(function(){
-			var val = $("input[name='option-secupdates']:checked").val();
-			var reboot = $("input[name='updates-autoreboot']").prop("checked");
 			$("#savehint-secupdates").attr("style","color:blue").html("<TMPL_VAR COMMON.MSG_PLEASEWAIT>");
-			$.when(
-				$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates", value: val}}),
-				$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: { action: "secupdates-autoreboot", value: reboot}})
-			).done(function(){
+			$.ajax({url: "/admin/system/ajax/ajax-config-handler.cgi", type: "POST", data: {
+				action: "osupdate",
+				interval: $("input[name='option-secupdates']:checked").val(),
+				type: $("input[name='option-updatetype']:checked").val(),
+				reboot: $("input[name='updates-autoreboot']").prop("checked") ? "true" : "false"
+			}}).done(function(data){
+				if (data.error) {
+					$("#savehint-secupdates").attr("style","color:red").html("<TMPL_VAR COMMON.MESSAGE_GENERIC_ERROR>");
+					return;
+				}
 				$("#savehint-secupdates").attr("style","color:green").html("<TMPL_VAR COMMON.MSG_SAVEOK>");
 			}).fail(function(){
 				$("#savehint-secupdates").attr("style","color:red").html("<TMPL_VAR COMMON.MESSAGE_GENERIC_ERROR>");
@@ -541,4 +576,6 @@ function urlify(text) {
 <TMPL_VAR UPDATELOGS_HTML>
 <p class="lb-section-title"><TMPL_VAR UPDATES.LBULOG_TITLE_UPDATECHECKLOGS></p>
 <TMPL_VAR UPDATECHECKLOGS_HTML>
+<p class="lb-section-title"><TMPL_VAR UPDATES.LBULOG_TITLE_OSUPDATELOGS></p>
+<TMPL_VAR OSUPDATELOGS_HTML>
 </TMPL_IF>

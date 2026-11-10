@@ -1,0 +1,20 @@
+[Unit]
+Description=LoxBerry web terminal (Shell In A Box)
+# Replaces the SysV script of the Debian package (#1566): a native unit with
+# the same name keeps systemd from generating one from /etc/init.d/shellinabox
+# (which started an unused second instance on port 4200 and a deprecation
+# warning). Replaces system/daemons/system/06-shellinabox as well.
+After=network.target ssh.service
+ConditionPathExists=/usr/bin/shellinaboxd
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/environment
+# "ssh loxberry@localhost" in the terminal needs localhost in known_hosts - add it once
+ExecStartPre=-/bin/sh -c 'mkdir -p "$$LBHOMEDIR/.ssh" && { ssh-keygen -F localhost -f "$$LBHOMEDIR/.ssh/known_hosts" > /dev/null 2>&1 || ssh-keyscan -H localhost >> "$$LBHOMEDIR/.ssh/known_hosts" 2> /dev/null; }; chown -R loxberry:loxberry "$$LBHOMEDIR/.ssh"'
+ExecStart=/usr/bin/shellinaboxd --no-beep --localhost-only -t -n -p 64994 -s "/:loxberry:loxberry:${LBHOMEDIR}:/usr/bin/ssh loxberry@localhost" --user-css "Normal:-/etc/shellinabox/options-available/00+Black on White.css,Reverse:+/etc/shellinabox/options-available/00_White On Black.css" --user-css "Color:+/etc/shellinabox/options-available/01+Color Terminal.css,Monochrome:-/etc/shellinabox/options-available/01_Monochrome.css"
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

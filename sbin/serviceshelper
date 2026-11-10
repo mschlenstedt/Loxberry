@@ -1,140 +1,33 @@
 #!/bin/bash
 
-APC=${LBHOMEDIR}/system/apache2/ports.conf
-AWC=${LBHOMEDIR}/system/apache2/sites-available/000-default.conf
-SSLAWC=${LBHOMEDIR}/system/apache2/sites-available/001-default-ssl.conf
-AWCN=${LBHOMEDIR}/system/apache2/sites-available/000-default_${2}.conf
-SSLAWCN=${LBHOMEDIR}/system/apache2/sites-available/001-default-ssl_${2}.conf
-AWCL=${LBHOMEDIR}/system/apache2/sites-enabled/000-default_${2}.conf
-SSLAWCL=${LBHOMEDIR}/system/apache2/sites-enabled/001-default-ssl_${2}.conf
-HF=${LBHOMEDIR}/webfrontend/html/system/servicehelper.php
-ABF=${APC}_$(date +%Y%m%d%H%M%S)
-LPC=${LBHOMEDIR}/system/lighttpd/port.conf
-LBF=${LPC}_$(date +%Y%m%d%H%M%S)
-SVR='$SERVER'
-APACHE=$(pgrep apache2)
-LIGHTY=$(pgrep lighttpd)
+# Root helper for system/services.php (sudoers: lbdefaults)
+#
+#   serviceshelper ssdpd <start|stop|restart>
+#   serviceshelper webserver_apply    <port> <sslenabled 0|1> <sslport>
+#   serviceshelper webserver_finalize <port> <sslenabled 0|1> <sslport>
+#
+# The web server ports are applied by sbin/webserverconfig.pl, see there.
+
+isport() {
+	[[ "$1" =~ ^[0-9]+$ ]] && [ "$1" -ge 1 ] && [ "$1" -le 65535 ]
+}
 
 case $1 in
 	ssdpd)
-		systemctl $2 ssdpd
+		case $2 in
+			start|stop|restart) systemctl $2 ssdpd ;;
+			*) echo "Usage: $0 ssdpd start|stop|restart"; exit 2 ;;
+		esac
 		;;
-	webport_change)
-		cp $APC $ABF
-		cp $LPC $LBF
-		sed -i -e "0,/^Listen.*/ s//&\nListen NEW/" $APC
-		sed -i -e "/^Listen[ \t]*$2$/,+0d" $APC
-		sed -i -e "s/^Listen.*NEW/Listen $2/" $APC
-		cp $AWC $AWCN
-		cat > $HF << EOF
-<?php
-	header("Access-Control-Allow-Origin: *");
-	header("Expires; 0");
-	header("Expires: Tue, 01 Jan 1980 1:00:00 GMT");
-	header("Cache-Control: no-cache, must-revalidate, post-check=0, pre-check=0");   
-	header("Cache-Control: max-age=0");
-	header("Pragma: no-cache");
-	header('Content-Type: application/json');
-	echo "{ \"ok\":\"-1\" }";
-?>
-EOF
-		sed -i -e "s/<VirtualHost.*/<VirtualHost *:$2>/" $AWCN
-		sed -i -e '/^$SERVER/,+0d' $LPC
-		sed -i -e "s/^server\.port.*/server.port = $2\n$SVR[\"socket\"] == \":$3\" {}/" $LPC
-		ln -s $AWCN $AWCL
-		systemctl stop ssdpd
-		sleep 2
-		if [ -n "$APACHE" ]
-		then
-			a2enmod headers
-			systemctl restart apache2
+	webserver_apply|webserver_finalize)
+		if ! isport "$2" || ! [[ "$3" =~ ^[01]$ ]] || ! isport "$4"; then
+			echo "ERROR Wrong parameters"
+			exit 2
 		fi
-			if [ -n "$LIGHTY" ]
-		then
-			systemctl restart lighttpd
-		fi
+		exec "${LBHOMEDIR}/sbin/webserverconfig.pl" "${1#webserver_}" "$2" "$3" "$4"
 		;;
-	sslport_change)
-		cp $APC $ABF
-                sed -i -e "0,/ssl_module>$/ s//&\n\tListen NEW/" $APC
-		sed -i -e "0,/mod_gnutls.c>$/ s//&\n\tListen NEW/" $APC
-                sed -i -e "/^\tListen[ \t]*$2$/,+0d" $APC
-                sed -i -e "s/^\tListen.*NEW/\tListen $2/" $APC
-                cp $SSLAWC $SSLAWCN
-                cat > $HF << EOF
-<?php
-        header("Access-Control-Allow-Origin: *");
-        header("Expires; 0");
-        header("Expires: Tue, 01 Jan 1980 1:00:00 GMT");
-        header("Cache-Control: no-cache, must-revalidate, post-check=0, pre-check=0");
-        header("Cache-Control: max-age=0");
-        header("Pragma: no-cache");
-        header('Content-Type: application/json');
-        echo "{ \"ok\":\"-1\" }";
-?>
-EOF
-                sed -i -e "s/<VirtualHost.*/<VirtualHost *:$2>/" $SSLAWCN
-                ln -s $SSLAWCN $SSLAWCL
-                systemctl stop ssdpd
-                sleep 2
-                if [ -n "$APACHE" ]
-                then
-                        a2enmod headers
-                        systemctl restart apache2
-                fi
-                ;;
-
-	webport_success)
-		if [ -f "$AWCN" ]
-		then
-			sed -i -e "0,/^Listen.*/ s//&\nListen NEW/" $APC
-			sed -i -e "/^Listen[ \t]*$2$/,+0d" $APC
-			sed -i -e "/^Listen[ \t]*$3$/,+0d" $APC
-			sed -i -e "s/^Listen.*NEW/Listen $2/" $APC
-			sed -i -e '/^$SERVER/,+0d' $LPC
-			unlink $AWCL
-			rm -f $AWC
-			rm -f $HF
-			mv $AWCN $AWC
-			systemctl start ssdpd
-			sleep 2
-   			if [ -n "$APACHE" ]
-   			then
-   				systemctl restart apache2
-   			fi
-   				if [ -n "$LIGHTY" ]
-   			then
-   				systemctl restart lighttpd
-   			fi
-		fi
-		;;
-	sslport_success)
-		if [ -f "$SSLAWCN" ]
-                then
-                        sed -i -e "0,/ssl_module>$/ s//&\n\tListen NEW/" $APC
-			sed -i -e "0,/mod_gnutls.c>$/ s//&\n\tListen NEW/" $APC
-                        sed -i -e "/^\tListen[ \t]*$2$/,+0d" $APC
-                        sed -i -e "/^\tListen[ \t]*$3$/,+0d" $APC
-                        sed -i -e "s/^\tListen.*NEW/\tListen $2/" $APC
-                        unlink $SSLAWCL
-                        rm -f $SSLAWC
-                        rm -f $HF
-                        mv $SSLAWCN $SSLAWC
-                        systemctl start ssdpd
-                        sleep 2
-                        if [ -n "$APACHE" ]
-                        then
-                                systemctl restart apache2
-                        fi
-                fi
-                ;;
-	enable_ssl)
-		a2ensite 001-default-ssl
-		systemctl reload apache2
-		;;
-	disable_ssl)
-		a2dissite 001-default-ssl
-		systemctl reload apache2
+	*)
+		echo "Usage: $0 ssdpd <start|stop|restart> | webserver_apply|webserver_finalize <port> <sslenabled 0|1> <sslport>"
+		exit 2
 		;;
 esac
-

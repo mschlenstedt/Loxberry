@@ -387,8 +387,8 @@ class intLog
 			$this->params["_next_db_check"] = time()+60;
 		}
 		
-		if (isset($this->params["stdout"])) {fwrite(STDOUT,$msg . PHP_EOL);}
-		if (isset($this->params["stderr"])) {fwrite(STDERR,$msg . PHP_EOL);}
+		if (!empty($this->params["stdout"])) {fwrite(STDOUT,$msg . PHP_EOL);}
+		if (!empty($this->params["stderr"])) {fwrite(STDERR,$msg . PHP_EOL);}
 		if ($this->params["loglevel"] != 0 && !isset($this->params["nofile"]) && $this->params["filename"] != "") {file_put_contents($this->params["filename"], $msg . PHP_EOL, FILE_APPEND);}
 	}
 

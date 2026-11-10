@@ -19,18 +19,33 @@ if (file_exists($lockfile_definitions))
 	}
 }
 
-// Check package install processes
-$commandlist[] = 'pgrep -l apt-get';
-$commandlist[] = 'pgrep -l dpkg';
-$commandlist[] = 'pgrep -l /usr/bin/unattended-upgrade';
+// Check package install processes (#1584)
+$commandlist = array(
+	// Match exact process names, not arbitrary command-line arguments
+	'pgrep -l -x ' . escapeshellarg('apt|apt-get|dpkg'),
+	// Match the updater itself, optionally launched through Python. A process
+	// name is cut to 15 characters, so this needs -f. The anchored pattern
+	// excludes shell wrappers (including the sh that exec() starts) and
+	// unattended-upgrade-shutdown
+	'pgrep -a -f ' . escapeshellarg(
+		'^(/usr/bin/python3([.][0-9]+)*[[:space:]]+)?'
+		. '/usr/bin/unattended-upgrade([[:space:]]|$)'
+	)
+);
 
 foreach($commandlist as $command) {
-	$pgrep_result = exec($command);
-	if($pgrep_result != "") {
-		$which[] = $pgrep_result;
+	$output = array();
+	$exitcode = 0;
+	exec($command, $output, $exitcode);
+	if($exitcode === 0) {
+		foreach($output as $process) {
+			$which[] = $process;
+		}
+	} elseif($exitcode !== 1) {
+		// pgrep exits with 1 if nothing matched - anything else is a failure
+		error_log("Package process detection failed with exit code $exitcode: $command");
 	}
-	unset($pgrep_result);
-}	
+}
 
 // List what locks are set
 if (!empty($which))

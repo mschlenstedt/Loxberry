@@ -37,8 +37,7 @@ my $value = $R::value;
 # print STDERR "| Value: $value" if $value;
 # print STDERR "\n";
 
-if    ($action eq 'secupdates') { &secupdates; }
-elsif ($action eq 'secupdates-autoreboot') { &secupdatesautoreboot; }
+if    ($action eq 'osupdate') { &osupdate; }
 elsif ($action eq 'poweroff') { &poweroff; }
 elsif ($action eq 'reboot') { &reboot; }
 elsif ($action eq 'ping') { $response{message} = "pong"; $response{error} = 0; exit; }
@@ -79,117 +78,30 @@ else   {
 exit;
 
 ################################
-# unattended-upgrades setting
+# Debian/PHP updates (sbin/osupdate.pl)
 ################################
-sub secupdates
+sub osupdate
 {
-	# print STDERR "ajax-config-handler: ajax secupdates\n";
-	# print STDERR "Value is: $value\n";
-	
-	if (!looks_like_number($value) && $value ne 'query') 
-		{ $response{message} = "<red>Value $value not supported.</red>"; 
-		  $response{error} = 1;
-		  return();}
-	
-	my $aptfile = "/etc/apt/apt.conf.d/02periodic";
-	open(FILE, $aptfile) || die "File not found";
-	flock(FILE,1);
-	my @lines = <FILE>;
-	close(FILE);
+	my $interval = $cgi->param('interval') // '';
+	my $type = $cgi->param('type') // '';
+	my $reboot = $cgi->param('reboot') // '';
 
-	my $querystring;
-	my $queryresult;
-	
-	my @newlines;
-	foreach(@lines) {
-		if (begins_with($_, "APT::Periodic::Unattended-Upgrade"))
-			{   # print STDERR "############ FOUND #############";
-				# if ($value eq 'query') {
-					# my ($querystring, $queryresult) = split / /;
-					# print STDERR "### QUERY result: " . $queryresult . "\n";
-					# $queryresult =~ s/[\$"#@~!&*()\[\];.,:?^ `\\\/]+//g;
-					# # print "option-secupdates-" . $queryresult;
-				# } else {
-				$_ = "APT::Periodic::Unattended-Upgrade \"$value\";\n"; 
-				#}
-			}
-		if (begins_with($_, "APT::Periodic::Update-Package-Lists") && $value ne 'query')
-			{   # print STDERR "############ FOUND #############";
-				$_ = "APT::Periodic::Update-Package-Lists \"$value\";\n";
-			}
-		push(@newlines,$_);
-	}
-
-	if ($value ne 'query') {
-		eval {
-			open(FILE, '>', $aptfile);
-			flock(FILE,2);
-			print FILE @newlines;
-			close(FILE);
-			$response{message} = "Change of APT::Periodic::Unattended-Upgrade to $value written successfully";
-			$response{error} = 0;
-		};
-		if ($@) {
-			$response{message} = "ERROR: Change of APT::Periodic::Unattended-Upgrade to $value: $!";
-			$response{error} = 1;
-		}
-		
-	}
-}
-
-############################################
-# unattended-upgrades auto-reboot setting
-############################################
-sub secupdatesautoreboot
-{
-	# print STDERR "ajax-config-handler: secupdates-autoreboot\n";
-	# print STDERR "Value is: $value\n";
-	
-	if ($value ne "true" && $value ne "false" && $value ne "query") { 
-		$response{message} = "<red>Value not supported.</red>"; 
+	if ($interval !~ /^(0|1|7|30)$/ || $type !~ /^(security|all)$/ || $reboot !~ /^(true|false)$/) {
+		$response{message} = "<red>Value not supported.</red>";
 		$response{error} = 1;
 		return();
 	}
-	
-	my $aptfile = "/etc/apt/apt.conf.d/50unattended-upgrades";
-	open(FILE, $aptfile) || die "File not found";
-	flock(FILE,1);
-	my @lines = <FILE>;
-	close(FILE);
 
-	my $querystring;
-	my $queryresult;
-	
-	my @newlines;
-	foreach(@lines) {
-		if (begins_with($_, "Unattended-Upgrade::Automatic-Reboot-WithUsers")) { 
-			# print STDERR "############ FOUND #############";
-			# if ($value eq 'query') {
-				# my ($querystring, $queryresult) = split / /;
-				# # print STDERR "### QUERY result: " . $queryresult . "\n";
-				# $queryresult =~ s/[\$"#@~!&*()\[\];.,:?^ `\\\/]+//g; #" Syntax highlighting fix for UltraEdit
-				# print "secupdates-autoreboot-" . $queryresult;
-			# } else {
-				$_ = $value eq "false" ? "Unattended-Upgrade::Automatic-Reboot-WithUsers \"false\";\n" : "Unattended-Upgrade::Automatic-Reboot-WithUsers \"true\";\n";
-			# }
-		}
-		push(@newlines,$_);
-	}
-
-	if ($value ne 'query') {
-		eval {
-			open(FILE, '>', $aptfile);
-			flock(FILE,2);
-			print FILE @newlines;
-			close(FILE);
-			$response{message} = "Change of Unattended-Upgrade::Automatic-Reboot-WithUsers to $value written successfully";
-			$response{error} = 0;
-		};
-		if ($@) {
-			$response{message} = "ERROR: Change of Unattended-Upgrade::Automatic-Reboot-WithUsers to $value: $!";
-			$response{error} = 1;
-		}
-	}
+	# change_generaljson() deletes keys with a false value like "0"
+	require LoxBerry::System::General;
+	my $jsonobj = LoxBerry::System::General->new();
+	my $cfg = $jsonobj->open() or return;
+	$cfg->{Osupdate}->{Interval} = $interval;
+	$cfg->{Osupdate}->{Type} = $type;
+	$cfg->{Osupdate}->{Reboot} = $reboot;
+	$jsonobj->write();
+	$response{error} = 0;
+	$response{message} = "OK";
 }
 
 ############################################

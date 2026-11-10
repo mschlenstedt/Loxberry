@@ -37,6 +37,7 @@ _logdbkey = _args.logdbkey
 # ─── Global state ────────────────────────────────────────────────────────────
 _loglevel: int = 3
 _miniservers: dict = {}
+_default_ms: str = "1"          # Main.msno: target of subscriptions without own miniservers
 _subscriptions: list = []
 _cache: dict = {}
 _ms_queues: dict = {}    # ms_id -> asyncio.Queue; one send queue per miniserver
@@ -196,6 +197,14 @@ def get_use_udp(gw_data: dict) -> bool:
     except (KeyError, TypeError):
         return False
 
+def get_default_ms(gw_data: dict) -> str:
+    """Standard miniserver (Main.msno) for subscriptions without own miniservers.
+    Gateway V1 used it as well; V2 sent those to miniserver 1 (#1576)."""
+    try:
+        return str(int(gw_data["Main"]["msno"]))
+    except (KeyError, TypeError, ValueError):
+        return "1"
+
 def get_udp_out_port(gw_data: dict) -> int:
     try:
         return int(gw_data["Main"]["udpport"])
@@ -343,7 +352,8 @@ async def send_http(session: aiohttp.ClientSession, ms: dict,
 async def config_watcher() -> None:
     """Async task: reload config every 5 s; re-subscribe on subscription changes."""
     global _loglevel, _miniservers, _subscriptions, _reset_delay_ms, \
-           _convert_booleans, _conversions, _use_http, _use_udp, _udp_out_port
+           _convert_booleans, _conversions, _use_http, _use_udp, _udp_out_port, \
+           _default_ms
 
     _last_general_mtime = 0.0
     _last_gw_mtime      = 0.0
@@ -356,7 +366,8 @@ async def config_watcher() -> None:
             sm  = CONFIG_SUBS.stat().st_mtime
             if gm != _last_general_mtime or gwm != _last_gw_mtime or sm != _last_subs_mtime:
                 (new_ms, new_subs, new_level, new_reset_ms, new_conv_bool,
-                 new_convs, new_use_http, new_use_udp, new_udp_out_port) = load_configs()
+                 new_convs, new_use_http, new_use_udp, new_udp_out_port,
+                 new_default_ms) = load_configs()
                 _last_general_mtime = gm
                 _last_gw_mtime      = gwm
                 _last_subs_mtime    = sm
@@ -373,6 +384,7 @@ async def config_watcher() -> None:
                 _use_http         = new_use_http
                 _use_udp          = new_use_udp
                 _udp_out_port     = new_udp_out_port
+                _default_ms       = new_default_ms
 
                 LOGINF("Config reloaded")
 
@@ -529,7 +541,7 @@ async def _process_resend(item: dict) -> None:
     for vi_name, entry in items:
         value    = entry.get("value", "")
         udp_name = entry.get("udp_name") or vi_name
-        ms_list  = [str(m) for m in (entry.get("miniservers") or ["1"])]
+        ms_list  = [str(m) for m in (entry.get("miniservers") or [_default_ms])]
         for ms_id in ms_list:
             if ms_id not in _ms_queues:
                 LOGWARN(f"Resend: miniserver {ms_id} not in config ({vi_name})")
@@ -588,7 +600,7 @@ async def _process_mqtt(item: dict, status_event: asyncio.Event) -> None:
         # Broker delivers retained messages on subscribe → cache only, no Miniserver forward
         now = datetime.now()
         for vi_name, udp_name, value, ms_ids, noncached, resetaftersend in sends:
-            ms_list = [str(m) for m in ms_ids] or ["1"]
+            ms_list = [str(m) for m in ms_ids] or [_default_ms]
             entry = _cache.setdefault(vi_name, make_cache_entry(value, ms_list))
             entry["value"]              = str(value)
             entry["miniservers"]        = ms_list
@@ -609,7 +621,7 @@ async def _process_mqtt(item: dict, status_event: asyncio.Event) -> None:
     # the VI's full target list (ms_list) for cache bookkeeping in the worker.
     per_ms: dict[str, list[tuple]] = {}
     for vi_name, udp_name, value, ms_ids, noncached, resetaftersend in sends:
-        ms_list = [str(m) for m in ms_ids] or ["1"]
+        ms_list = [str(m) for m in ms_ids] or [_default_ms]
         for ms_id in ms_list:
             per_ms.setdefault(ms_id, []).append(
                 (vi_name, udp_name, value, ms_list, noncached, resetaftersend))
@@ -1111,10 +1123,10 @@ def extract_json_value(data: dict | list, path_str: str):
             current = current[part]
     return current
 
-def load_configs() -> tuple[dict, list, int, float, bool, dict, bool, bool, int]:
+def load_configs() -> tuple[dict, list, int, float, bool, dict, bool, bool, int, str]:
     """Load and parse config files.
     Returns (miniservers, subscriptions, loglevel, reset_delay_ms, convert_booleans,
-             conversions, use_http, use_udp, udp_out_port).
+             conversions, use_http, use_udp, udp_out_port, default_ms).
     Raises on file/JSON error — caller must handle."""
     general_data = json.loads(CONFIG_GENERAL.read_text(encoding="utf-8"))
     gw_data      = json.loads(CONFIG_GW.read_text(encoding="utf-8"))
@@ -1129,6 +1141,7 @@ def load_configs() -> tuple[dict, list, int, float, bool, dict, bool, bool, int]
         get_use_http(gw_data),
         get_use_udp(gw_data),
         get_udp_out_port(gw_data),
+        get_default_ms(gw_data),
     )
 
 # ─── Cache helpers ────────────────────────────────────────────────────────────
@@ -1145,14 +1158,15 @@ def should_send_ms(entry: dict | None, ms_id: str, value, noncached: bool) -> bo
     return pm is None or str(pm.get("value")) != str(value)
 
 def get_miniserver_ids(toms: list) -> list[str]:
-    """Return miniserver IDs to send to. Empty list means Miniserver 1."""
-    return ["1"] if not toms else [str(t) for t in toms]
+    """Return miniserver IDs to send to. Empty list means the standard
+    miniserver (Main.msno)."""
+    return [_default_ms] if not toms else [str(t) for t in toms]
 
 def make_cache_entry(value, ms_ids,
                      processing_ms: float | None = None) -> dict:
     now = datetime.now()
     if isinstance(ms_ids, (list, tuple)):
-        ms_list = [str(m) for m in ms_ids] or ["1"]
+        ms_list = [str(m) for m in ms_ids] or [_default_ms]
     else:
         ms_list = [str(ms_ids)]
     return {
@@ -1298,13 +1312,13 @@ async def _supervise(name: str, coro_factory) -> None:
 async def main() -> None:
     global _loglevel, _miniservers, _subscriptions, _reset_delay_ms, \
            _convert_booleans, _conversions, _use_http, _use_udp, \
-           _udp_out_port, _udp_in_port
+           _udp_out_port, _udp_in_port, _default_ms
     global _lb_version, _stats_start_mono, _stats_start_epoch
 
     try:
         (_miniservers, _subscriptions, _loglevel, _reset_delay_ms,
          _convert_booleans, _conversions,
-         _use_http, _use_udp, _udp_out_port) = load_configs()
+         _use_http, _use_udp, _udp_out_port, _default_ms) = load_configs()
     except Exception as exc:
         print(f" CRIT: Cannot load config: {exc}", flush=True)
         return
@@ -1313,6 +1327,7 @@ async def main() -> None:
     trans_load_directories()
     LOGINF(f"Loglevel: {_loglevel}")
     LOGINF(f"Miniservers: {list(_miniservers.keys())}")
+    LOGINF(f"Standard Miniserver: {_default_ms}")
     LOGINF(f"Subscriptions: {[s['id'] for s in _subscriptions]}")
     LOGINF(f"use_http={_use_http}  use_udp={_use_udp}  udp_out_port={_udp_out_port}")
 

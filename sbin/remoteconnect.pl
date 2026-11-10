@@ -150,13 +150,19 @@ sub remoteurl {
 		return;
 	}
 	for(my $i = 1;$i <= 120;$i++) {
-		$remoteurl = `cat $cfdlog | awk '/.*https.*trycloudflare\\.com.*/ {print \$4}'`;
-		chomp ($remoteurl);
-		if ($remoteurl =~ /^https.*/) {
-			last;
-		} else {
-			sleep (1);
+		# Match the URL itself, not its column - the column depends on the
+		# box cloudflared draws around it (#1560)
+		if (open(my $fh, '<', $cfdlog)) {
+			while (my $line = <$fh>) {
+				if ($line =~ m{(https://[a-z0-9-]+\.trycloudflare\.com)}) {
+					$remoteurl = $1;
+					last;
+				}
+			}
+			close($fh);
 		}
+		last if $remoteurl;
+		sleep (1);
 	}
 	return ($remoteurl);
 }

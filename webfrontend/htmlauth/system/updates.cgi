@@ -23,6 +23,7 @@ use LoxBerry::System;
 use LoxBerry::System::General;
 use LoxBerry::Web;
 use LoxBerry::Log;
+use JSON;
 use Time::Piece;
 
 
@@ -199,37 +200,19 @@ sub form {
 	$maintemplate->param ("SELFURL", $ENV{REQUEST_URI});
 
 
-	our $unattended_val = get_unattended_upgrades_days();
-	our $unattended_reboot_bool = get_unattended_upgrades_autoreboot();
+	# Debian/PHP updates by sbin/osupdate.pl (DietPi based LoxBerrys only)
+	my %osupdate = get_osupdate_settings();
+	$maintemplate->param("OSUPDATE_DIETPI", -e '/boot/dietpi/.version' ? 1 : 0);
+	$maintemplate->param("SECUPDATE_IS_$_", $osupdate{Interval} eq $_ ? 1 : 0) foreach ('0', '1', '7', '30');
+	$maintemplate->param("OSUPDATE_TYPE_ALL", $osupdate{Type} eq 'all' ? 1 : 0);
+	$maintemplate->param("AUTOREBOOT_BOOL", $osupdate{Reboot} eq 'true' ? 1 : 0);
 
-	print STDERR "OFF: $SL{'UPDATES.SECUPDATE_RADIO_OFF'}\n";
-
-	our $cgi = new CGI;
-	our %labels = (		'0'=>  $SL{'UPDATES.SECUPDATE_RADIO_OFF'},
-						'1'=> $SL{'UPDATES.SECUPDATE_RADIO_DAILY'},
-						'7'=> $SL{'UPDATES.SECUPDATE_RADIO_WEEKLY'},
-						'30'=> $SL{'UPDATES.SECUPDATE_RADIO_MONTHLY'});
-					 
-	our $update_radio = $cgi->radio_group(
-			-name 	 => 'option-secupdates',
-			-values  => ['0', '1', '7', '30'],
-			-labels  => \%labels,
-			-default => $unattended_val,
-		);
-	$maintemplate->param("UPDATE_RADIO", $update_radio);
-	$maintemplate->param("SECUPDATE_IS_0",  ($unattended_val eq '0')  ? 1 : 0);
-	$maintemplate->param("SECUPDATE_IS_1",  ($unattended_val eq '1')  ? 1 : 0);
-	$maintemplate->param("SECUPDATE_IS_7",  ($unattended_val eq '7')  ? 1 : 0);
-	$maintemplate->param("SECUPDATE_IS_30", ($unattended_val eq '30') ? 1 : 0);
-	$maintemplate->param("AUTOREBOOT_BOOL", $unattended_reboot_bool);
-
-	our $update_reboot_checkbox = $cgi->checkbox( -name => 'updates-autoreboot',
-												  -checked => $unattended_reboot_bool,
-												  #-checked => 1,
-												  #-value => '1',
-												  -label => $SL{'UPDATES.SECUPDATE_REBOOT_ENABLED'}
-		);
-	$maintemplate->param("UPDATE_REBOOT_CHECKBOX", $update_reboot_checkbox);
+	my %osstatus = get_osupdate_status();
+	$maintemplate->param("OSUPDATE_LASTRUN", $osstatus{lastrun});
+	$maintemplate->param("OSUPDATE_RESULT_OK", $osstatus{result} eq 'ok' ? 1 : 0);
+	$maintemplate->param("OSUPDATE_RESULT_ERROR", $osstatus{result} eq 'error' ? 1 : 0);
+	$maintemplate->param("OSUPDATE_PACKAGES", $osstatus{packages});
+	$maintemplate->param("OSUPDATE_REBOOT", -e '/run/reboot-required' ? 1 : 0);
 		
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'UPDATES.WIDGETLABEL'};
 
@@ -317,6 +300,7 @@ sub lbuhistory
 
 	$maintemplate->param("UPDATELOGS_HTML", loglist_html( PACKAGE => 'LoxBerry Update', NAME => 'update' ));
 	$maintemplate->param("UPDATECHECKLOGS_HTML", loglist_html( PACKAGE => 'LoxBerry Update', NAME => 'check' ));
+	$maintemplate->param("OSUPDATELOGS_HTML", loglist_html( PACKAGE => 'LoxBerry Update', NAME => 'osupdate' ));
 	
 	
 	# Print Template
@@ -396,62 +380,33 @@ sub is_folder_empty {
 }
 
 ###################################################################
-# Returns the current days of unattended-upgrades
+# Settings of sbin/osupdate.pl from general.json
 ###################################################################
 
-sub get_unattended_upgrades_days
+sub get_osupdate_settings
 {
-	my $aptfile = "/etc/apt/apt.conf.d/02periodic";
-	if (!-f $aptfile) {
-		return 0; 
+	my $cfg = LoxBerry::System::General->new()->open( readonly => 1 );
+	my %settings = ( Interval => '7', Type => 'security', Reboot => 'false' );
+	foreach my $key ( keys %settings ) {
+		$settings{$key} = $cfg->{Osupdate}->{$key} if ( defined $cfg->{Osupdate}->{$key} );
 	}
-	open(FILE, $aptfile) || die "File not found";
-	my @lines = <FILE>;
-	close(FILE);
-
-	my $querystring;
-	my $queryresult;
-	
-	foreach(@lines) {
-		if (begins_with($_, "APT::Periodic::Unattended-Upgrade"))
-			{   my ($querystring, $queryresult) = split / /;
-				$queryresult =~ s/\R//g;
-				$queryresult =~ s/[\$"#@~!&*()\[\];.,:?^ `\\\/]+//g; #" Highlighting fix for Ultra Edit
-				return $queryresult;
-			}
-	}
-return 0;
+	return %settings;
 }
 
 ###################################################################
-# Returns if unattended-upgrades is set to automatically reboot
+# Result of the last run of sbin/osupdate.pl
 ###################################################################
 
-sub get_unattended_upgrades_autoreboot
+sub get_osupdate_status
 {
-	my $aptfile = "/etc/apt/apt.conf.d/50unattended-upgrades";
-	if (!-f $aptfile) {
-		return 0; 
-	}
-	open(FILE, $aptfile) || die "File not found";
-	my @lines = <FILE>;
-	close(FILE);
-
-	my $querystring;
-	my $queryresult;
-	
-	foreach(@lines) {
-		if (begins_with($_, "Unattended-Upgrade::Automatic-Reboot-WithUsers "))
-			{   my ($querystring, $queryresult) = split / /;
-				# print STDERR "AUTOREBOOT QUERYRESULT: " . $queryresult . "\n";
-				$queryresult =~ s/\R//g;
-				#print STDERR "AUTOREBOOT QUERYRESULT: " . $queryresult . "\n";
-				$queryresult =~ s/[\$"#@~!&*()\[\];.,:?^ `\\\/]+//g;
-				#print STDERR "AUTOREBOOT QUERYRESULT: #" . $queryresult . "#\n";
-				return $queryresult eq 'true' ? 1 : 0;
-				#print STDERR "AUTOREBOOT RETURNVAL: " . $returnval . "\n";
-				#return $returnval;
-			}
-	}
-return 0;
+	my %status = ( lastrun => '', result => '', packages => 0 );
+	my $statusfile = "$lbsdatadir/osupdate.json";
+	open( my $fh, '<', $statusfile ) or return %status;
+	my $data = eval { decode_json( do { local $/; <$fh> } ) };
+	close($fh);
+	return %status if ( ref($data) ne 'HASH' || !$data->{lastrun} );
+	$status{lastrun} = localtime( $data->{lastrun} )->strftime("%d.%m.%Y %H:%M");
+	$status{result} = $data->{result} // '';
+	$status{packages} = ref( $data->{packages} ) eq 'ARRAY' ? scalar @{ $data->{packages} } : 0;
+	return %status;
 }

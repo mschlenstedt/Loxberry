@@ -6,7 +6,7 @@
       "Startsetup" : "1",
       "Systemloglevel" : "6",
       "Theme" : "classic",
-      "Version" : "4.0.0.15"
+      "Version" : "4.0.1.5"
    },
    "Healthcheck" : null,
    "Miniserver" : {
@@ -64,7 +64,7 @@
    },
    "Timeserver" : {
       "Method" : "ntp",
-      "Ntpserver" : "0.europe.pool.ntp.org",
+      "Ntpserver" : "europe.pool.ntp.org",
       "Timemsno" : 1,
       "Timezone" : "Europe/Berlin"
    },
@@ -78,6 +78,11 @@
       "Keepupdatefiles" : null,
       "Latestsha" : null,
       "Releasetype" : "release"
+   },
+   "Osupdate" : {
+      "Interval" : "7",
+      "Reboot" : "true",
+      "Type" : "security"
    },
    "Watchdog" : {
       "Maxtemp" : "85"

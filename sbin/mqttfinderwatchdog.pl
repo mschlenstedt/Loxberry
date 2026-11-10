@@ -102,6 +102,7 @@ sub restart_finder {
 			package  => 'MQTT',
 			name     => 'mqttfinderwatchdog',
 			filename => "$lbstmpfslogdir/mqttfinderwatchdog.log",
+			append   => 1,	# without it LoxBerry::Log deletes the file - only the last restart would remain
 			addtime  => 1,
 		);
 	};

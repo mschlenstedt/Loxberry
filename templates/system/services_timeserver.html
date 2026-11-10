@@ -9,7 +9,7 @@
 		<div class="lb-form-field">
 			<TMPL_VAR SYSTEMDATETIME>
 			&nbsp;<a class="lb-btn lb-btn-sm" href="javascript:location.reload()"><TMPL_VAR COMMON.BUTTON_REFRESH></a>
-			&nbsp;<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/setdatetime.log&header=html&format=template" target="_blank"><i class="pi pi-info-circle"></i> <TMPL_VAR COMMON.BUTTON_LOGFILE></a>
+			&nbsp;<a class="lb-btn lb-btn-sm lb-btn-icon" href="/admin/system/tools/logfile.cgi?logfile=system_tmpfs/settimeserver.log&header=html&format=template" target="_blank"><i class="pi pi-info-circle"></i> <TMPL_VAR COMMON.BUTTON_LOGFILE></a>
 		</div>
 		<div class="lb-form-help"></div>
 	</div>
@@ -18,29 +18,33 @@
 
 	<div class="lb-form-row">
 		<div class="lb-form-label">
-			<label id="labeluhrzeit"><TMPL_VAR TIMESERVER.LABEL_TYPE_TIME></label>
+			<label id="labeluhrzeit" for="syncmode"><TMPL_VAR TIMESERVER.LABEL_TYPE_TIME></label>
 		</div>
 		<div class="lb-form-field">
-			<label><input <TMPL_VAR CHECKED2> id="zeitserver_ntp" name="zeitserver" type="checkbox" value="ntp"> <TMPL_VAR TIMESERVER.ENABLE_NTP></label>
+			<select class="lb-select" id="syncmode" name="syncmode" data-role="none">
+				<TMPL_LOOP SYNCMODES>
+				<option value="<TMPL_VAR VALUE>" <TMPL_VAR SELECTED>><TMPL_VAR LABEL></option>
+				</TMPL_LOOP>
+			</select>
 		</div>
 		<div class="lb-form-help"></div>
 	</div>
 
 	<div class="lb-form-row">
 		<div class="lb-form-label">
-			<label id="labelntpserverurl"><TMPL_VAR TIMESERVER.LABEL_NTP_SERVER></label>
+			<label id="labelntpserverurl" for="ntpserverurl"><TMPL_VAR TIMESERVER.LABEL_NTP_SERVER></label>
 		</div>
 		<div class="lb-form-field">
-			<input value="<TMPL_VAR NTPSERVERURL>" id="ntpserverurl" name="ntpserverurl" type="text" class="lb-input" data-validation-rule="special:domainname_or_ipaddr" data-validation-error-msg="<TMPL_VAR TIMESERVER.MSG_VAL_INVALID_HOST>">
+			<input value="<TMPL_VAR NTPSERVERURL>" id="ntpserverurl" name="ntpserverurl" type="text" class="lb-input" data-validation-rule="special:ntpservers" data-validation-error-msg="<TMPL_VAR TIMESERVER.MSG_VAL_INVALID_HOST>">
 		</div>
 		<div class="lb-form-help">
-			<div class="hint"><a id="linkntpurls" href="http://www.pool.ntp.org/de/use.html" target="_blank"><TMPL_VAR TIMESERVER.LINK_OTHER_TIMESERVERS></a></div>
+			<div class="hint"><TMPL_VAR TIMESERVER.HINT_NTP_SERVER> <a id="linkntpurls" href="https://www.pool.ntp.org/de/use.html" target="_blank"><TMPL_VAR TIMESERVER.LINK_OTHER_TIMESERVERS></a></div>
 		</div>
 	</div>
 
 	<div class="lb-form-row">
 		<div class="lb-form-label">
-			<label id="labelzeitzone"><TMPL_VAR TIMESERVER.LABEL_TIMEZONE></label>
+			<label id="labelzeitzone" for="zeitzone"><TMPL_VAR TIMESERVER.LABEL_TIMEZONE></label>
 		</div>
 		<div class="lb-form-field">
 			<select class="lb-select" id="zeitzone" name="zeitzone" data-role="none">

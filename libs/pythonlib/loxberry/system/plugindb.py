@@ -91,6 +91,8 @@ def get_plugins(force: bool = False) -> list:
             "PLUGINDB_MD5_CHECKSUM": pd.get("md5"),
             "PLUGINDB_AUTHOR_NAME": pd.get("author_name"),
             "PLUGINDB_AUTHOR_EMAIL": pd.get("author_email"),
+            "PLUGINDB_MAINTAINER_NAME": pd.get("maintainer_name") or "",
+            "PLUGINDB_MAINTAINER_EMAIL": pd.get("maintainer_email") or "",
             "PLUGINDB_PLUGIN_WEBSITE": pd.get("plugin_website") or "",
             "PLUGINDB_VERSION": pd.get("version"),
             "PLUGINDB_NAME": pd.get("name"),
