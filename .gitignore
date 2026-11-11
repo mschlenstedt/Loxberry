@@ -33,10 +33,6 @@ templates/plugins/**
 webfrontend/htmlauth/plugins/**
 webfrontend/html/plugins/**
 
-# Ausnahme erlauben
-!webfrontend/html/plugins/cssframework/
-!webfrontend/html/plugins/cssframework/**
-
 # Claude Code project notes (user-specific, not for the public repo)
 CLAUDE.md
 .claude/
@@ -56,4 +52,3 @@ desktop.ini
 *.bak
 *.orig
 *.rej
-*.ps1

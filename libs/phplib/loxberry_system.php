@@ -71,7 +71,6 @@
 	define ("LBSHTMLDIR", LBHOMEDIR . "/webfrontend/html/system");
 	define ("LBSTEMPLATEDIR", LBHOMEDIR . "/templates/system");
 	define ("LBSDATADIR", LBHOMEDIR . "/data/system");
-	define ("LBSTHEMEDIR", LBSDATADIR . "/themes");
 	define ("LBSLOGDIR", LBHOMEDIR . "/log/system");
 	define ("LBSTMPFSLOGDIR", LBHOMEDIR . "/log/system_tmpfs");
 	define ("LBSCONFIGDIR", LBHOMEDIR . "/config/system");
@@ -84,7 +83,6 @@
 	$lbshtmldir = LBSHTMLDIR;
 	$lbstemplatedir = LBSTEMPLATEDIR;
 	$lbsdatadir = LBSDATADIR;
-	$lbsthemedir = LBSTHEMEDIR;
 	$lbslogdir = LBSLOGDIR;
 	$lbstmpfslogdir = LBSTMPFSLOGDIR;
 	$lbsconfigdir = LBSCONFIGDIR;
@@ -116,7 +114,7 @@
 // 
 class LBSystem
 {
-	public static $LBSYSTEMVERSION = "4.0.0.15";
+	public static $LBSYSTEMVERSION = "4.0.0.14";
 	public static $lang=NULL;
 	private static $SL=NULL;
 		
