@@ -1,2 +1,7 @@
 #!/bin/bash
+# Debian/PHP updates. cron.daily starts every job at 04:23 at the same time -
+# a random delay of 30-60 minutes starts this after the LoxBerry update check
+# (loxberryupdate_cron, 0-15 minutes). osupdate.pl counts its interval from its
+# own start and allows an hour of tolerance, so the varying start is no problem.
+sleep $((1800 + RANDOM % 1800))
 sudo $LBHOMEDIR/sbin/osupdate.pl cron=daily

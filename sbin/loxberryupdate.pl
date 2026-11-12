@@ -90,9 +90,10 @@ if ($cgi->param('cron')) {
 }
 
 if ($cron) {
-	LOGINF "Locking lbupdate - delaying up to 10 minutes...";
+	# Same wait as osupdate.pl: Debian/PHP updates with a big backlog take a while
+	LOGINF "Locking lbupdate - delaying up to 2 hours...";
 	eval {
-		my $lockstate = LoxBerry::System::lock( lockfile => 'lbupdate', wait => 600 );
+		my $lockstate = LoxBerry::System::lock( lockfile => 'lbupdate', wait => 7200 );
 		if ($lockstate) {
 			LOGCRIT "Could not get lock for lbupdate. Skipping this update.";
 			LOGINF "Locking error reason is: $lockstate";

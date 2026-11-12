@@ -396,7 +396,9 @@ sub install {
 	LOGINF "$LL{'INF_LOCKING'}";
 	$errors = 0;
 	eval {
-		my $lockstate = LoxBerry::System::lock( lockfile => 'plugininstall', wait => 600 );
+		# Automatic updates (cron.daily) may meet a running LoxBerry or
+		# Debian/PHP update - they wait as long as osupdate.pl does
+		my $lockstate = LoxBerry::System::lock( lockfile => 'plugininstall', wait => ( $R::action eq "autoupdate" ? 7200 : 600 ) );
 		$errors = $lockstate if ($lockstate);
 	};
 	if ($errors) {

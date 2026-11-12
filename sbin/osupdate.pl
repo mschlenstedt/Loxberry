@@ -46,11 +46,15 @@ use POSIX qw(strftime);
 use strict;
 use warnings;
 
-my $version = "4.0.1.4";
+my $version = "4.0.1.6";
 
 my %args = map { split(/=/, $_, 2) } grep { /=/ } @ARGV;
 my $cron = ($args{cron} // '') eq 'daily';
 my $dryrun = $args{dryrun} ? 1 : 0;
+# The interval counts from the start of a run, not its end: the start varies by
+# up to 30 minutes (random delay in cron.daily/05-osupdate), a long run would
+# otherwise push the next one past the tolerance and skip a day.
+my $starttime = time();
 
 my $statusfile = "$lbsdatadir/osupdate.json";
 my $rebootflag = '/run/reboot-required';
@@ -86,8 +90,8 @@ my ($lbuid, $lbgid) = ( getpwnam('loxberry') )[2, 3];
 
 my $due = 1;
 if ( $cron ) {
-	# cron.daily starts at the same time every night - an hour of tolerance
-	# keeps a run that took a bit longer from being skipped for a day.
+	# cron.daily/05-osupdate starts at a random time between 04:53 and 05:23 -
+	# an hour of tolerance keeps that from skipping a day.
 	$due = $interval =~ /^(1|7|30)$/ && time() - ( $status->{lastrun} // 0 ) >= $interval * 86400 - 3600;
 	my $reboot = $autoreboot && -e $rebootflag;
 	exit(0) if ( !$due && !$reboot );
@@ -239,7 +243,7 @@ sub installed_versions
 sub save_status
 {
 	my ($result, $message, $changed) = @_;
-	$status->{lastrun} = time();
+	$status->{lastrun} = $starttime;
 	$status->{result} = $result;
 	$status->{message} = $message;
 	$status->{type} = $type;

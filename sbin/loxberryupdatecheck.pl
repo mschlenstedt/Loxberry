@@ -205,8 +205,17 @@ LOGINF "Executing user of loxberryupdatecheck is $curruser";
 
 # Aquire a lock to check if an update is currently running
 eval {
-	LOGINF "Locking lbupdate to check if an update is running...";
-	my $lockstate = LoxBerry::System::lock( lockfile => 'lbupdate' );
+	# A check started by cron waits for a running update or installation (e.g.
+	# the Debian/PHP updates of osupdate.pl, which can take a while with a big
+	# backlog) - started from the WebUI it reports at once.
+	my $lockstate;
+	if ($cron) {
+		LOGINF "Locking lbupdate to check if an update is running - waiting up to 2 hours...";
+		$lockstate = LoxBerry::System::lock( lockfile => 'lbupdate', wait => 7200 );
+	} else {
+		LOGINF "Locking lbupdate to check if an update is running...";
+		$lockstate = LoxBerry::System::lock( lockfile => 'lbupdate' );
+	}
 	if ($lockstate) {
 		LOGERR "Lock not possible. Reason: $lockstate";
 		$joutput{'error'} = $SL{"UPDATES.UPGRADE_ERROR_ANOTHER_UPDATE_RUNNING"} . " (Lockstate $lockstate)";
