@@ -311,6 +311,7 @@ sub pagestart
 	);
 	
 	LoxBerry::System::readlanguage($headerobj, undef, 1);
+	$headerobj->param(FORM_LOGIN => (($ENV{LOXBERRY_FORM_LOGIN} || '') eq '1' ? 1 : 0));
 	
 	# If help is empty, read default text from language file
 	if (! $helptext) {
