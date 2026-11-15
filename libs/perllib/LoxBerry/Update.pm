@@ -21,7 +21,7 @@ our $errors;
 
 ################################################################
 package LoxBerry::Update;
-our $VERSION = "3.0.0.11";
+our $VERSION = "4.0.1.7";
 our $DEBUG;
 
 ### Exports ###
@@ -408,9 +408,28 @@ sub apt_update
 
 		# Try apt-get update 3 times befor giving up, choose another mirror if command failed
 		my $success = 0;
+		my @aptproblems;
 		for (my $i;$i<4;$i++) {
-			$output = qx { $export $aptbin -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages --allow-releaseinfo-change update >> $logfilename 2>&1 };
+			$output = qx { LANG=C $export $aptbin -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages --allow-releaseinfo-change update 2>&1 };
 			$exitcode  = $? >> 8;
+			if ( open(my $lfh, '>>', $logfilename) ) {
+				print $lfh $output;
+				close($lfh);
+			}
+			# A broken repository added by a plugin (or any other non-LoxBerry
+			# source) makes apt-get update end with 100, but apt updates all other
+			# sources anyway. Only problems of the sources LoxBerry needs count.
+			if ($exitcode == 100) {
+				my ($official, $foreign, $other) = apt_update_problems($output);
+				if (!@$official && !@$other && @$foreign) {
+					$main::log->WARN("A package source that is not part of LoxBerry is broken - apt ignores it, LoxBerry Update does as well. Please repair or remove it (e.g. by updating or reinstalling the plugin that added it):");
+					$main::log->WARN("  $_") foreach (@$foreign);
+					$main::log->OK("Apt database of the LoxBerry package sources updated successfully.");
+					$success++;
+					last;
+				}
+				@aptproblems = (@$official, @$other);
+			}
 			if ($exitcode != 0) {
 				$main::log->ERR("Error updating apt database - Error $exitcode");
 				require LoxBerry::JSON;
@@ -434,7 +453,12 @@ sub apt_update
 			}
 		}
 		if (!$success) {
-			$main::log->ERR("Error updating apt database. All servers give an error. Internet connection available? Giving up.");
+			if (@aptproblems) {
+				$main::log->ERR("Error updating apt database. A package source LoxBerry needs is broken:");
+				$main::log->ERR("  $_") foreach (@aptproblems);
+			} else {
+				$main::log->ERR("Error updating apt database. All servers give an error. Internet connection available? Giving up.");
+			}
 			$main::errors++;
 		}
 	}
@@ -450,6 +474,79 @@ sub apt_update
 	}
 	LoxBerry::System::unlock(lockfile => 'apt_loxberry_update_lib');
 	
+}
+
+####################################################################
+# Sorts the errors of apt-get update (exit code 100)
+# Parameter:
+#	Output of apt-get update (LANG=C)
+# Returns three array refs:
+#	official: broken sources LoxBerry needs (Debian, Raspberry Pi, PHP)
+#	foreign:  broken sources of anybody else (plugins, ...)
+#	other:    any other error - also counts as an error
+# Only two errors prove a broken source (tested with apt 2.6 and 3.0);
+# network problems are warnings with exit code 0:
+#	E: The repository 'URI SUITE ...' is not signed.
+#	E: The repository 'URI SUITE ...' does not have a Release file.
+####################################################################
+sub apt_update_problems
+{
+	my ($output) = @_;
+	my @lines = split(/\n/, $output // '');
+
+	# Debian mirrors set up in sources.list count as Debian
+	my %mirrors;
+	if ( open(my $fh, '<', '/etc/apt/sources.list') ) {
+		while ( my $line = <$fh> ) {
+			next if ( $line =~ /^\s*#/ );
+			$mirrors{lc($1)} = 1 if ( $line =~ m{^\s*deb(?:-src)?\s+(?:\[[^\]]*\]\s+)?\w+://([^/:\s]+)} );
+		}
+		close($fh);
+	}
+
+	# Reasons per source: indented lines after "Err:N URI ..." and the W: lines naming the URI
+	my %details;
+	my $cur;
+	foreach (@lines) {
+		if ( /^Err:\d+\s+(\S+)/ ) { $cur = $1; next; }
+		if ( defined $cur && /^\s+(\S.*)$/ ) { $details{$cur} .= " $1"; next; }
+		undef $cur;
+	}
+
+	my (@official, @foreign, @other);
+	foreach my $line ( grep { /^E: / } @lines ) {
+		if ( $line =~ /^E: The repository '(\S+)\s+([^']*)' (?:is not signed|does not have a Release file|no longer has a Release file)/ ) {
+			my ($uri, $suite) = ($1, $2);
+			my $host = $uri =~ m{^\w+://([^/:]+)} ? lc($1) : '';
+			# NO_PUBKEY / EXPKEYSIG (apt 2.x), Missing key (apt 3.x), HTTP 404
+			my $detail = ( $details{$uri} // '' ) . ' ' . join( ' ', grep { /^W: / && index($_, $uri) >= 0 } @lines );
+			my ($reason) = $detail =~ /(NO_PUBKEY [0-9A-F]+|EXPKEYSIG [0-9A-F]+|Missing key [0-9A-F]+|\b40\d\s+[A-Za-z ]+[A-Za-z])/;
+			$reason =~ s/\s+/ /g if ( defined $reason );
+			my $text = "$uri $suite" . ( $reason ? " ($reason)" : "" ) . ": " . ( $line =~ /not signed/ ? "not signed" : "no Release file" ) . apt_source_file($uri);
+			if ( $host =~ /(^|\.)debian\.org$/ || $host eq 'packages.sury.org' || $host =~ /^(archive|raspbian)\.raspberrypi\.(com|org)$/ || $mirrors{$host} ) {
+				push(@official, $text);
+			} else {
+				push(@foreign, $text);
+			}
+		} else {
+			push(@other, $line);
+		}
+	}
+	return (\@official, \@foreign, \@other);
+}
+
+# File in /etc/apt that holds a source URI (for the log message)
+sub apt_source_file
+{
+	my ($uri) = @_;
+	(my $short = $uri) =~ s{/+$}{};
+	foreach my $file ( '/etc/apt/sources.list', glob('/etc/apt/sources.list.d/*.list'), glob('/etc/apt/sources.list.d/*.sources') ) {
+		open(my $fh, '<', $file) or next;
+		my $found = grep { !/^\s*#/ && index($_, $short) >= 0 } <$fh>;
+		close($fh);
+		return " - $file" if ($found);
+	}
+	return "";
 }
 
 ####################################################################

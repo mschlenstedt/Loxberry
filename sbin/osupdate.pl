@@ -46,7 +46,7 @@ use POSIX qw(strftime);
 use strict;
 use warnings;
 
-my $version = "4.0.1.6";
+my $version = "4.0.1.7";
 
 my %args = map { split(/=/, $_, 2) } grep { /=/ } @ARGV;
 my $cron = ($args{cron} // '') eq 'daily';
@@ -135,7 +135,7 @@ exit( $errors ? 1 : 0 );
 sub run_update
 {
 	my $errors = 0;
-	my %env = ( APT_LISTCHANGES_FRONTEND => 'none', DEBIAN_FRONTEND => 'noninteractive' );
+	my %env = ( APT_LISTCHANGES_FRONTEND => 'none', DEBIAN_FRONTEND => 'noninteractive', PATH => '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' );
 	@ENV{ keys %env } = values %env;
 	my $aptopts = "-q -o DPkg::Lock::Timeout=1800 -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold";
 
@@ -157,6 +157,8 @@ sub run_update
 	}
 
 	my %before = installed_versions();
+	my $php = php_state();
+	php_protect($php) if ( !$dryrun );
 	my ($exitcode, $output) = execute(
 		command => "apt-get $aptopts $pinopts -y --with-new-pkgs " . ( $dryrun ? "-s " : "" ) . "upgrade 2>&1",
 		log => $log,
@@ -170,6 +172,7 @@ sub run_update
 	return $errors if ( $dryrun );
 
 	execute( command => "apt-get $aptopts -y autoremove --purge", log => $log, intro => "Removing packages that are no longer needed (e.g. old kernels)..." );
+	$errors += php_restore($php);
 
 	my %after = installed_versions();
 	my @changed = sort grep { !defined $before{$_} || $before{$_} ne $after{$_} } keys %after;
@@ -228,6 +231,111 @@ sub write_pinfile
 		close($pin);
 	}
 	return 1;
+}
+
+# ---------------------------------------------------------------------------
+# PHP: keep the version that is active before the update.
+# The PHP metapackages (php, php-cli, libapache2-mod-php, php-curl, ...; the
+# Bullseye installer sets them up with "apt install php") depend on the newest
+# PHP at packages.sury.org. Upgrading them installs e.g. PHP 8.4 as a new
+# dependency; alternatives in auto mode then switch the command line to it
+# (priority 84 beats 74), and the old version - now only automatically
+# installed - would be purged by autoremove. LoxBerry and its plugins need the
+# version that was set up. Same steps as the installer (install_*.sh):
+# update-alternatives --set php, a2dismod php*, a2enmod phpX.Y.
+# ---------------------------------------------------------------------------
+sub php_state
+{
+	my ($quiet) = @_;
+	my %state = ( alternatives => {}, modes => {}, apache => [], versions => [] );
+	foreach ( `update-alternatives --get-selections 2>/dev/null` ) {
+		my ($name, $mode, $value) = split;
+		next if ( !defined $value || $name !~ /^(php|phar)/ );
+		$state{alternatives}{$name} = $value;
+		$state{modes}{$name} = $mode;
+	}
+	$state{apache} = [ sort map { m{/(php[\d.]+)\.load$} ? $1 : () } glob("/etc/apache2/mods-enabled/php*.load") ];
+	my %versions = map { /(\d+\.\d+)$/ ? ( $1 => 1 ) : () } ( values %{ $state{alternatives} }, @{ $state{apache} } );
+	$state{versions} = [ sort keys %versions ];
+	if ( !$quiet ) {
+		LOGINF "Active PHP: command line " . ( $state{alternatives}{php} // 'none' ) . " (" . ( $state{modes}{php} // '-' ) . "), Apache module " . ( join( ', ', @{ $state{apache} } ) || 'none' ) . ".";
+	}
+	return \%state;
+}
+
+# Packages of the active PHP versions are marked as manually installed, so
+# that autoremove keeps them when a metapackage moves to a newer version.
+sub php_protect
+{
+	my ($state) = @_;
+	return if ( !@{ $state->{versions} } );
+	my $re = join( '|', map { quotemeta } @{ $state->{versions} } );
+	my @auto = grep { /^(php|libapache2-mod-php)($re)(-|:|$)/ } split( /\n/, `apt-mark showauto 2>/dev/null` );
+	return if ( !@auto );
+	LOGINF "Marking the active PHP packages as manually installed, so that autoremove keeps them...";
+	execute( command => "apt-mark manual " . join( ' ', @auto ), log => $log, ignoreerrors => 1 );
+}
+
+sub php_restore
+{
+	my ($before) = @_;
+	my $errors = 0;
+	my $after = php_state(1);
+
+	# Command line (php, php-cgi, phar, ...): set back and fix it (manual mode)
+	foreach my $name ( sort keys %{ $before->{alternatives} } ) {
+		my $old = $before->{alternatives}{$name};
+		my $new = $after->{alternatives}{$name} // '';
+		next if ( $old eq $new && ( $after->{modes}{$name} // '' ) eq 'manual' );
+		if ( !-e $old ) {
+			LOGERR "PHP alternative $name: $old does not exist anymore - left at " . ( $new || 'none' ) . ".";
+			$errors++;
+			next;
+		}
+		if ( $old ne $new ) {
+			LOGWARN "PHP alternative $name was switched to $new by the update - setting it back to $old.";
+		} else {
+			LOGINF "PHP alternative $name: fixing $old (manual mode), so that updates cannot switch it.";
+		}
+		my ($aexitcode) = execute( command => "update-alternatives --set $name $old", log => $log );
+		$errors++ if ( $aexitcode != 0 );
+	}
+
+	# Apache module
+	my %old = map { $_ => 1 } @{ $before->{apache} };
+	my %new = map { $_ => 1 } @{ $after->{apache} };
+	my @enable = grep { !$new{$_} } sort keys %old;
+	my @disable = grep { !$old{$_} } sort keys %new;
+	if ( @{ $before->{apache} } && ( @enable || @disable ) ) {
+		foreach my $mod ( @enable ) {
+			my $so = '';
+			if ( open( my $fh, '<', "/etc/apache2/mods-available/$mod.load" ) ) {
+				( $so ) = map { /^\s*LoadModule\s+\S+\s+(\S+)/ ? $1 : () } <$fh>;
+				close($fh);
+			}
+			if ( !$so || !-e $so ) {
+				LOGERR "Apache module $mod is not available anymore - Apache PHP left at " . ( join( ', ', @{ $after->{apache} } ) || 'none' ) . ".";
+				return $errors + 1;
+			}
+		}
+		LOGWARN "Apache PHP module was switched to " . ( join( ', ', @{ $after->{apache} } ) || 'none' ) . " by the update - setting it back to " . join( ', ', @{ $before->{apache} } ) . ".";
+		execute( command => "a2dismod -q -f $_", log => $log, ignoreerrors => 1 ) foreach ( @disable );
+		execute( command => "a2enmod -q $_", log => $log, ignoreerrors => 1 ) foreach ( @enable );
+		my ($cexitcode) = execute( command => "apache2ctl configtest 2>&1", log => $log );
+		my ($rexitcode) = $cexitcode == 0 ? execute( command => "systemctl restart apache2", log => $log ) : ( 1 );
+		my ($sexitcode) = execute( command => "systemctl is-active --quiet apache2" );
+		if ( $cexitcode != 0 || $rexitcode != 0 || $sexitcode != 0 ) {
+			# Apache has to come up in any case: back to the state after the upgrade
+			LOGERR "Apache does not start with " . join( ', ', @{ $before->{apache} } ) . " - going back to " . ( join( ', ', @{ $after->{apache} } ) || 'none' ) . ".";
+			execute( command => "a2dismod -q -f $_", log => $log, ignoreerrors => 1 ) foreach ( @enable );
+			execute( command => "a2enmod -q $_", log => $log, ignoreerrors => 1 ) foreach ( @disable );
+			execute( command => "systemctl restart apache2", log => $log, ignoreerrors => 1 );
+			$errors++;
+		} else {
+			LOGOK "Apache runs with " . join( ', ', @{ $before->{apache} } ) . " again.";
+		}
+	}
+	return $errors;
 }
 
 sub installed_versions

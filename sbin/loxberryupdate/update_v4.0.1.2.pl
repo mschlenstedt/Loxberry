@@ -114,7 +114,11 @@ if ( @dbgsym ) {
 # unit of its own and this script does not wait for it.
 # ---------------------------------------------------------------------------
 my ($qexitcode, $installed) = execute( command => "dpkg-query -W -f='\${db:Status-Abbrev} \${Package}\\n' 'php*' 'libapache2-mod-php*' 2>/dev/null" );
-my @phppackages = grep { !/-dbgsym$/ } map { (split)[1] } grep { /^ii/ } split( /\n/, $installed );
+# Only the packages of the installed PHP versions (php7.4-cli, libapache2-mod-php7.4,
+# ...) and php-common. The metapackages (php, php-cli, libapache2-mod-php, ...)
+# depend on the newest PHP at sury: upgrading them installs e.g. PHP 8.4 and
+# switches the command line PHP to it (update_v4.0.1.7.pl repairs that).
+my @phppackages = grep { !/-dbgsym$/ && ( /^(php|libapache2-mod-php)\d/ || $_ eq 'php-common' ) } map { (split)[1] } grep { /^ii/ } split( /\n/, $installed );
 if ( @phppackages ) {
 	my $upgradecmd = "APT_LISTCHANGES_FRONTEND=none DEBIAN_FRONTEND=noninteractive apt-get -y -o DPkg::Lock::Timeout=600 -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold install --only-upgrade " . join( ' ', @phppackages ) . "; systemctl reload apache2";
 	my ($sexitcode) = execute( command => "systemd-run --unit=loxberry-securityupdate-" . time() . " --collect --no-block /bin/sh -c '$upgradecmd'", log => $log );
