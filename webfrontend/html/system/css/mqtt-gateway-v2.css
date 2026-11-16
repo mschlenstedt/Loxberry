@@ -1076,3 +1076,86 @@ body.theme-dark .mqttgw-topic-ms {
 .trans_table div {
   padding: 2px 6px;
 }
+
+/* ============================================================
+   V1: Warnbanner Miniserver Application Firewall (ab 17.3.11.12)
+   Farben nur aus Tokens, damit alle Themes greifen.
+   ============================================================ */
+.mqttgw-v1-fw-banner {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  max-width: 80%;
+  margin: 0 auto 20px;
+  border: 1px solid color-mix(in srgb, var(--lb-danger) 35%, var(--lb-border-color));
+  border-left: 6px solid var(--lb-danger);
+  background: color-mix(in srgb, var(--lb-danger) 7%, var(--lb-card-bg));
+  color: var(--lb-text);
+  border-radius: var(--lb-radius);
+  padding: 18px 20px;
+  text-shadow: none;
+  box-sizing: border-box;
+}
+.mqttgw-v1-fw-banner-icon {
+  flex: 0 0 auto;
+  color: var(--lb-danger);
+  line-height: 1;
+  margin-top: 2px;
+}
+.mqttgw-v1-fw-banner-icon .pi {
+  font-size: 32px;
+}
+.mqttgw-v1-fw-banner-body {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+.mqttgw-v1-fw-banner-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--lb-text);
+}
+.mqttgw-v1-fw-banner-body p {
+  margin: 0;
+  max-width: 75ch;
+  color: var(--lb-text-secondary);
+}
+.mqttgw-v1-fw-banner-body p strong {
+  color: var(--lb-text);
+}
+.mqttgw-v1-fw-banner a.mqttgw-v1-fw-banner-link,
+.mqttgw-v1-fw-banner a.mqttgw-v1-fw-banner-link:visited {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 7px 14px;
+  border-radius: var(--lb-btn-radius);
+  background: var(--lb-danger);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  text-shadow: none;
+}
+.mqttgw-v1-fw-banner a.mqttgw-v1-fw-banner-link:hover {
+  filter: brightness(0.92);
+  color: #fff;
+}
+.mqttgw-v1-fw-banner a.mqttgw-v1-fw-banner-link:focus-visible {
+  outline: 2px solid var(--lb-danger);
+  outline-offset: 2px;
+}
+@media (max-width: 600px) {
+  .mqttgw-v1-fw-banner {
+    flex-direction: column;
+    gap: 10px;
+    max-width: none;
+    padding: 14px 16px;
+  }
+  .mqttgw-v1-fw-banner-icon .pi {
+    font-size: 28px;
+  }
+}

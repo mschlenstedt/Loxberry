@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="/system/css/mqtt-gateway-v2.css">
+<link rel="stylesheet" href="/system/css/mqtt-gateway-v2.css?v=2">
 <script src="/system/scripts/mqttgw-scan.js?v=7"></script>
 <script>
 // Texte für "Miniserver scannen" (Tab Abonnements und Umstieg V1->V2)
@@ -472,6 +472,19 @@ MqttgwScan.lang = {
 	<div id="Uselocalbroker"><TMPL_VAR USELOCALBROKER></div>
 	<div id="gatewayversion"><TMPL_VAR GATEWAY_VERSION></div>
 </div>
+
+<TMPL_UNLESS GATEWAY_V2>
+<!-- V1: Warnung Miniserver Application Firewall (ab Firmware 17.3.11.12) -->
+<div class="mqttgw-v1-fw-banner" role="alert">
+	<div class="mqttgw-v1-fw-banner-icon" aria-hidden="true"><i class="pi pi-exclamation-triangle"></i></div>
+	<div class="mqttgw-v1-fw-banner-body">
+		<div class="mqttgw-v1-fw-banner-title"><TMPL_VAR MQTT.V1_FW_BANNER_TITLE></div>
+		<p><TMPL_VAR MQTT.V1_FW_BANNER_TEXT1></p>
+		<p><TMPL_VAR MQTT.V1_FW_BANNER_TEXT2></p>
+		<a class="mqttgw-v1-fw-banner-link" href="https://www.loxforum.com/forum/projektforen/loxberry/allgemeines-aa/495593-v17-3-11-12-analyse-der-neuen-application-firewall-und-einfluss-auf-das-mqtt-gateway" target="_blank" rel="noopener" data-role="none"><TMPL_VAR MQTT.V1_FW_BANNER_LINK> &rarr;</a>
+	</div>
+</div>
+</TMPL_UNLESS>
 
 <TMPL_IF FORM_BASIC>
 <!-- Form BASIC (MQTT Basic - V2) -->
