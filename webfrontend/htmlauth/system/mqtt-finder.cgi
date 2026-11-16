@@ -61,8 +61,8 @@ our @navbar = (
 );
 
 LoxBerry::Web::lbheader($template_title, $helplink);
-# Firewall-Schutz des MQTT Gateways V2 (Bremse, 429, fehlende Eingänge)
-print LoxBerry::Log::get_notifications_html('mqtt', 'mqttgateway');
+# Alle Meldungen des Pakets mqtt - dieselben, die die MQTT-Kachel zählt
+print LoxBerry::Log::get_notifications_html('mqtt');
 
 print $maintemplate->output();
 
