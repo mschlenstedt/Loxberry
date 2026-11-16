@@ -1080,6 +1080,26 @@ $(function() {
         });
     }
 
+    // Firewall-Schutz des Gateways: Eingänge, die im Miniserver fehlen, bekommen
+    // per HTTP keine Werte mehr (per_ms[id].missing im Status).
+    var _fwLang = {
+        m404:  '<TMPL_VAR MQTT.V2_VI_MISSING_404>',
+        mproj: '<TMPL_VAR MQTT.V2_VI_MISSING_PROJECT>'
+    };
+    function missingTip(e) {
+        if (!e || !e.per_ms) return '';
+        var t = [];
+        Object.keys(e.per_ms).forEach(function (id) {
+            var m = e.per_ms[id] && e.per_ms[id].missing;
+            if (m) t.push('MS' + id + ': ' + (m.source === 'project' ? _fwLang.mproj : _fwLang.m404));
+        });
+        return t.join(' | ');
+    }
+    function topicMissingTip(topic) {
+        var vi = topic.replace(/\//g, '_').replace(/ /g, '_').replace(/%/g, '_');
+        return missingTip(statusData[vi]);
+    }
+
     function httpScOf(e) {
         if (!e) return 'new';
         function one(h) {
@@ -1093,7 +1113,8 @@ $(function() {
         if (e.per_ms && Object.keys(e.per_ms).length) {
             var order = {error: 0, warn: 1, ok: 2, new: 3}, worst = 'new';
             Object.keys(e.per_ms).forEach(function (id) {
-                var sc = one(e.per_ms[id].http);
+                var pm = e.per_ms[id] || {};
+                var sc = pm.missing ? 'warn' : one(pm.http);
                 if (order[sc] < order[worst]) worst = sc;
             });
             return worst;
@@ -1447,7 +1468,7 @@ $(function() {
                 : '../../system/images/icon-notfound.png';
             var html  = '<div class="mqttgw-topic-row mqttgw-json-leaf' + (isChecked ? ' mqttgw-json-leaf-active' : '') + (fieldHasError ? ' mqttgw-topic-row-error' : '') + '">';
             if (fieldHasError) {
-                html += '<img src="' + fieldErrSrc + '" class="mqttgw-topic-error-icon" width="14" height="14" title="HTTP ' + fieldSc + '">';
+                html += '<img src="' + fieldErrSrc + '" class="mqttgw-topic-error-icon" width="14" height="14" title="' + (missingTip(statusData[fieldVi]) || 'HTTP ' + fieldSc) + '">';
             } else {
                 html += '<span class="mqttgw-topic-error-placeholder"></span>';
             }
@@ -1495,7 +1516,7 @@ $(function() {
                   + (jsonClosed  ? ' mqttgw-row-json-closed' : '')
                   + '" data-topic="' + safeTopic + '">';
         if (hasError) {
-            html += '<img src="' + errorIconSrc + '" class="mqttgw-topic-error-icon" width="14" height="14" title="HTTP ' + topicSc + '">';
+            html += '<img src="' + errorIconSrc + '" class="mqttgw-topic-error-icon" width="14" height="14" title="' + (topicMissingTip(topic) || 'HTTP ' + topicSc) + '">';
         } else {
             html += '<span class="mqttgw-topic-error-placeholder"></span>';
         }
@@ -2212,7 +2233,8 @@ $(function () {
     if (e.per_ms && Object.keys(e.per_ms).length) {
       var worst = 'new';
       Object.keys(e.per_ms).forEach(function (id) {
-        var sc = oneFn(e.per_ms[id][key]);
+        var pm = e.per_ms[id] || {};
+        var sc = (key === 'http' && pm.missing) ? 'warn' : oneFn(pm[key]);
         if (_scOrder[sc] < _scOrder[worst]) worst = sc;
       });
       return worst;
@@ -2226,6 +2248,8 @@ $(function () {
     nothingSent:  '<TMPL_VAR MQTT.V2_NOTHING_SENT>',
     noMatch:      '<TMPL_VAR MQTT.V2_NO_FILTER_MATCH>',
     statusOk:     '<TMPL_VAR MQTT.V2_STATUS_OK>',
+    viMissing404:  '<TMPL_VAR MQTT.V2_VI_MISSING_404>',
+    viMissingProj: '<TMPL_VAR MQTT.V2_VI_MISSING_PROJECT>',
     statusWarn:   '<TMPL_VAR MQTT.V2_STATUS_WARN>',
     statusError:  '<TMPL_VAR MQTT.V2_STATUS_ERROR>',
     statusNew:    '<TMPL_VAR MQTT.V2_STATUS_NEW>',
@@ -2336,8 +2360,10 @@ $(function () {
             var bsc, tip;
             if (isHttp) {
               var h = pm && pm.http;
-              bsc = httpScOne(h);
+              var miss = pm && pm.missing;
+              bsc = miss ? 'warn' : httpScOne(h);
               tip = 'MS' + id + (h && h.http_status ? ' · ' + h.http_status : ' · ' + _titles[bsc]);
+              if (miss) tip += ' · ' + (miss.source === 'project' ? _lang.viMissingProj : _lang.viMissing404);
             } else {
               bsc = udpScOne(pm && pm.udp);
               tip = 'MS' + id + ' · ' + _titles[bsc];

@@ -6,6 +6,7 @@
 
 use LoxBerry::System;
 use LoxBerry::Web;
+use LoxBerry::Log;
 use CGI::Simple;
 
 use warnings;
@@ -60,6 +61,8 @@ our @navbar = (
 );
 
 LoxBerry::Web::lbheader($template_title, $helplink);
+# Firewall-Schutz des MQTT Gateways V2 (Bremse, 429, fehlende Eingänge)
+print LoxBerry::Log::get_notifications_html('mqtt', 'mqttgateway');
 
 print $maintemplate->output();
 

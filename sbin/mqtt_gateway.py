@@ -15,8 +15,10 @@ import signal
 import socket
 import subprocess
 import sys
+import time
 import traceback
 import base64
+from collections import deque
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import quote
@@ -342,6 +344,11 @@ async def send_http(session: aiohttp.ClientSession, ms: dict,
         ) as resp:
             if resp.status < 300:
                 return True, resp.status
+            if resp.status == 429:
+                try:
+                    _retry_after_hint[ms["fulluri"]] = float(resp.headers.get("Retry-After"))
+                except (TypeError, ValueError, AttributeError):
+                    pass
             LOGERR(f"HTTP {resp.status}: {vi_name} → MS (non-2xx response)")
             return False, resp.status
     except Exception as exc:
@@ -374,6 +381,7 @@ async def config_watcher() -> None:
 
                 old_topics = {s["id"] for s in _subscriptions}
                 new_topics = {s["id"] for s in new_subs}
+                new_vis    = subscribed_vi_names(new_subs) - subscribed_vi_names(_subscriptions)
 
                 _loglevel         = new_level
                 _miniservers      = new_ms
@@ -391,6 +399,10 @@ async def config_watcher() -> None:
                 # Unsubscribed topics/JSON fields leave the send cache at once,
                 # not only at the next gateway restart.
                 prune_cache(new_subs)
+                # (Re-)subscribed VIs get a fresh chance even if they were missing.
+                for vi in new_vis:
+                    for ms_id in list(_guards):
+                        _clear_missing(ms_id, vi)
 
                 # Start/stop per-miniserver workers if the MS list changed
                 _ensure_ms_workers()
@@ -533,6 +545,17 @@ async def _process_resend(item: dict) -> None:
     prune_cache(_subscriptions)
 
     if target:
+        # A resend by hand (WebUI button) tries a missing VI again - also one
+        # the program file does not list (it may be another kind of block).
+        for ms_id in list(_guards):
+            g = _guards[ms_id]
+            if _clear_missing(ms_id, target) or target not in g.vis:
+                g.vis[target] = {"state": "try"}
+    else:
+        # 'reconnect': the Miniserver may run a new program.
+        fw_retry_all_missing()
+
+    if target:
         entry = _cache.get(target)
         if entry is None:
             LOGWARN(f"Resend: unknown VI '{target}' (not in cache)")
@@ -627,21 +650,548 @@ async def _process_mqtt(item: dict, status_event: asyncio.Event) -> None:
 
     # Fan out: one 'sends' job per target miniserver. Each send tuple carries
     # the VI's full target list (ms_list) for cache bookkeeping in the worker.
+    # Every value gets a sequence number; the worker skips a value when a newer
+    # one for the same VI is already queued (limits the backlog under a brake).
     per_ms: dict[str, list[tuple]] = {}
+    seqs: dict[str, dict] = {}
     for vi_name, udp_name, value, ms_ids, noncached, resetaftersend in sends:
         ms_list = [str(m) for m in ms_ids] or [_default_ms]
         for ms_id in ms_list:
             per_ms.setdefault(ms_id, []).append(
                 (vi_name, udp_name, value, ms_list, noncached, resetaftersend))
+            seq = _next_seq()
+            _latest_seq[(ms_id, vi_name)] = seq
+            seqs.setdefault(ms_id, {})[vi_name] = seq
 
     for ms_id, ms_sends in per_ms.items():
         q = _ms_queues.get(ms_id)
         if q is None:
             LOGWARN(f"Miniserver {ms_id} not in config")
             continue
-        await q.put({"type": "sends", "sends": ms_sends,
+        await q.put({"type": "sends", "sends": ms_sends, "seqs": seqs.get(ms_id, {}),
                      "received_at": item.get("received_at", 0.0),
                      "received_ts": item.get("received_ts", "?")})
+
+# ─── Miniserver application firewall guard ───────────────────────────────────
+# Firmware 17.3.11.12 added an application firewall to the Miniserver. Measured
+# behaviour (tests/ms_firewall): every HTTP 404 is one penalty point for the
+# sender IP, a point decays in ~7 s. Points 1-7 do nothing; from the 8th point
+# EVERY response to that IP is delayed (~270 ms per point, up to ~1.9 s); the
+# 16th point answers 429 with Retry-After ~55 s. Valid requests never count,
+# however many. All software on the LoxBerry shares the same points.
+#
+# The guard keeps the gateway's own 404s far below the brake:
+#   1. a VI that answered 404 is not sent to again (state "missing"),
+#   2. a VI not known to exist is only tried within a small 404 budget,
+#   3. a brake (slow answers) or a 429 pauses all tries; 429 also pauses sends,
+#   4. the Miniserver's program file tells which VIs exist without any 404.
+# Values that cannot go out yet are deferred (latest value per VI wins).
+
+FW_BUDGET_MAX          = 3       # 404s the gateway may cause in a row
+FW_BUDGET_REFILL_S     = 20.0    # one more 404 allowed every 20 s (decay is 1 per ~7 s)
+FW_RETRY_BASE_S        = 3600    # first retry of a VI that answered 404
+FW_RETRY_MAX_S         = 86400   # retry interval doubles up to once a day
+FW_PAUSE_429_S         = 5.0     # after a 429: no HTTP at all for 5 s
+FW_PAUSE_429_DEFAULT_S = 55.0    # Retry-After if the header is missing
+FW_PROBE_PAUSE_EXTRA_S = 5.0     # tries resume Retry-After + 5 s after a 429
+FW_BRAKE_DELTA_MS      = 250.0   # answer this much slower than normal = brake
+FW_RECOVER_DELTA_MS    = 100.0   # back within this much = brake over
+FW_BRAKE_RUN           = 5       # consecutive answers needed for either verdict
+FW_BASELINE_MIN        = 10      # normal answers needed before judging
+FW_SCAN_DELAY_S        = 30.0    # wait after a Miniserver 'reconnect' before scanning
+FW_SCAN_TIMEOUT_S      = 240     # same limit as the WebUI scan
+NOTIFY_FIRST_DELAY_S   = 60.0    # collect events this long before the first notify
+NOTIFY_MIN_INTERVAL_S  = 900.0   # at most one notify every 15 min
+NOTIFY_NAME            = "mqttgateway"
+
+_LBSDATA      = Path(os.environ.get("LBSDATA", str(_LBSCONFIG.parent.parent / "data" / "system")))
+FW_STATE_FILE = _LBSDATA / "mqttgateway_vistate.json"
+
+
+class MsGuard:
+    """Firewall bookkeeping for one miniserver."""
+
+    def __init__(self) -> None:
+        now = time.monotonic()
+        self.tokens: float = float(FW_BUDGET_MAX)
+        self.tokens_at: float = now
+        self.pause_until: float = 0.0        # all HTTP deferred (after a 429)
+        self.probe_pause_until: float = 0.0  # tries deferred (after a 429)
+        self.braked: bool = False
+        self.normal_lat: deque = deque(maxlen=30)
+        self.slow_run: int = 0
+        self.fast_run: int = 0
+        # vi -> {"state": "ok"} | {"state": "try"} (resent by hand: one try even
+        #       if the program file does not list it) |
+        #       {"state": "missing", "source": "404"|"project",
+        #        "since": epoch, "retry_at": epoch, "tries": n}
+        self.vis: dict = {}
+        self.override: set = set()   # VIs that answer 200 although not in the program file
+        self.project: "set | None" = None   # lower-case VI names from the program file
+        self.scan_disabled: bool = False     # scan answered an HTTP error once
+        self.deferred: dict = {}     # vi -> (send tuple, seq, received_at)
+
+    # -- 404 budget --------------------------------------------------------
+    def _refill(self, now: float) -> None:
+        if self.tokens < FW_BUDGET_MAX:
+            self.tokens = min(FW_BUDGET_MAX,
+                              self.tokens + (now - self.tokens_at) / FW_BUDGET_REFILL_S)
+        self.tokens_at = now
+
+    def can_probe(self, now: float) -> bool:
+        self._refill(now)
+        return (self.tokens >= 1.0 and not self.braked
+                and now >= self.probe_pause_until and now >= self.pause_until)
+
+    def spend(self, now: float) -> None:
+        self._refill(now)
+        self.tokens = max(0.0, self.tokens - 1.0)
+
+    # -- brake detection ---------------------------------------------------
+    def observe_latency(self, lat_ms: float) -> "str | None":
+        """Feed one answer time; returns 'brake_on', 'brake_off' or None."""
+        if len(self.normal_lat) < FW_BASELINE_MIN:
+            if not self.braked:
+                self.normal_lat.append(lat_ms)
+            return None
+        base = sorted(self.normal_lat)[len(self.normal_lat) // 2]
+        if not self.braked:
+            if lat_ms > base + FW_BRAKE_DELTA_MS:
+                self.slow_run += 1
+                if self.slow_run >= FW_BRAKE_RUN:
+                    self.braked, self.slow_run, self.fast_run = True, 0, 0
+                    return "brake_on"
+            else:
+                self.slow_run = 0
+                self.normal_lat.append(lat_ms)
+        else:
+            if lat_ms < base + FW_RECOVER_DELTA_MS:
+                self.fast_run += 1
+                if self.fast_run >= FW_BRAKE_RUN:
+                    self.braked, self.slow_run, self.fast_run = False, 0, 0
+                    return "brake_off"
+            else:
+                self.fast_run = 0
+        return None
+
+
+_guards: dict = {}            # ms_id -> MsGuard
+_latest_seq: dict = {}        # (ms_id, vi) -> seq of the newest queued value
+_seq_counter: int = 0
+_fw_dirty: bool = False       # persisted VI state changed
+_retry_after_hint: dict = {}  # fulluri -> Retry-After seconds of the last 429
+_scan_due: dict = {}          # ms_id -> monotonic time a program-file scan is due
+_notify_events: list = []
+_notify_first_at: float = 0.0
+_notify_last_at: float = -NOTIFY_MIN_INTERVAL_S
+_stat_404: int = 0            # own 404s this stats interval
+_stat_429: int = 0
+_stat_coalesced: int = 0      # stale queued values skipped
+
+
+def _guard(ms_id: str) -> MsGuard:
+    g = _guards.get(str(ms_id))
+    if g is None:
+        g = _guards[str(ms_id)] = MsGuard()
+    return g
+
+
+def _fw_reset_state() -> None:
+    """Forget all guard state (startup and tests)."""
+    global _seq_counter, _fw_dirty, _notify_first_at, _notify_last_at
+    global _stat_404, _stat_429, _stat_coalesced
+    _guards.clear(); _latest_seq.clear(); _retry_after_hint.clear()
+    _scan_due.clear(); _notify_events.clear()
+    _seq_counter = 0
+    _fw_dirty = False
+    _notify_first_at = 0.0
+    _notify_last_at = -NOTIFY_MIN_INTERVAL_S
+    _stat_404 = _stat_429 = _stat_coalesced = 0
+
+
+def _next_seq() -> int:
+    global _seq_counter
+    _seq_counter += 1
+    return _seq_counter
+
+
+def _set_pm_missing(vi: str, ms_id: str, info: "dict | None") -> None:
+    """Mirror a VI's missing state into the status cache for the WebUI."""
+    entry = _cache.get(vi)
+    if entry is None:
+        return
+    pm = entry.setdefault("per_ms", {}).setdefault(str(ms_id), make_per_ms_entry(None))
+    pm["missing"] = ({"source": info["source"], "since": info["since"]}
+                     if info else None)
+    if _status_event is not None:
+        _status_event.set()
+
+
+def _mark_missing(ms_id: str, vi: str, source: str) -> None:
+    global _fw_dirty
+    g = _guard(ms_id)
+    old = g.vis.get(vi) or {}
+    tries = old.get("tries", 0) + 1 if source == "404" and old.get("state") == "missing" else 1
+    now = int(time.time())
+    delay = min(FW_RETRY_BASE_S * 2 ** (tries - 1), FW_RETRY_MAX_S)
+    info = {"state": "missing", "source": source, "since": old.get("since", now)
+            if old.get("state") == "missing" else now,
+            "retry_at": now + delay if source == "404" else 0, "tries": tries}
+    g.vis[vi] = info
+    _fw_dirty = True
+    _set_pm_missing(vi, ms_id, info)
+    if old.get("state") != "missing":
+        if source == "404":
+            LOGWARN(f"VI '{vi}' does not exist on MS{ms_id} (HTTP 404) - no more HTTP "
+                    f"sends to it, next check in {delay // 60} min, on 'reconnect' or resend")
+        else:
+            LOGWARN(f"VI '{vi}' is not in the program of MS{ms_id} - not sent via HTTP")
+        _notify_add("missing", ms_id, vi)
+
+
+def _clear_missing(ms_id: str, vi: str) -> bool:
+    """Forget a missing state (VI confirmed, re-subscribed or resent by hand)."""
+    global _fw_dirty
+    g = _guards.get(str(ms_id))
+    if g is None or (g.vis.get(vi) or {}).get("state") != "missing":
+        return False
+    del g.vis[vi]
+    _fw_dirty = True
+    _set_pm_missing(vi, ms_id, None)
+    return True
+
+
+def http_decision(ms_id: str, vi: str, now: float) -> str:
+    """'send', 'skip' (VI missing) or 'defer' (try later)."""
+    g = _guard(ms_id)
+    st = g.vis.get(vi)
+    if st and st["state"] == "ok":
+        return "defer" if now < g.pause_until else "send"
+    if st and st["state"] == "missing":
+        if st["source"] != "404" or st["retry_at"] > time.time():
+            return "skip"
+    elif st and st["state"] == "try":
+        pass
+    elif (g.project is not None and vi.lower() not in g.project
+          and vi not in g.override):
+        _mark_missing(ms_id, vi, "project")
+        return "skip"
+    # Unknown VI (or a missing one whose retry is due): a try within the budget.
+    return "send" if g.can_probe(now) else "defer"
+
+
+def http_outcome(ms_id: str, vi: str, ok: bool, status: "int | None",
+                 lat_ms: "float | None", fulluri: str = "") -> None:
+    """Book one HTTP answer: VI state, 404 budget, 429 pause, brake."""
+    global _fw_dirty, _stat_404, _stat_429
+    g = _guard(ms_id)
+    now = time.monotonic()
+    if ok:
+        was_missing = _clear_missing(ms_id, vi)
+        g.vis[vi] = {"state": "ok"}
+        if g.project is not None and vi.lower() not in g.project and vi not in g.override:
+            g.override.add(vi)
+            _fw_dirty = True
+        if was_missing:
+            LOGOK(f"VI '{vi}' exists on MS{ms_id} again - sending resumed")
+    elif status == 404:
+        _stat_404 += 1
+        g.spend(now)
+        _notify_count404(ms_id)
+        _mark_missing(ms_id, vi, "404")
+    elif status == 429:
+        _stat_429 += 1
+        ra = _retry_after_hint.pop(fulluri, None) or FW_PAUSE_429_DEFAULT_S
+        g.pause_until = now + FW_PAUSE_429_S
+        g.probe_pause_until = max(g.probe_pause_until, now + ra + FW_PROBE_PAUSE_EXTRA_S)
+        LOGERR(f"MS{ms_id} answered 429 (firewall lock, Retry-After {ra:.0f} s) - "
+               f"HTTP paused {FW_PAUSE_429_S:.0f} s, no tries for {ra + FW_PROBE_PAUSE_EXTRA_S:.0f} s")
+        _notify_add("429", ms_id, f"{ra:.0f}")
+    if status is not None and status != 429 and lat_ms is not None:
+        verdict = g.observe_latency(lat_ms)
+        if verdict == "brake_on":
+            LOGERR(f"MS{ms_id} slows down its answers (firewall brake, now {lat_ms:.0f} ms) - "
+                   f"tries of unknown VIs paused")
+            _notify_add("brake", ms_id, f"{lat_ms:.0f}")
+        elif verdict == "brake_off":
+            LOGOK(f"MS{ms_id} answers at normal speed again - tries resumed")
+
+
+def fw_prune(keep: set) -> None:
+    """Drop guard state of VIs that are no longer subscribed."""
+    global _fw_dirty
+    for ms_id, g in _guards.items():
+        for vi in [v for v in g.vis if v not in keep]:
+            if g.vis.pop(vi).get("state") == "missing":
+                _fw_dirty = True
+        for vi in [v for v in g.deferred if v not in keep]:
+            del g.deferred[vi]
+        for vi in [v for v in g.override if v not in keep]:
+            g.override.discard(vi)
+            _fw_dirty = True
+    for key in [k for k in _latest_seq if k[1] not in keep]:
+        del _latest_seq[key]
+
+
+def fw_retry_all_missing() -> None:
+    """Miniserver 'reconnect': it may have a new program - try missing VIs again
+    (within the budget) and read the program file once more."""
+    for ms_id, g in _guards.items():
+        for st in g.vis.values():
+            if st.get("state") == "missing" and st.get("source") == "404":
+                st["retry_at"] = 0
+    for ms_id in _miniservers:
+        _scan_due[str(ms_id)] = time.monotonic() + FW_SCAN_DELAY_S
+
+
+# -- persistence (written only when something changed) ------------------------
+def fw_load_state(path: "Path | None" = None) -> None:
+    path = path or FW_STATE_FILE
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return
+    except Exception as exc:
+        LOGWARN(f"VI state file unreadable ({exc}) - starting without it")
+        return
+    n = 0
+    for ms_id, d in (data.get("miniservers") or {}).items():
+        g = _guard(ms_id)
+        for vi, st in (d.get("missing") or {}).items():
+            g.vis[vi] = {"state": "missing", "source": st.get("source", "404"),
+                         "since": int(st.get("since", 0)),
+                         "retry_at": int(st.get("retry_at", 0)),
+                         "tries": int(st.get("tries", 1))}
+            n += 1
+        g.override.update(d.get("override") or [])
+    if n:
+        LOGINF(f"VI state loaded: {n} VI(s) known as missing on the Miniserver")
+
+
+def fw_save_state(path: "Path | None" = None) -> None:
+    global _fw_dirty
+    path = path or FW_STATE_FILE
+    out = {"version": 1, "miniservers": {}}
+    for ms_id, g in _guards.items():
+        missing = {vi: {k: st[k] for k in ("source", "since", "retry_at", "tries")}
+                   for vi, st in g.vis.items() if st.get("state") == "missing"}
+        if missing or g.override:
+            out["miniservers"][ms_id] = {"missing": missing,
+                                         "override": sorted(g.override)}
+    try:
+        tmp = path.with_suffix(".tmp")
+        tmp.write_text(json.dumps(out, indent=1), encoding="utf-8")
+        tmp.replace(path)
+        _fw_dirty = False
+    except Exception as exc:
+        LOGERR(f"VI state file write failed: {exc}")
+        _fw_dirty = False   # do not retry every second
+
+
+# -- program file scan (no 404) -------------------------------------------------
+async def fw_scan(ms_ids: list) -> None:
+    """Read the VI names from the Miniservers' program files (same helper as the
+    WebUI button 'Scan Miniserver'). VIs not in the program are then known as
+    missing without a single 404. Without rights or with token-only login the
+    scan fails and the 404 budget alone protects the Miniserver."""
+    ms_ids = [m for m in ms_ids if not _guard(m).scan_disabled]
+    if not ms_ids:
+        return
+    script = _LBSBIN / "mqtt-scan-miniserver.py"
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "python3", str(script), "--ms", ",".join(ms_ids),
+            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
+        out, _ = await asyncio.wait_for(proc.communicate(), timeout=FW_SCAN_TIMEOUT_S)
+        result = json.loads(out.decode("utf-8", "replace") or "{}")
+    except Exception as exc:
+        LOGWARN(f"Program scan failed: {exc!r}")
+        return
+    fw_apply_scan(result)
+
+
+def fw_apply_scan(result: dict) -> None:
+    for ms_id, r in (result.get("miniservers") or {}).items():
+        g = _guard(ms_id)
+        if not r.get("ok"):
+            if r.get("error") == "http":
+                g.scan_disabled = True   # an HTTP error may be a 404 - never again
+            LOGINF(f"Program scan MS{ms_id} not possible ({r.get('error')}) - "
+                   f"unknown VIs are tried within the 404 budget")
+            continue
+        g.project = {str(i.get("name", "")).lower() for i in r.get("inputs") or []}
+        LOGINF(f"Program scan MS{ms_id}: {len(g.project)} virtual input(s)")
+        # VIs that were missing in the old program but exist now: send their value.
+        found = [vi for vi, st in g.vis.items()
+                 if st.get("state") == "missing" and st.get("source") == "project"
+                 and vi.lower() in g.project]
+        for vi in found:
+            _clear_missing(ms_id, vi)
+            entry = _cache.get(vi)
+            if entry is not None:
+                g.deferred[vi] = ((vi, entry.get("udp_name") or vi, entry.get("value", ""),
+                                   list(entry.get("miniservers") or [ms_id]), True, False),
+                                  None, 0.0)
+        if found:
+            LOGOK(f"MS{ms_id}: {len(found)} VI(s) now in the program - values queued")
+
+
+# -- collected notifications ---------------------------------------------------
+_own404_window: dict = {}   # ms_id -> own 404s since the last notify
+
+
+def _notify_count404(ms_id: str) -> None:
+    _own404_window[ms_id] = _own404_window.get(ms_id, 0) + 1
+
+
+def _notify_add(kind: str, ms_id: str, detail: str) -> None:
+    global _notify_first_at
+    if not _notify_events:
+        _notify_first_at = time.monotonic()
+    _notify_events.append({"kind": kind, "ms": str(ms_id), "detail": detail,
+                           "at": datetime.now().strftime("%H:%M")})
+
+
+def _notify_lang() -> str:
+    try:
+        raw = json.loads(CONFIG_GENERAL.read_text(encoding="utf-8"))
+        return "de" if str(raw.get("Base", {}).get("Lang", "en")).lower() == "de" else "en"
+    except Exception:
+        return "en"
+
+
+def notify_message(events: list, own404: dict, lang: str) -> "tuple[int, str]":
+    """Build one collected notification -> (severity, text)."""
+    de = lang == "de"
+    parts, severity = [], 6
+    by_ms: dict = {}
+    for e in events:
+        by_ms.setdefault(e["ms"], []).append(e)
+    for ms_id, evs in sorted(by_ms.items()):
+        brakes = [e for e in evs if e["kind"] == "brake"]
+        locks  = [e for e in evs if e["kind"] == "429"]
+        miss   = list(dict.fromkeys(e["detail"] for e in evs if e["kind"] == "missing"))
+        if brakes or locks:
+            severity = 3
+            times = ", ".join(e["at"] for e in brakes + locks)
+            if de:
+                s = (f"Miniserver {ms_id}: Die Application Firewall hat den LoxBerry "
+                     f"{len(brakes)}× gebremst und {len(locks)}× gesperrt (HTTP 429) - um {times}. ")
+                s += (f"Das Gateway selbst hat in dieser Zeit {own404.get(ms_id, 0)} Anfrage(n) "
+                      f"an fehlende Eingänge (HTTP 404) gesendet; was darüber hinaus zur Bremse "
+                      f"führt, kommt von anderer Software auf dem LoxBerry (z. B. Plugins).")
+            else:
+                s = (f"Miniserver {ms_id}: The application firewall slowed down the LoxBerry "
+                     f"{len(brakes)}× and locked it {len(locks)}× (HTTP 429) - at {times}. ")
+                s += (f"The gateway itself sent {own404.get(ms_id, 0)} request(s) to missing "
+                      f"inputs (HTTP 404) in this time; anything beyond that comes from other "
+                      f"software on the LoxBerry (e.g. plugins).")
+            parts.append(s)
+        if miss:
+            shown = ", ".join(miss[:10]) + (" …" if len(miss) > 10 else "")
+            if de:
+                parts.append(f"Miniserver {ms_id}: Diese virtuellen Eingänge fehlen und bekommen "
+                             f"per HTTP keine Werte mehr ({len(miss)}): {shown}. "
+                             f"Die Abo-Tabelle des MQTT Gateways zeigt sie an.")
+            else:
+                parts.append(f"Miniserver {ms_id}: {len(miss)} virtual input(s) missing, no more "
+                             f"values via HTTP: {shown}. The gateway's subscription table shows them.")
+    return severity, "MQTT Gateway: " + " ".join(parts)
+
+
+def _send_notify(severity: int, message: str) -> None:
+    """Notification via the Perl library (blocking - run in a thread)."""
+    code = ("use LoxBerry::Log; LoxBerry::Log::notify_ext({PACKAGE => 'mqtt', "
+            "NAME => '" + NOTIFY_NAME + "', SEVERITY => $ARGV[0], MESSAGE => $ARGV[1]});")
+    try:
+        subprocess.run(["perl", "-e", code, str(severity), message],
+                       timeout=30, check=False,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception as exc:
+        LOGERR(f"Notify failed: {exc}")
+
+
+async def notify_flush(force: bool = False) -> None:
+    global _notify_last_at
+    if not _notify_events:
+        return
+    now = time.monotonic()
+    if not force and (now - _notify_first_at < NOTIFY_FIRST_DELAY_S
+                      or now - _notify_last_at < NOTIFY_MIN_INTERVAL_S):
+        return
+    events = list(_notify_events)
+    _notify_events.clear()
+    own404 = dict(_own404_window)
+    _own404_window.clear()
+    _notify_last_at = now
+    severity, msg = notify_message(events, own404, _notify_lang())
+    LOGINF(f"Notify (severity {severity}): {msg}")
+    await asyncio.to_thread(_send_notify, severity, msg)
+
+
+# -- housekeeping: deferred values, retries, scans, persistence, notifications ----
+def fw_flush_deferred(now: float) -> None:
+    """Put deferred values back into their miniserver's queue once they may go."""
+    loop_now = asyncio.get_event_loop().time()
+    for ms_id, g in _guards.items():
+        q = _ms_queues.get(ms_id)
+        if q is None or not g.deferred or now < g.pause_until:
+            continue
+        probe_ok = g.can_probe(now)
+        # Values from MQTT keep their sequence number (a newer value wins);
+        # retries and values found by a scan carry none and bypass the dedup.
+        normal, forced, seqs, recv = [], [], {}, None
+        for vi, (tup, seq, received_at) in list(g.deferred.items()):
+            known_ok = (g.vis.get(vi) or {}).get("state") == "ok"
+            if not known_ok and not probe_ok:
+                continue
+            del g.deferred[vi]
+            if seq is None:
+                forced.append(tup)
+            else:
+                normal.append(tup)
+                seqs[vi] = seq
+            if received_at:
+                recv = received_at if recv is None else min(recv, received_at)
+        for sends, force in ((normal, False), (forced, True)):
+            if sends:
+                q.put_nowait({"type": "sends", "sends": sends, "seqs": seqs,
+                              "force": force, "deferred": True,
+                              "received_at": recv or loop_now, "received_ts": ""})
+
+
+def fw_queue_due_retries() -> None:
+    """VIs that answered 404 get one try per retry interval with their latest value."""
+    t = time.time()
+    for ms_id, g in _guards.items():
+        for vi, st in g.vis.items():
+            if (st.get("state") == "missing" and st.get("source") == "404"
+                    and st.get("retry_at", 0) <= t and vi not in g.deferred):
+                entry = _cache.get(vi)
+                if entry is None:
+                    continue
+                g.deferred[vi] = ((vi, entry.get("udp_name") or vi, entry.get("value", ""),
+                                   list(entry.get("miniservers") or [ms_id]), True, False),
+                                  None, 0.0)
+
+
+async def fw_housekeeping() -> None:
+    tick = 0
+    while True:
+        await asyncio.sleep(1.0)
+        tick += 1
+        now = time.monotonic()
+        if tick % 60 == 0:
+            fw_queue_due_retries()
+        fw_flush_deferred(now)
+        due = [m for m, t in _scan_due.items() if t <= now]
+        for m in due:
+            del _scan_due[m]
+        if due:
+            asyncio.create_task(fw_scan(due))
+        if _fw_dirty and tick % 10 == 0:
+            fw_save_state()
+        await notify_flush()
 
 # ─── Per-miniserver worker ───────────────────────────────────────────────────
 async def ms_worker(ms_id: str, queue: asyncio.Queue,
@@ -668,14 +1218,28 @@ async def _process_sends(session, ms_id: str, queue: asyncio.Queue,
     HTTP sends with a 10 ms pause between requests, then one bundled UDP
     packet for all UDP pairs of the job."""
     global _sent_since_summary, _stat_failed, _stat_proc_sum, _stat_proc_cnt, _stat_proc_max
+    global _stat_coalesced
     loop        = asyncio.get_event_loop()
     received_at = job.get("received_at", 0.0)
     received_ts = job.get("received_ts", "?")
     force       = job.get("force", False)
 
+    seqs        = job.get("seqs") or {}
+    g           = _guard(ms_id)
+
     udp_pairs: list[tuple[str, str, str]] = []   # (vi_name, udp_name, value)
 
-    for vi_name, udp_name, value, ms_list, noncached, resetaftersend in job["sends"]:
+    for tup in job["sends"]:
+        vi_name, udp_name, value, ms_list, noncached, resetaftersend = tup
+        seq = seqs.get(vi_name)
+        # Backlog limit: a newer value for this VI is already queued for this
+        # miniserver, so this one would be overwritten anyway. Pulses
+        # (noncached / reset after send) are never skipped.
+        if (seq is not None and not noncached and not resetaftersend
+                and seq < _latest_seq.get((ms_id, vi_name), seq)):
+            _stat_coalesced += 1
+            LOGDEB(f"Newer value queued (skip): {vi_name} = {value} → MS{ms_id}")
+            continue
         # Dedup is checked here (at send time, not dispatch time) so a queue
         # backlog cannot make the decision against a stale cache state.
         if not force and not should_send_ms(_cache.get(vi_name), ms_id, value, noncached):
@@ -686,39 +1250,60 @@ async def _process_sends(session, ms_id: str, queue: asyncio.Queue,
             LOGWARN(f"Miniserver {ms_id} not in config")
             return
 
-        elapsed_ms = (loop.time() - received_at) * 1000
-        # Feeds procmsavg/procmsmax. Counted here, after the dedup check, so
-        # the average covers exactly the values that really go out to a
-        # miniserver - the same number the WebUI shows as last_processing_ms.
-        _stat_proc_sum += elapsed_ms
-        _stat_proc_cnt += 1
-        if elapsed_ms > _stat_proc_max:
-            _stat_proc_max = elapsed_ms
-        send_dt    = datetime.now()
-        # send_ts is logging-only; send_dt itself feeds real cache fields below.
-        send_ts    = (send_dt.strftime("%H:%M:%S.") + f"{send_dt.microsecond // 1000:03d}"
-                      if _loglevel >= 7 else "")
-        ok = False
+        udp_out = _use_udp and bool(ms.get("ipaddress"))
+        send_dt = datetime.now()
 
-        # Create or update top-level cache entry (per_ms below is only ever
-        # written by this worker for its own ms_id — no cross-worker conflict).
-        entry = _cache.setdefault(vi_name, make_cache_entry(value, ms_list, round(elapsed_ms, 1)))
+        # The newest value always goes into the cache - a deferred or skipped
+        # value must be the one that is sent once the VI can be reached.
+        entry = _cache.setdefault(vi_name, make_cache_entry(value, ms_list))
         entry["value"]              = str(value)
         entry["miniservers"]        = list(ms_list)
         entry["udp_name"]           = udp_name
         entry["last_updated"]       = send_dt.isoformat(timespec="seconds")
         entry["last_updated_epoch"] = int(send_dt.timestamp())
-        entry["last_processing_ms"] = round(elapsed_ms, 1)
-        pm = entry.setdefault("per_ms", {}).setdefault(str(ms_id), make_per_ms_entry(value))
-        pm["value"] = str(value)
+        pm = entry.setdefault("per_ms", {}).setdefault(str(ms_id), make_per_ms_entry(None))
 
-        if _use_http:
+        # Firewall guard: send, skip (VI missing) or defer (budget/pause). Decided
+        # after the cache entry exists, so a missing state shows in the WebUI.
+        http_action = http_decision(ms_id, vi_name, time.monotonic()) if _use_http else "none"
+        if http_action in ("skip", "defer"):
+            status_event.set()
+
+        if http_action == "defer":
+            g.deferred[vi_name] = (tup, seq, received_at)
+            LOGDEB(f"Deferred (firewall guard): {vi_name} = {value} → MS{ms_id}")
+            continue
+
+        elapsed_ms = (loop.time() - received_at) * 1000
+        if http_action == "send" or udp_out:
+            # Feeds procmsavg/procmsmax: exactly the values that really go out
+            # to a miniserver - the same number the WebUI shows as last_processing_ms.
+            _stat_proc_sum += elapsed_ms
+            _stat_proc_cnt += 1
+            if elapsed_ms > _stat_proc_max:
+                _stat_proc_max = elapsed_ms
+            entry["last_processing_ms"] = round(elapsed_ms, 1)
+        # send_ts is logging-only.
+        send_ts = (send_dt.strftime("%H:%M:%S.") + f"{send_dt.microsecond // 1000:03d}"
+                   if _loglevel >= 7 else "")
+        delivered = False
+
+        if http_action == "send":
+            t0 = loop.time()
             ok, http_status = await send_http(session, ms, vi_name, value)
+            http_outcome(ms_id, vi_name, ok, http_status,
+                         (loop.time() - t0) * 1000, ms.get("fulluri", ""))
             pm["http"] = make_http_result(ok, http_status)
             status_event.set()
             if not ok:
                 _stat_failed += 1
+            if http_status == 429:
+                # Not delivered: send again after the firewall pause.
+                g.deferred[vi_name] = (tup, seq, received_at)
+                await asyncio.sleep(0.01)
+                continue
             if ok:
+                delivered = True
                 _sent_since_summary += 1
                 if force:
                     LOGOK(f"Resend (HTTP): {vi_name} = {value} → MS{ms_id}")
@@ -732,13 +1317,17 @@ async def _process_sends(session, ms_id: str, queue: asyncio.Queue,
                 LOGDEB(f"Send failed: {vi_name} | http_status={http_status} | "
                        f"total={elapsed_ms:.1f}ms | epoch={entry['last_updated_epoch']}")
             await asyncio.sleep(0.01)   # 10 ms pause between requests to this MS
+        elif http_action == "skip":
+            LOGDEB(f"VI missing on MS{ms_id}, HTTP skipped: {vi_name} = {value}")
 
-        if _use_udp and ms.get("ipaddress"):
+        if udp_out:
             udp_pairs.append((vi_name, udp_name, value))
-            if not _use_http:
-                ok = True
+            delivered = True
 
-        if ok and resetaftersend:
+        if delivered:
+            pm["value"] = str(value)
+
+        if delivered and resetaftersend:
             # The reset job goes into this worker's OWN queue, so it is
             # serialized behind all pending sends for the same miniserver.
             async def _enqueue_reset(q=queue, vi=vi_name, udp=udp_name,
@@ -786,8 +1375,16 @@ async def _process_reset(session, ms_id: str, item: dict,
     pm = entry.setdefault("per_ms", {}).setdefault(str(ms_id), make_per_ms_entry("0"))
     pm["value"] = "0"
 
-    if _use_http:
+    action = http_decision(ms_id, vi_name, time.monotonic()) if _use_http else "none"
+    if action == "defer":
+        _guard(ms_id).deferred[vi_name] = ((vi_name, udp_name, "0", [ms_id], True, False),
+                                           None, 0.0)
+    if action == "send":
+        loop = asyncio.get_event_loop()
+        t0 = loop.time()
         ok, http_status = await send_http(session, ms, vi_name, "0")
+        http_outcome(ms_id, vi_name, ok, http_status,
+                     (loop.time() - t0) * 1000, ms.get("fulluri", ""))
         pm["http"] = make_http_result(ok, http_status)
         status_event.set()
         if ok:
@@ -1170,6 +1767,7 @@ def prune_cache(subs: list) -> list[str]:
     VI the Miniserver no longer has answers 404 - which the Miniserver
     application firewall (firmware 17.3.11.12+) counts against this IP."""
     keep = subscribed_vi_names(subs)
+    fw_prune(keep)
     removed = [vi for vi in _cache if vi not in keep]
     for vi in removed:
         del _cache[vi]
@@ -1190,7 +1788,7 @@ def should_send_ms(entry: dict | None, ms_id: str, value, noncached: bool) -> bo
     if noncached or entry is None:
         return True
     pm = entry.get("per_ms", {}).get(str(ms_id))
-    return pm is None or str(pm.get("value")) != str(value)
+    return pm is None or pm.get("value") is None or str(pm.get("value")) != str(value)
 
 def get_miniserver_ids(toms: list) -> list[str]:
     """Return miniserver IDs to send to. Empty list means the standard
@@ -1215,8 +1813,9 @@ def make_cache_entry(value, ms_ids,
     }
 
 def make_per_ms_entry(value) -> dict:
-    """Per-miniserver sub-entry: last value sent + per-transport send result."""
-    return {"value": str(value), "http": None, "udp": None}
+    """Per-miniserver sub-entry: last value delivered (None = nothing yet) +
+    per-transport send result."""
+    return {"value": None if value is None else str(value), "http": None, "udp": None}
 
 def make_http_result(ok: bool, http_status: int | None) -> dict:
     now = datetime.now()
@@ -1262,6 +1861,7 @@ async def _stats_publisher() -> None:
     global _sent_since_summary, _stat_msgin, _stat_udpin, _stat_failed
     global _stat_proc_sum, _stat_proc_cnt, _stat_proc_max, _stat_queue_max
     global _stat_cpu_last, _stat_wall_last
+    global _stat_404, _stat_429, _stat_coalesced
 
     base = _gw_topic_base()
     loop = asyncio.get_event_loop()
@@ -1276,6 +1876,8 @@ async def _stats_publisher() -> None:
         sent, failed = _sent_since_summary, _stat_failed
         psum, pcnt   = _stat_proc_sum, _stat_proc_cnt
         pmax, qmax   = _stat_proc_max, _stat_queue_max
+        n404, n429, ncoal = _stat_404, _stat_429, _stat_coalesced
+        _stat_404 = _stat_429 = _stat_coalesced = 0
         _stat_msgin = _stat_udpin = _stat_failed = 0
         _sent_since_summary = 0
         _stat_proc_sum  = 0.0
@@ -1308,6 +1910,13 @@ async def _stats_publisher() -> None:
             "procmsavg":     round(psum / pcnt, 1) if pcnt else 0,     # avg delivery time (ms)
             "procmsmax":     round(pmax, 1),                          # slowest delivery (ms)
             "queuemax":      qmax,                                    # deepest backlog
+            "coalesced":     ncoal,                                   # stale queued values skipped
+            "http404":       n404,                                    # own 404s (firewall points)
+            "http429":       n429,                                    # firewall locks seen
+            "brake":         int(any(g.braked for g in _guards.values())),  # firewall brake now
+            "vimissing":     sum(1 for g in _guards.values() for st in g.vis.values()
+                                 if st.get("state") == "missing"),     # VIs missing on a MS
+            "deferred":      sum(len(g.deferred) for g in _guards.values()),  # values waiting
             "subscriptions": len(_subscriptions),
             "vicount":       len(_cache),                             # known virtual inputs
             "miniservers":   len(_ms_queues),
@@ -1365,6 +1974,14 @@ async def main() -> None:
     LOGINF(f"Standard Miniserver: {_default_ms}")
     LOGINF(f"Subscriptions: {[s['id'] for s in _subscriptions]}")
     LOGINF(f"use_http={_use_http}  use_udp={_use_udp}  udp_out_port={_udp_out_port}")
+
+    # Firewall guard: VIs known as missing survive a restart; the program files
+    # are read shortly after the start (no 404 needed to learn missing VIs).
+    _fw_reset_state()
+    fw_load_state()
+    if _use_http:
+        for ms_id in _miniservers:
+            _scan_due[str(ms_id)] = time.monotonic() + 5
 
     _stats_start_mono  = asyncio.get_running_loop().time()
     _stats_start_epoch = int(datetime.now().timestamp())
@@ -1446,10 +2063,13 @@ async def main() -> None:
                     _supervise("status_writer", lambda: status_writer(status_event, _cache)),
                     _supervise("stats_publisher", _stats_publisher),
                     _supervise("udp_listener", lambda: udp_listener(_udp_in_port)),
+                    _supervise("fw_housekeeping", fw_housekeeping),
                 )
             finally:
                 for task in _ms_workers.values():
                     task.cancel()
+                if _fw_dirty:
+                    fw_save_state()
     finally:
         loop.remove_signal_handler(signal.SIGTERM)
 

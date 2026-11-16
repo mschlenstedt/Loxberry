@@ -144,6 +144,8 @@ sub print_form
 	LoxBerry::Web::lbheader($plugintitle, $helplink, $helptemplate);
 
 	print LoxBerry::Log::get_notifications_html('mqtt', 'no_miniserver');
+	# Firewall-Schutz des MQTT Gateways V2 (Bremse, 429, fehlende Eingänge)
+	print LoxBerry::Log::get_notifications_html('mqtt', 'mqttgateway');
 
 	print $template->output();
 
