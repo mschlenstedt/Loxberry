@@ -733,6 +733,8 @@ class MsGuard:
 
     # -- 404 budget --------------------------------------------------------
     def _refill(self, now: float) -> None:
+        if now < self.tokens_at:
+            return   # budget is frozen until the end of a firewall pause
         if self.tokens < FW_BUDGET_MAX:
             self.tokens = min(FW_BUDGET_MAX,
                               self.tokens + (now - self.tokens_at) / FW_BUDGET_REFILL_S)
@@ -782,8 +784,10 @@ _fw_dirty: bool = False       # persisted VI state changed
 _retry_after_hint: dict = {}  # fulluri -> Retry-After seconds of the last 429
 _scan_due: dict = {}          # ms_id -> monotonic time a program-file scan is due
 _notify_events: list = []
-_notify_first_at: float = 0.0
-_notify_last_at: float = -NOTIFY_MIN_INTERVAL_S
+# Errors (brake, 429) and infos (missing VIs) are collected separately, so a
+# info notify never holds back a brake or lock warning.
+_notify_first_at: dict = {}   # "err"/"info" -> time of the first pending event
+_notify_last_at: dict = {}    # "err"/"info" -> time of the last notify
 _stat_404: int = 0            # own 404s this stats interval
 _stat_429: int = 0
 _stat_coalesced: int = 0      # stale queued values skipped
@@ -798,14 +802,15 @@ def _guard(ms_id: str) -> MsGuard:
 
 def _fw_reset_state() -> None:
     """Forget all guard state (startup and tests)."""
-    global _seq_counter, _fw_dirty, _notify_first_at, _notify_last_at
+    global _seq_counter, _fw_dirty
     global _stat_404, _stat_429, _stat_coalesced
     _guards.clear(); _latest_seq.clear(); _retry_after_hint.clear()
     _scan_due.clear(); _notify_events.clear()
     _seq_counter = 0
     _fw_dirty = False
-    _notify_first_at = 0.0
-    _notify_last_at = -NOTIFY_MIN_INTERVAL_S
+    _notify_first_at.clear()
+    _notify_last_at.clear()
+    _own404_window.clear()
     _stat_404 = _stat_429 = _stat_coalesced = 0
 
 
@@ -904,12 +909,16 @@ def http_outcome(ms_id: str, vi: str, ok: bool, status: "int | None",
         ra = _retry_after_hint.pop(fulluri, None) or FW_PAUSE_429_DEFAULT_S
         g.pause_until = now + FW_PAUSE_429_S
         g.probe_pause_until = max(g.probe_pause_until, now + ra + FW_PROBE_PAUSE_EXTRA_S)
+        # Other software may still hold the points up: after the pause the
+        # budget refills from zero (one try every 20 s), not all at once.
+        g.tokens, g.tokens_at = 0.0, g.probe_pause_until
         LOGERR(f"MS{ms_id} answered 429 (firewall lock, Retry-After {ra:.0f} s) - "
                f"HTTP paused {FW_PAUSE_429_S:.0f} s, no tries for {ra + FW_PROBE_PAUSE_EXTRA_S:.0f} s")
         _notify_add("429", ms_id, f"{ra:.0f}")
     if status is not None and status != 429 and lat_ms is not None:
         verdict = g.observe_latency(lat_ms)
         if verdict == "brake_on":
+            g.tokens, g.tokens_at = 0.0, now
             LOGERR(f"MS{ms_id} slows down its answers (firewall brake, now {lat_ms:.0f} ms) - "
                    f"tries of unknown VIs paused")
             _notify_add("brake", ms_id, f"{lat_ms:.0f}")
@@ -1044,10 +1053,14 @@ def _notify_count404(ms_id: str) -> None:
     _own404_window[ms_id] = _own404_window.get(ms_id, 0) + 1
 
 
+def _notify_class(kind: str) -> str:
+    return "info" if kind == "missing" else "err"
+
+
 def _notify_add(kind: str, ms_id: str, detail: str) -> None:
-    global _notify_first_at
-    if not _notify_events:
-        _notify_first_at = time.monotonic()
+    cls = _notify_class(kind)
+    if not any(_notify_class(e["kind"]) == cls for e in _notify_events):
+        _notify_first_at[cls] = time.monotonic()
     _notify_events.append({"kind": kind, "ms": str(ms_id), "detail": detail,
                            "at": datetime.now().strftime("%H:%M")})
 
@@ -1073,16 +1086,21 @@ def notify_message(events: list, own404: dict, lang: str) -> "tuple[int, str]":
         miss   = list(dict.fromkeys(e["detail"] for e in evs if e["kind"] == "missing"))
         if brakes or locks:
             severity = 3
-            times = ", ".join(e["at"] for e in brakes + locks)
+            ats = sorted(e["at"] for e in brakes + locks)
+            if ats[0] == ats[-1]:
+                times = (f"um {ats[0]}" if de else f"at {ats[0]}")
+            else:
+                times = (f"zwischen {ats[0]} und {ats[-1]}" if de
+                         else f"between {ats[0]} and {ats[-1]}")
             if de:
                 s = (f"Miniserver {ms_id}: Die Application Firewall hat den LoxBerry "
-                     f"{len(brakes)}× gebremst und {len(locks)}× gesperrt (HTTP 429) - um {times}. ")
+                     f"{len(brakes)}× gebremst und {len(locks)}× gesperrt (HTTP 429), {times}. ")
                 s += (f"Das Gateway selbst hat in dieser Zeit {own404.get(ms_id, 0)} Anfrage(n) "
                       f"an fehlende Eingänge (HTTP 404) gesendet; was darüber hinaus zur Bremse "
                       f"führt, kommt von anderer Software auf dem LoxBerry (z. B. Plugins).")
             else:
                 s = (f"Miniserver {ms_id}: The application firewall slowed down the LoxBerry "
-                     f"{len(brakes)}× and locked it {len(locks)}× (HTTP 429) - at {times}. ")
+                     f"{len(brakes)}× and locked it {len(locks)}× (HTTP 429), {times}. ")
                 s += (f"The gateway itself sent {own404.get(ms_id, 0)} request(s) to missing "
                       f"inputs (HTTP 404) in this time; anything beyond that comes from other "
                       f"software on the LoxBerry (e.g. plugins).")
@@ -1111,22 +1129,38 @@ def _send_notify(severity: int, message: str) -> None:
         LOGERR(f"Notify failed: {exc}")
 
 
-async def notify_flush(force: bool = False) -> None:
-    global _notify_last_at
-    if not _notify_events:
-        return
+def _notify_take(force: bool = False) -> list:
+    """Remove the event classes that are due and return their messages."""
     now = time.monotonic()
-    if not force and (now - _notify_first_at < NOTIFY_FIRST_DELAY_S
-                      or now - _notify_last_at < NOTIFY_MIN_INTERVAL_S):
-        return
-    events = list(_notify_events)
-    _notify_events.clear()
-    own404 = dict(_own404_window)
-    _own404_window.clear()
-    _notify_last_at = now
-    severity, msg = notify_message(events, own404, _notify_lang())
-    LOGINF(f"Notify (severity {severity}): {msg}")
-    await asyncio.to_thread(_send_notify, severity, msg)
+    out = []
+    for cls in ("err", "info"):
+        events = [e for e in _notify_events if _notify_class(e["kind"]) == cls]
+        if not events:
+            continue
+        if not force and (now - _notify_first_at.get(cls, now) < NOTIFY_FIRST_DELAY_S
+                          or now - _notify_last_at.get(cls, -1e9) < NOTIFY_MIN_INTERVAL_S):
+            continue
+        _notify_events[:] = [e for e in _notify_events if _notify_class(e["kind"]) != cls]
+        own404 = {}
+        if cls == "err":
+            own404 = dict(_own404_window)
+            _own404_window.clear()
+        _notify_last_at[cls] = now
+        severity, msg = notify_message(events, own404, _notify_lang())
+        LOGINF(f"Notify (severity {severity}): {msg}")
+        out.append((severity, msg))
+    return out
+
+
+async def notify_flush(force: bool = False) -> None:
+    for severity, msg in _notify_take(force):
+        await asyncio.to_thread(_send_notify, severity, msg)
+
+
+def notify_flush_on_exit() -> None:
+    """Gateway stops: send what is still collected, nothing may get lost."""
+    for severity, msg in _notify_take(force=True):
+        _send_notify(severity, msg)
 
 
 # -- housekeeping: deferred values, retries, scans, persistence, notifications ----
@@ -1275,7 +1309,9 @@ async def _process_sends(session, ms_id: str, queue: asyncio.Queue,
             continue
 
         elapsed_ms = (loop.time() - received_at) * 1000
-        if http_action == "send" or udp_out:
+        # Deferred values waited for the firewall guard on purpose - they would
+        # make procmsavg look like a slow gateway, so they are not counted.
+        if (http_action == "send" or udp_out) and not job.get("deferred"):
             # Feeds procmsavg/procmsmax: exactly the values that really go out
             # to a miniserver - the same number the WebUI shows as last_processing_ms.
             _stat_proc_sum += elapsed_ms
@@ -2070,6 +2106,7 @@ async def main() -> None:
                     task.cancel()
                 if _fw_dirty:
                     fw_save_state()
+                notify_flush_on_exit()
     finally:
         loop.remove_signal_handler(signal.SIGTERM)
 
