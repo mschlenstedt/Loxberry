@@ -388,6 +388,10 @@ async def config_watcher() -> None:
 
                 LOGINF("Config reloaded")
 
+                # Unsubscribed topics/JSON fields leave the send cache at once,
+                # not only at the next gateway restart.
+                prune_cache(new_subs)
+
                 # Start/stop per-miniserver workers if the MS list changed
                 _ensure_ms_workers()
 
@@ -523,6 +527,10 @@ async def _process_resend(item: dict) -> None:
     item["vi_name"] == "<vi>" → resend just that VI (per-row WebUI button).
     """
     target = item.get("vi_name")
+
+    # A send job still queued when a topic was unsubscribed may have put the
+    # VI back into the cache - never resend what is no longer subscribed.
+    prune_cache(_subscriptions)
 
     if target:
         entry = _cache.get(target)
@@ -1145,6 +1153,33 @@ def load_configs() -> tuple[dict, list, int, float, bool, dict, bool, bool, int,
     )
 
 # ─── Cache helpers ────────────────────────────────────────────────────────────
+def subscribed_vi_names(subs: list) -> set[str]:
+    """VI names the current subscriptions can produce (one per topic, or one
+    per JSON field for expanded topics)."""
+    names: set[str] = set()
+    for sub in subs:
+        if sub["jsonexpand"]:
+            names.update(build_vi_name(sub["id"], f["id"]) for f in sub["json"])
+        else:
+            names.add(build_vi_name(sub["id"]))
+    return names
+
+def prune_cache(subs: list) -> list[str]:
+    """Drop cache entries whose VI is no longer subscribed and return their
+    names. Otherwise a 'reconnect'/'resend' would still send them, and every
+    VI the Miniserver no longer has answers 404 - which the Miniserver
+    application firewall (firmware 17.3.11.12+) counts against this IP."""
+    keep = subscribed_vi_names(subs)
+    removed = [vi for vi in _cache if vi not in keep]
+    for vi in removed:
+        del _cache[vi]
+    if removed:
+        shown = ", ".join(removed[:10]) + (" ..." if len(removed) > 10 else "")
+        LOGINF(f"Cache: removed {len(removed)} unsubscribed VI(s): {shown}")
+        if _status_event is not None:
+            _status_event.set()
+    return removed
+
 def should_send_ms(entry: dict | None, ms_id: str, value, noncached: bool) -> bool:
     """Return True if *value* should be forwarded to this specific miniserver.
 
