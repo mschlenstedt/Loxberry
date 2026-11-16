@@ -25,7 +25,7 @@ header('Content-Type: application/json; charset=UTF-8');
 
 /* If started from the command line, wrap parameters to $_POST and $_GET */
 if (!isset($_SERVER["HTTP_HOST"])) {
-  parse_str($argv[1], $_POST);
+  parse_str($argv[1] ?? '', $_POST);
 }
 
 $cfgfile = "mqttgateway.json";
@@ -33,7 +33,7 @@ $datafile = "/dev/shm/mqttgateway_topics.json";
 $finderdatafile = "/dev/shm/mqttfinder.json";
 
 $ajax = !empty( $_POST['ajax'] ) ? $_POST['ajax'] : "";
-$ajax = empty($ajax) ? $_GET['ajax'] : $ajax;
+$ajax = empty($ajax) ? ($_GET['ajax'] ?? '') : $ajax;
 
 if( $ajax == 'relayed_topics' ) {
 	if( !empty($_POST['udpinport'] ) ) {
@@ -332,7 +332,7 @@ elseif( $ajax == 'getmqttfinderdata' ) {
 	}
 }
 
-elseif ( $_POST['ajax'] == 'get_subscriptions_v2' || $_GET['ajax'] == 'get_subscriptions_v2' ) {
+elseif ( $ajax == 'get_subscriptions_v2' ) {
     $cfgfile = 'mqttgateway.json';
     $fullcfgfile = LBSCONFIGDIR.'/'.$cfgfile;
 
@@ -347,7 +347,7 @@ elseif ( $_POST['ajax'] == 'get_subscriptions_v2' || $_GET['ajax'] == 'get_subsc
     }
 }
 
-elseif ( $_POST['ajax'] == 'save_subscriptions_v2' ) {
+elseif ( $ajax == 'save_subscriptions_v2' ) {
     $cfgfile = 'mqttgateway.json';
     $fullcfgfile = LBSCONFIGDIR.'/'.$cfgfile;
 
@@ -378,7 +378,7 @@ elseif ( $_POST['ajax'] == 'save_subscriptions_v2' ) {
     echo json_encode(array('status' => 'ok', 'count' => count($input['subscriptions_v2'])));
 }
 
-elseif ( $_POST['ajax'] == 'get_subscriptions' || $_GET['ajax'] == 'get_subscriptions' ) {
+elseif ( $ajax == 'get_subscriptions' ) {
     $fullcfgfile = LBSCONFIGDIR.'/subscriptions.json';
     header('Content-Type: application/json');
     if (file_exists($fullcfgfile)) {
@@ -389,7 +389,7 @@ elseif ( $_POST['ajax'] == 'get_subscriptions' || $_GET['ajax'] == 'get_subscrip
     }
 }
 
-elseif ( $_POST['ajax'] == 'save_subscriptions' || $_GET['ajax'] == 'save_subscriptions' ) {
+elseif ( $ajax == 'save_subscriptions' ) {
     $fullcfgfile = LBSCONFIGDIR.'/subscriptions.json';
     $input = json_decode(file_get_contents('php://input'), true);
     if (!$input || !isset($input['Subscriptions'])) {
