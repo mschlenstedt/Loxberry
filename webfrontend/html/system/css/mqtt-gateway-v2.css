@@ -1096,6 +1096,9 @@ body.theme-dark .mqttgw-topic-ms {
   text-shadow: none;
   box-sizing: border-box;
 }
+.mqttgw-v1-fw-banner[hidden] {
+  display: none;
+}
 .mqttgw-v1-fw-banner-icon {
   flex: 0 0 auto;
   color: var(--lb-danger);
