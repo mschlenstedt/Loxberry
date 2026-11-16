@@ -12,7 +12,7 @@ use LoxBerry::System;
 
 ################################################################
 package LoxBerry::Log;
-our $VERSION = "3.0.0.4";
+our $VERSION = "3.0.0.5";
 our $DEBUG;
 
 # This object is the object the exported LOG* functions use
@@ -183,7 +183,8 @@ sub new
 		$self->{dbkey} = $self->log_db_get_session_by_filename();
 	} elsif($self->{append} && !$self->{nofile}) {
 		$self->{dbh} = log_db_init_database();
-		$self->{dbkey} = log_db_query_id($self->{dbh}, $self);
+		# An existing file may contain output written before its first LOGSTART.
+		$self->{dbkey} = log_db_query_id($self->{dbh}, $self, 1);
 		# print STDERR "Appending to file $self->{filename} with key $self->{dbkey}\n";
 	}
 	
@@ -755,6 +756,7 @@ sub log_db_query_id
 	
 	my $dbh = shift;
 	my %p = %{shift()};
+	my $missing_ok = shift;
 		
 	# Check mandatory fields
 	Carp::cluck "log_db_query_id: No FILENAME defined\n" if (!$p{filename});
@@ -767,7 +769,8 @@ sub log_db_query_id
 	my $qu = "SELECT LOGKEY FROM logs WHERE FILENAME LIKE '$p{filename}' ORDER BY LOGSTART DESC LIMIT 1;"; 
 	my ($logid) = $dbh->selectrow_array($qu) or
 		do {
-				Carp::carp "log_db_query_id: No database entry found for given filename $p{filename}. File will be created.\n";
+				Carp::carp "log_db_query_id: No database entry found for given filename $p{filename}. File will be created.\n"
+					if !$missing_ok || $dbh->err;
 				return undef;
 			};
 	
