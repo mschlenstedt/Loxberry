@@ -1,0 +1,20 @@
+{
+  "welcome": "Jouw huis. Jouw mogelijkheden.",
+  "tagline": "Eén plek voor je plugins, verbindingen en ideeën.",
+  "local": "Thuis op je eigen netwerk.",
+  "title": "Welkom terug",
+  "intro": "Log in op je LoxBerry.",
+  "username": "Gebruikersnaam",
+  "password": "Wachtwoord",
+  "show": "Toon",
+  "hide": "Verberg",
+  "login": "Inloggen",
+  "logout": "Uitloggen",
+  "continue": "Open LoxBerry",
+  "note": "Gebruik je bestaande LoxBerry-account.",
+  "secure": "Versleutelde verbinding",
+  "signed_in_title": "Je bent ingelogd",
+  "signed_in_intro": "Beheer je LoxBerry of beëindig deze browsersessie.",
+  "login_error": "De gebruikersnaam of het wachtwoord is onjuist. Probeer het opnieuw.",
+  "rate_error": "Te veel pogingen. Wacht vijf minuten en probeer het opnieuw."
+}
