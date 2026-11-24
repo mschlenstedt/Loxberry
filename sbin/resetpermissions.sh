@@ -53,7 +53,12 @@ chown -c loxberry:loxberry /etc/localtime
 chown -c loxberry:loxberry $LBHOMEDIR/config/system/general.*
 chown -Rc loxberry:loxberry $LBHOMEDIR/system/python_venv
 
-chmod -c 600 $LBHOMEDIR/config/system/*
+# Files only: the glob also hit the directory config/system/mosquitto (0600,
+# no x bit). A broker running as user mosquitto then cannot open
+# mosq_mqttgateway.conf - reload fails, a start without root fails.
+find $LBHOMEDIR/config/system -maxdepth 1 -type f -exec chmod -c 600 {} +
+# Repair LoxBerrys where the old line left the directory at 0600
+[ -d $LBHOMEDIR/config/system/mosquitto ] && chmod -c 755 $LBHOMEDIR/config/system/mosquitto
 chmod -c 600 $LBHOMEDIR/data/system/netshares.dat
 chmod -c 644 $LBHOMEDIR/config/system/securepin.dat
 chmod -c 644 $LBHOMEDIR/data/system/plugindatabase.json-
