@@ -18,6 +18,23 @@ if ($cgi->param("action") && $cgi->param("action") eq "checksecpin") {
 	exit;
 }
 
+# AJAX: broker settings incl. user and password - only after a correct
+# SecurePIN (#1624). The page reads them from here, not from ajax-generic.php.
+if ($cgi->param("action") && $cgi->param("action") eq "getcfg") {
+	my %resp;
+	my $checkres = LoxBerry::System::check_securepin(scalar $cgi->param("secpin"));
+	$resp{error} = int($checkres // 0);
+	if ( !$resp{error} ) {
+		require LoxBerry::JSON;
+		my $jsonobj = LoxBerry::JSON->new();
+		my $cfg = $jsonobj->open(filename => "$lbsconfigdir/general.json", readonly => 1);
+		$resp{Mqtt} = ( $cfg && $cfg->{Mqtt} ) ? $cfg->{Mqtt} : {};
+	}
+	print header(-type => 'application/json', -Cache_Control => 'no-store');
+	print to_json(\%resp);
+	exit;
+}
+
 my $helplink = "https://wiki.loxberry.de/konfiguration/widget_help/widget_mqtt";
 my $helptemplate = "help.html";
 

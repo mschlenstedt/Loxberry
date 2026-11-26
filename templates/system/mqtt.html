@@ -261,6 +261,8 @@
 <script>
 
 	const mqtt_generic = '/admin/system/ajax/ajax-generic.php';
+	// Section Mqtt of general.json, set by checkSecurePIN() before the Vue app starts
+	var mqtt_cfg = {};
 
 	var _lang_mosq = {
 		statusQuerying:    '<TMPL_VAR MQTT.MOSQ_STATUS_QUERYING>',
@@ -386,8 +388,8 @@
 
 			getData() {
 				console.log("Called getData");
-				fetch(mqtt_generic+'?file=$lbsconfigdir/general.json&section=Mqtt&read')
-					.then( response => response.json() )
+				// Delivered by mqtt.cgi?action=getcfg together with the SecurePIN check (#1624)
+				Promise.resolve( mqtt_cfg )
 					.then( data => {
 						if ( data.Uselocalbroker == 1 || data.Uselocalbroker === true ) data.Uselocalbroker = 'true';
 						if ( data.Uselocalbroker === false ) data.Uselocalbroker = 'false';
@@ -646,7 +648,8 @@
 		$("#check_hint").attr("style", "color:blue;").html("<TMPL_VAR SECUREPIN.CHECK_WAIT>");
 		$.ajax({
 			type: 'POST',
-			data: { action: 'checksecpin', secpin: $('#securepin').val() }
+			// Broker settings are delivered only with a correct SecurePIN (#1624)
+			data: { action: 'getcfg', secpin: $('#securepin').val() }
 		})
 		.fail(function(data) {
 			$("#securepin_block").fadeIn();
@@ -658,9 +661,11 @@
 					case 1: case 2: case 3:
 						data.message = '<TMPL_VAR SECUREPIN.ERROR_WRONG>'; break;
 				}
+				$("#securepin_block").fadeIn();
 				$("#check_hint").attr("style", "color:red").html(data.message);
 				return;
 			}
+			mqtt_cfg = data.Mqtt || {};
 			sessionStorage.setItem("securePIN", $('#securepin').val());
 			$("#securepin_block").fadeOut();
 			$("#main_content").css('visibility', 'visible');

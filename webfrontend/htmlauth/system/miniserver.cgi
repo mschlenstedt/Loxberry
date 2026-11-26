@@ -176,6 +176,26 @@ if ($cgi->param("action") && $cgi->param("action") eq "checksecpin") {
 	exit;
 }
 
+# AJAX: Miniserver credentials - only after a correct SecurePIN (#1624).
+# The form is sent without user and password, the page fills them in from here.
+if ($cgi->param("action") && $cgi->param("action") eq "getcredentials") {
+	my %resp;
+	my $checkres = LoxBerry::System::check_securepin(scalar $cgi->param("secpin"));
+	$resp{error} = int($checkres // 0);
+	if ( !$resp{error} ) {
+		foreach my $no ( keys %{$cfg->{Miniserver}} ) {
+			my $curms = $cfg->{Miniserver}->{$no};
+			$resp{miniservers}{$no} = {
+				user => uri_unescape($curms->{Admin} // ''),
+				pass => uri_unescape($curms->{Pass} // ''),
+			};
+		}
+	}
+	print header(-type => 'application/json', -Cache_Control => 'no-store');
+	print to_json(\%resp);
+	exit;
+}
+
 if ($cgi->param("addbtn")) {
 	# Add button
 	# Figure out the highest number of Miniserver id's 
@@ -233,8 +253,8 @@ sub form {
 		$ms{MSNO} = $msno;
 		$ms{MSIP} = $curms->{Ipaddress};
 		$ms{MSPORT} = $curms->{Port};
-		$ms{MSUSER} = uri_unescape($curms->{Admin});
-		$ms{MSPASS} = uri_unescape($curms->{Pass});
+		# User and password are not rendered into the page: they come from
+		# action=getcredentials after the SecurePIN check (#1624).
 		$ms{MSUSECLOUDDNS} = is_enabled( $curms->{Useclouddns} ) ? "true" : "false";
 		$ms{MSCLOUDURL} = $curms->{Cloudurl};
 		$ms{MSCLOUDURLFTPPORT} = $curms->{Cloudurlftpport};

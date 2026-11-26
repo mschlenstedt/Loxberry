@@ -78,7 +78,7 @@
 					<label for="miniserveruser<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSUSER></label>
 				</div>
 				<div class="lb-form-field">
-					<input class="lb-input" readonly onfocus="this.removeAttribute('readonly');" value="<TMPL_VAR MSUSER>" id='miniserveruser<TMPL_VAR MSNO>' name='miniserveruser<TMPL_VAR MSNO>' type='text' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_MSUSER>" data-validation-rule="^([^\!\#\$\%\&\'\*\+\,\/\:\;\=\?\@\[\]\\\]]){1}([^\!\#\$\%\&\'\*\+\,\/\:\;\=\?\@\[\]\\\]])*$" data-validation-coloring="off">
+					<input class="lb-input" readonly onfocus="this.removeAttribute('readonly');" value="" id='miniserveruser<TMPL_VAR MSNO>' name='miniserveruser<TMPL_VAR MSNO>' type='text' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_MSUSER>" data-validation-rule="^([^\!\#\$\%\&\'\*\+\,\/\:\;\=\?\@\[\]\\\]]){1}([^\!\#\$\%\&\'\*\+\,\/\:\;\=\?\@\[\]\\\]])*$" data-validation-coloring="off">
 				</div>
 				<div class="lb-form-help hint">
 					<TMPL_VAR MINISERVER.HINT_MSUSER>
@@ -91,7 +91,7 @@
 					<label for="miniserverkennwort<TMPL_VAR MSNO>"><TMPL_VAR MINISERVER.LABEL_MSPASS></label>
 				</div>
 				<div class="lb-form-field" style="display:flex;gap:6px;align-items:center">
-					<input class="lb-input textfield" style="flex:1;min-width:0" readonly onfocus="this.removeAttribute('readonly');" value="<TMPL_VAR MSPASS>" id='miniserverkennwort<TMPL_VAR MSNO>' name='miniserverkennwort<TMPL_VAR MSNO>' type='password' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_MSPASS>" data-validation-rule="^.{1}.*$" data-validation-coloring="off" autocomplete="off">
+					<input class="lb-input textfield" style="flex:1;min-width:0" readonly onfocus="this.removeAttribute('readonly');" value="" id='miniserverkennwort<TMPL_VAR MSNO>' name='miniserverkennwort<TMPL_VAR MSNO>' type='password' data-validation-error-msg="<TMPL_VAR MINISERVER.MSG_VAL_INVALID_MSPASS>" data-validation-rule="^.{1}.*$" data-validation-coloring="off" autocomplete="off">
 					<button type="button" class="lb-btn lb-btn-sm lb-btn-icon showpass-btn" style="flex-shrink:0" data-target="miniserverkennwort<TMPL_VAR MSNO>"><i class="pi pi-eye"></i></button>
 				</div>
 				<div class="lb-form-help hint">
@@ -677,7 +677,8 @@ function checkSecurePIN() {
 	$("#check_hint").attr("style", "color:blue;").html("<TMPL_VAR SECUREPIN.CHECK_WAIT>");
 	$.ajax({
 		type: 'POST',
-		data: { action: 'checksecpin', secpin: $('#securepin').val() }
+		// Credentials are delivered only with a correct SecurePIN (#1624)
+		data: { action: 'getcredentials', secpin: $('#securepin').val() }
 	})
 	.fail(function(data) {
 		$("#securepin_block").fadeIn();
@@ -689,9 +690,14 @@ function checkSecurePIN() {
 				case 1: case 2: case 3:
 					data.message = '<TMPL_VAR SECUREPIN.ERROR_WRONG>'; break;
 			}
+			$("#securepin_block").fadeIn();
 			$("#check_hint").attr("style", "color:red").html(data.message);
 			return;
 		}
+		$.each(data.miniservers || {}, function(msno, cred) {
+			$("#miniserveruser" + msno).val(cred.user);
+			$("#miniserverkennwort" + msno).val(cred.pass);
+		});
 		sessionStorage.setItem("securePIN", $('#securepin').val());
 		$("#securepin_block").fadeOut();
 		$("#main_form2").css('visibility', 'visible');
