@@ -1196,8 +1196,15 @@ sub check_securepin
 		undef $pinerrobj;
 	}
 	
-	my $output = qx(sudo $lbssbindir/credentialshandler.pl checksecurepin '$securepin');
-	if (!$?) {
+	# List form without a shell: the PIN comes from the request, a ' in it
+	# must not end the quoting and run commands (#1624).
+	my $pinok = 0;
+	if ( open(my $chk, '-|', 'sudo', "$lbssbindir/credentialshandler.pl", 'checksecurepin', $securepin // '') ) {
+		my @output = <$chk>;
+		close($chk);
+		$pinok = 1 if (!$?);
+	}
+	if ($pinok) {
 		# OK
 		unlink $pinerror_file;
 		return (undef);
