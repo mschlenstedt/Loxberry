@@ -259,10 +259,20 @@ def parse_miniservers(general_data: dict) -> dict:
     return result
 
 def parse_subscriptions(subs_data: dict) -> list:
+    """Subscriptions from subscriptions.json. A topic or JSON path that is not
+    a non-empty string is skipped with a warning: an object Id (saved by the
+    WebUI before #1610) made every subscribe fail."""
     result = []
     for sub in subs_data.get("Subscriptions", []):
+        if not isinstance(sub, dict) or not isinstance(sub.get("Id"), str) or not sub["Id"]:
+            LOGWARN(f"Subscription skipped - topic is not a text: {sub.get('Id') if isinstance(sub, dict) else sub!r}")
+            continue
         json_fields = []
         for field in sub.get("Json", []):
+            if not isinstance(field, dict) or not isinstance(field.get("Id"), str) or not field["Id"]:
+                LOGWARN(f"JSON field of {sub['Id']} skipped - path is not a text: "
+                        f"{field.get('Id') if isinstance(field, dict) else field!r}")
+                continue
             json_fields.append({
                 "id":             field["Id"],
                 "toms":           [str(t) for t in field.get("Toms", [])],
@@ -412,8 +422,7 @@ async def config_watcher() -> None:
                         await _mqtt_client.unsubscribe(topic)
                         LOGINF(f"Unsubscribed: {topic}")
                     for topic in new_topics - old_topics:
-                        await _mqtt_client.subscribe(topic)
-                        LOGINF(f"Subscribed: {topic}")
+                        await mqtt_subscribe_one(_mqtt_client, topic)
 
         except Exception as exc:
             LOGERR(f"Config reload failed: {exc} — keeping current config")
@@ -422,6 +431,19 @@ async def config_watcher() -> None:
 
 # ─── MQTT Listener ────────────────────────────────────────────────────────────
 _mqtt_client = None
+
+async def mqtt_subscribe_one(client, topic) -> bool:
+    """Subscribe one topic. A topic the MQTT client rejects is logged and
+    skipped - before, one bad subscription crashed the listener in a loop and
+    no topic after it was ever subscribed (#1610). Connection errors are raised
+    as before (the listener reconnects)."""
+    try:
+        await client.subscribe(topic)
+    except (ValueError, TypeError) as exc:
+        LOGERR(f"Subscribe rejected for topic {topic!r} ({exc}) - skipped. Please check it in the Subscriptions tab.")
+        return False
+    LOGINF(f"Subscribed: {topic}")
+    return True
 
 def _gw_topic_base() -> str:
     """<short-hostname>/mqttgateway/ — compatible with V1 topic layout."""
@@ -472,8 +494,7 @@ async def mqtt_listener(queue: asyncio.Queue, mqtt_config: dict) -> None:
                 LOGINF(f"Gateway topic base: {base}")
 
                 for sub in _subscriptions:
-                    await client.subscribe(sub["id"])
-                    LOGINF(f"Subscribed: {sub['id']}")
+                    await mqtt_subscribe_one(client, sub["id"])
 
                 await client.publish(base + "status", "Connected", retain=True)
                 await client.publish(

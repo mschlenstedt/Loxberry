@@ -108,7 +108,7 @@ $(function() {
 	// Expand / Collaps binding
 	
 	jQuery(document).on('click', '.topicExpand', function(event, ui){
-		var target = $(this).data('topic');
+		var target = $(this).attr('data-topic');
 		console.log("Expand target", target);
 		if( expandTopicList[target] ) {
 			delete expandTopicList[target];

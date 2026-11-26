@@ -1,6 +1,23 @@
 <link rel="stylesheet" href="/system/css/mqtt-gateway-v2.css?v=3">
 <script src="/system/scripts/mqttgw-scan.js?v=7"></script>
 <script>
+// Subscriptions as loaded from subscriptions.json, with every topic Id and
+// JSON path Id as a string. Topic and path are read from the page with
+// .attr('data-…'), never .data(): jQuery's .data() turns a value that looks
+// like JSON, a number or true/false/null into that type - a topic
+// '{"topic":…}' was saved as an object Id, the gateway could not subscribe and
+// the Subscriptions tab stopped at "Loading topics…" (#1610). Ids saved that
+// way before are turned back into their topic string here.
+window.mqttgwNormalizeSubs = function(list) {
+	function str(v) { return typeof v === 'string' ? v : (v === undefined || v === null ? '' : JSON.stringify(v)); }
+	return (Array.isArray(list) ? list : []).filter(function(s) { return s && typeof s === 'object'; }).map(function(s) {
+		s.Id = str(s.Id);
+		s.Json = (Array.isArray(s.Json) ? s.Json : []).filter(function(f) { return f && typeof f === 'object'; })
+			.map(function(f) { f.Id = str(f.Id); return f; });
+		return s;
+	}).filter(function(s) { return s.Id !== ''; });
+};
+
 // Texte für "Miniserver scannen" (Tab Abonnements und Umstieg V1->V2)
 MqttgwScan.lang = {
 	loading:         '<TMPL_VAR MQTT.SCAN_LOADING>',
@@ -1142,6 +1159,8 @@ $(function() {
     // ── Data model — mirrors subscriptions.json exactly ───────────────────
     // Each entry: { Id, Toms[], Noncached, resetaftersend, Jsonexpand, Json[] }
     // Json entry:  { Id (@@-path), Toms[], Noncached, resetaftersend }
+    // Topic and path are read with .attr('data-…'), never .data() (#1610,
+    // see mqttgwNormalizeSubs at the top of this template).
     var subscriptions = [];
     var isDirty = false;
     var saveTimer = null;
@@ -1340,7 +1359,7 @@ $(function() {
     $.post('ajax/ajax-mqtt.php', { ajax: 'get_subscriptions' })
     .done(function(resp) {
         var data = typeof resp === 'string' ? JSON.parse(resp) : resp;
-        subscriptions = data.Subscriptions || [];
+        subscriptions = mqttgwNormalizeSubs(data.Subscriptions);
     })
     .always(function() {
         startDiscovery();
@@ -1701,14 +1720,14 @@ $(function() {
     // ── Event handlers ────────────────────────────────────────────────────
 
     $(document).on('change', '.topic-subscribe', function() {
-        var topic = $(this).data('topic');
+        var topic = $(this).attr('data-topic');
         if ($(this).prop('checked')) getOrCreateSub(topic);
         else removeSub(topic);
         markDirty(); renderTopics();
     });
 
     $(document).on('change', '.topic-json-expand', function() {
-        var topic = $(this).data('topic');
+        var topic = $(this).attr('data-topic');
         var sub   = getOrCreateSub(topic);
         sub.Jsonexpand = $(this).prop('checked');
         if (!sub.Jsonexpand) sub.Json = [];
@@ -1716,21 +1735,21 @@ $(function() {
     });
 
     $(document).on('change', '.topic-disable-cache', function() {
-        var sub = findSub($(this).data('topic'));
+        var sub = findSub($(this).attr('data-topic'));
         if (!sub) return;
         sub.Noncached = $(this).prop('checked');
         markDirty();
     });
 
     $(document).on('change', '.topic-reset-after-send', function() {
-        var sub = findSub($(this).data('topic'));
+        var sub = findSub($(this).attr('data-topic'));
         if (!sub) return;
         sub.resetaftersend = $(this).prop('checked');
         markDirty();
     });
 
     $(document).on('change', '.ms-default-check', function() {
-        var sub = findSub($(this).data('topic'));
+        var sub = findSub($(this).attr('data-topic'));
         if (!sub) return;
         sub.Toms = [];
         var $dropdown = $(this).closest('.mqttgw-ms-dropdown');
@@ -1741,7 +1760,7 @@ $(function() {
     });
 
     $(document).on('change', '.ms-checkbox', function() {
-        var topic = $(this).data('topic');
+        var topic = $(this).attr('data-topic');
         var ms    = parseInt($(this).data('ms'));
         var sub   = findSub(topic);
         if (!sub) return;
@@ -1756,8 +1775,8 @@ $(function() {
     });
 
     $(document).on('change', '.json-field-subscribe', function() {
-        var topic = $(this).data('topic');
-        var path  = $(this).data('path');
+        var topic = $(this).attr('data-topic');
+        var path  = $(this).attr('data-path');
         var sub   = getOrCreateSub(topic);
         if ($(this).prop('checked')) {
             if (!findJsonField(sub, path))
@@ -1769,23 +1788,23 @@ $(function() {
     });
 
     $(document).on('change', '.json-field-nocache', function() {
-        var sub = findSub($(this).data('topic'));
+        var sub = findSub($(this).attr('data-topic'));
         if (!sub) return;
-        var field = findJsonField(sub, $(this).data('path'));
+        var field = findJsonField(sub, $(this).attr('data-path'));
         if (field) { field.Noncached = $(this).prop('checked'); markDirty(); }
     });
 
     $(document).on('change', '.json-field-reset', function() {
-        var sub = findSub($(this).data('topic'));
+        var sub = findSub($(this).attr('data-topic'));
         if (!sub) return;
-        var field = findJsonField(sub, $(this).data('path'));
+        var field = findJsonField(sub, $(this).attr('data-path'));
         if (field) { field.resetaftersend = $(this).prop('checked'); markDirty(); }
     });
 
     $(document).on('change', '.ms-field-default-check', function() {
-        var sub = findSub($(this).data('topic'));
+        var sub = findSub($(this).attr('data-topic'));
         if (!sub) return;
-        var field = findJsonField(sub, $(this).data('path'));
+        var field = findJsonField(sub, $(this).attr('data-path'));
         if (!field) return;
         field.Toms = [];
         var $dropdown = $(this).closest('.mqttgw-ms-dropdown');
@@ -1796,9 +1815,9 @@ $(function() {
     });
 
     $(document).on('change', '.ms-field-checkbox', function() {
-        var sub = findSub($(this).data('topic'));
+        var sub = findSub($(this).attr('data-topic'));
         if (!sub) return;
-        var field = findJsonField(sub, $(this).data('path'));
+        var field = findJsonField(sub, $(this).attr('data-path'));
         if (!field) return;
         var ms  = parseInt($(this).data('ms'));
         var arr = field.Toms || [];
@@ -2184,7 +2203,7 @@ $(function () {
   function loadSubs() {
     $.get('ajax/ajax-mqtt.php', {ajax: 'get_subscriptions'}, function (resp) {
       viRows = [];
-      (resp.Subscriptions || []).forEach(function (sub) {
+      mqttgwNormalizeSubs(resp.Subscriptions).forEach(function (sub) {
         var parts = sub.Id.split('/');
         var grp   = parts[0];
         var short = parts.slice(1).join('/') || sub.Id;
