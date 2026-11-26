@@ -238,7 +238,7 @@ sub save {
 	}
 
 	# IMMED: Check Password
-	$output = qx(sudo $lbssbindir/credentialshandler.pl checkpasswd 'loxberry' '$adminpassold');
+	$output = credentialshandler('checkpasswd', 'loxberry', $adminpassold);
 	chomp ($output);
 	$exitcode  = $? >> 8;
 	if ($exitcode == 1) {
@@ -265,8 +265,10 @@ sub save {
 	
 	# Validate passwords
 	if ($adminpass1 || $adminpass2) {
+		# Same characters as the browser check (admin.html): no : " ' @ \ or blank.
+		# The old m/\"\'\@\:/ only matched these four in exactly this order.
 		$_ = $adminpass1;
-		if (m/\"\'\@\:/ ) {
+		if (m/[:\s"'\@\\]/ ) {
 			$error = $SL{'ADMIN.MSG_VAL_PASSWORD_ERROR'};
 			&error;
 		}
@@ -302,7 +304,7 @@ sub save {
 	if ($adminuser && !$adminpass1) {
 		# Save Username/Password for Webarea
 		#$output = qx(/usr/bin/htpasswd -c -b $lbhomedir/config/system/htusers.dat $adminuser $quoted_adminpassold);
-		$output = qx(sudo $lbssbindir/credentialshandler.pl changewebuipasswd '$adminuser' '$adminpassold');
+		$output = credentialshandler('changewebuipasswd', $adminuser, $adminpassold);
 		my $exitcode  = $? >> 8;
 		if ($exitcode != 0) {
 			chomp ($output);
@@ -318,7 +320,7 @@ sub save {
 	##
 	if ($adminpass1) {
 		# Save Username/Password for System
-		$output = qx(sudo $lbssbindir/credentialshandler.pl changepasswd 'loxberry' '$adminpassold' '$adminpass1');
+		$output = credentialshandler('changepasswd', 'loxberry', $adminpassold, $adminpass1);
 		$exitcode  = $? >> 8;
 		if ($exitcode != 0) {
 			chomp ($output);
@@ -327,7 +329,7 @@ sub save {
 		} else {
 			$maintemplate->param("ADMINOK", 1);
 			# Save Username/Password for Webarea
-			$output = qx(sudo $lbssbindir/credentialshandler.pl changewebuipasswd '$adminuser' '$adminpass1');
+			$output = credentialshandler('changewebuipasswd', $adminuser, $adminpass1);
 			my $exitcode  = $? >> 8;
 			if ($exitcode != 0) {
 				chomp ($output);
@@ -343,7 +345,7 @@ sub save {
 	## User wants to change the SecurePIN:
 	##
 	if ($securepin1) {
-		$output = qx(sudo $lbhomedir/sbin/credentialshandler.pl changesecurepin '$securepinold' '$securepin1');
+		$output = credentialshandler('changesecurepin', $securepinold, $securepin1);
 		my $exitcode  = $? >> 8;
 		if ($exitcode ne 0) {
 			chomp ($output);
@@ -461,6 +463,26 @@ sub generate {
         }
 
         return($zufall);
+}
+
+#####################################################
+# credentialshandler.pl without a shell
+# Passwords and PINs from the form are handed over as single arguments, so a
+# ' in them cannot end the quoting and run commands. Returns STDOUT and leaves
+# the exit code in $? like qx did.
+#####################################################
+
+sub credentialshandler {
+	my @args = @_;
+	my $out = '';
+	if ( open(my $fh, '-|', 'sudo', "$lbssbindir/credentialshandler.pl", map { $_ // '' } @args) ) {
+		local $/;
+		$out = <$fh> // '';
+		close($fh);
+	} else {
+		$? = 255 << 8;
+	}
+	return $out;
 }
 
 sub generatedigit {
