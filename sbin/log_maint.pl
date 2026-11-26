@@ -421,17 +421,23 @@ sub checkdisks {
 sub trim_logcount {
 	my (@basepaths) = @_;
 
+	# Check every folder on its own (e.g. per plugin log dir), never a whole
+	# tree - a single busy plugin must not affect the logs of others.
+	# Counting recursively from a parent folder lumps folders together: with
+	# the log ramdisk, log/ramlog/log contains log/plugins and log/system_tmpfs
+	# (bind mounts of the same ramdisk), and a plugin writing one logfile per
+	# minute made the trim delete the logfiles of ALL plugins except the newest
+	# 24 (issue #1623). Folders reachable twice (bind mounts) are checked only once.
+	my %seen;
 	foreach my $disk (@basepaths) {
-		# Check per subfolder (e.g. per plugin log dir), not for the whole
-		# tree - a single busy plugin must not affect the logs of others.
-		my @countdirs = grep { -d $_ } glob("$disk/*");
-		push @countdirs, $disk;
+		next if ( ! -d $disk );
+		my @countdirs = File::Find::Rule->directory()->in($disk);
 		foreach my $dir (@countdirs) {
 			# Never trim a permanently-protected dir (issue #1539).
 			next if ( is_protected($dir) );
-			my $rule = File::Find::Rule->file()->name('*.log', '*.log.gz');
-			$rule = $rule->maxdepth(1) if ($dir eq $disk); # subfolders are checked separately
-			my @logfiles = $rule->in($dir);
+			my ($dev, $ino) = stat($dir);
+			next if ( !defined $ino or $seen{"$dev:$ino"}++ );
+			my @logfiles = File::Find::Rule->file()->name('*.log', '*.log.gz')->maxdepth(1)->in($dir);
 			my $filecount = scalar @logfiles;
 			if ($filecount <= $maxlogfiles) {
 				LOGDEB "--> $dir OK ($filecount log files)";
