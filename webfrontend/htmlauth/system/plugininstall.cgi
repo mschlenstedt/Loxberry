@@ -22,6 +22,8 @@
 use LoxBerry::System;
 use LoxBerry::Web;
 use LoxBerry::Log;
+use LoxBerry::PluginDownload qw(download_plugin_archive);
+use IO::Handle;
 use CGI::Carp qw(fatalsToBrowser);
 use CGI;
 use Config::Simple;
@@ -294,6 +296,13 @@ sub install {
 	$logtemplate->param( "LOGFILE", "$tempfile.log");
 	$logtemplate->param( "STATUSFILE", "$tempfile.status");
 
+	# Keep download state separate: the installer requires a new status file.
+	my $downloadstatus = "/tmp/$tempfile.status.download";
+	my ($statuserror) = LoxBerry::System::write_file($downloadstatus, $archiveurl ? "4" : "1");
+	if ($statuserror) {
+		$error = "Could not create download status: $statuserror";
+		&error;
+	}
 	
 	# Print Template
 	$template_title = $SL{'COMMON.LOXBERRY_MAIN_TITLE'} . ": " . $SL{'PLUGININSTALL.WIDGETLABEL'};
@@ -319,21 +328,43 @@ sub install {
 		
 		# do this in the child
 		open STDIN, "</dev/null";
-		open STDOUT, ">$logfile";
-		#open STDERR, ">$logfile";
-		open STDERR, ">/dev/null";
+		open STDOUT, ">>", $logfile or die "Could not open installation log: $!";
+		open STDERR, ">&", \*STDOUT or die "Could not redirect installation errors: $!";
+		STDOUT->autoflush(1);
+		STDERR->autoflush(1);
 
 		if ($archiveurl) {
-			print "<INFO> Downloading $archiveurl ...\n";
-			# Single-quote the URL to prevent shell injection from & ? ; etc.
-			(my $safe_url = $archiveurl) =~ s/'/'"'"'/g;
-			system("$bins->{CURL} -fsSLk --connect-timeout 10 --max-time 60 --retry 5 -o $lbsdatadir/tmp/uploads/$tempfile.zip '$safe_url'");
+			print LoxBerry::System::currtime('hrtimehires') . " <INFO> Downloading $archiveurl ...\n";
+			my ($downloaded, $downloaderror) = download_plugin_archive(
+				$bins->{CURL}, $archiveurl, "$uploadpath/$tempfile.zip");
+			if (!$downloaded) {
+				print LoxBerry::System::currtime('hrtimehires') . " <ERROR> Could not download plugin archive: $downloaderror\n";
+				my ($statuserror) = LoxBerry::System::write_file($downloadstatus, "2");
+				die "Could not write download failure status: $statuserror" if $statuserror;
+				exit 1;
+			}
+			print LoxBerry::System::currtime('hrtimehires') . " <INFO> Archive download completed.\n";
 		} else {
 			# File is already there
 		}
 
+		my ($statuserror) = LoxBerry::System::write_file($downloadstatus, "1");
+		die "Could not write installation status: $statuserror" if $statuserror;
+
 		# Do the installation
-		system ("sudo $lbhomedir/sbin/plugininstall.pl action=install file=$lbsdatadir/tmp/uploads/$tempfile.zip pin=$securepin tempfile=$tempfile cgi=1 >> $logfile 2>&1");
+		my $result = system('sudo', "$lbhomedir/sbin/plugininstall.pl", 'action=install',
+			"file=$uploadpath/$tempfile.zip", "pin=$securepin", "tempfile=$tempfile", 'cgi=1');
+		if ($result != 0) {
+			my $reason = $result == -1 ? "Could not start installer: $!"
+				: ($result & 127) ? "Installer terminated by signal " . ($result & 127)
+				: "Installer exited with code " . ($result >> 8);
+			print LoxBerry::System::currtime('hrtimehires') . " <ERROR> $reason\n";
+			my ($statuserror) = LoxBerry::System::write_file($downloadstatus, "2");
+			die "Could not write installation failure status: $statuserror" if $statuserror;
+			exit 1;
+		}
+		unlink($downloadstatus) or warn "Could not remove download status: $!";
+		exit 0;
 
 	} # End Child process
 
