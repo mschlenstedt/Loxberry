@@ -216,19 +216,14 @@
   color: var(--lb-gray-600);
 }
 
-/* "Alle"-Checkbox rechts im Gruppenkopf, abgesetzt vom Pfeil links.
-   Padding vergrößert die Klickfläche. */
+/* "Alle"-Checkbox direkt hinter der Anzahl im Gruppenkopf, abgesetzt vom
+   Pfeil links. Padding vergrößert die Klickfläche. */
 .mqttgw-group-all {
-  margin-left: auto;
   display: inline-flex;
   align-items: center;
-  padding: 4px 0 4px 8px;
+  padding: 4px 8px;
   cursor: pointer;
   flex-shrink: 0;
-}
-/* Untergruppen haben rechts kein Padding: bündig mit der Gruppe darüber */
-.mqttgw-subgroup > summary > .mqttgw-group-all {
-  margin-right: 14px;
 }
 .lb-content .mqttgw-group-all input[type="checkbox"] {
   margin: 0;
