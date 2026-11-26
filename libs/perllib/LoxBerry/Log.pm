@@ -160,14 +160,16 @@ sub new
 		my $dir = File::Basename::dirname($self->{filename});
 		if (! -d $dir) {
 			require File::Path;
-			File::Path::make_path($dir);
+			# make_path returns every folder it created - all of them belong
+			# to loxberry, not only the last one (#1612)
+			my @created = File::Path::make_path($dir);
 			eval {
 				if(!$self->{loxberry_uid}) {
 					my (undef,undef,$uid,$gid) = getpwnam('loxberry');
 					$self->{loxberry_uid} = $uid;
-					$self->{loxberry_uid} = $gid;
+					$self->{loxberry_gid} = $gid;
 				}
-				chown $self->{loxberry_uid}, $self->{loxberry_uid}, $dir;
+				chown $self->{loxberry_uid}, $self->{loxberry_gid}, ( @created ? @created : $dir );
 			};
 		}
 	}
@@ -251,15 +253,6 @@ sub open
 	my $fh;
 
 	eval {
-		if(!$self->{loxberry_uid}) {
-			my (undef,undef,$uid,$gid) = getpwnam('loxberry');
-			$self->{loxberry_uid} = $uid;
-			$self->{loxberry_uid} = $gid;
-		}
-		chown $self->{loxberry_uid}, $self->{loxberry_uid}, $fh;
-		chmod 0666, $fh;
-	};
-	eval {
 		open($fh, $writetype, $self->{filename});
 		#flock($fh, 2);
 		$self->{'_FH'} = $fh if($fh);
@@ -267,6 +260,23 @@ sub open
 	if ($@) {
 		print STDERR "Cannot open logfile " . $self->{filename} . " (writetype " . $writetype . "): $@";
 		return;
+	}
+	# A logfile created by root (e.g. the update check, mqtt-handler) belongs to
+	# loxberry, so that log_maint.pl (runs as loxberry) can gzip and truncate it
+	# (#1612). The chown has to follow the open - before, it ran on the still
+	# empty filehandle and never had any effect.
+	if ( $< == 0 && $self->{'_FH'} ) {
+		eval {
+			if(!$self->{loxberry_uid}) {
+				my (undef,undef,$uid,$gid) = getpwnam('loxberry');
+				$self->{loxberry_uid} = $uid;
+				$self->{loxberry_gid} = $gid;
+			}
+			my @st = stat($self->{'_FH'});
+			if ( defined $self->{loxberry_uid} && @st && $st[4] != $self->{loxberry_uid} ) {
+				chown $self->{loxberry_uid}, $self->{loxberry_gid}, $self->{'_FH'};
+			}
+		};
 	}
 }
 

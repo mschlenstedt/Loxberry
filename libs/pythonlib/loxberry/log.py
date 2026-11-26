@@ -174,8 +174,16 @@ class LBLog(object):
             d = os.path.dirname(self.filename)
             if d and not os.path.isdir(d):
                 try:
+                    # Every folder created here belongs to loxberry, not only
+                    # the last one (#1612)
+                    missing = []
+                    p = d
+                    while p and not os.path.isdir(p):
+                        missing.append(p)
+                        p = os.path.dirname(p)
                     os.makedirs(d, exist_ok=True)
-                    _chown_loxberry(d)
+                    for m in missing:
+                        _chown_loxberry(m)
                 except OSError:
                     pass
 
@@ -196,6 +204,10 @@ class LBLog(object):
     def _open(self):
         if self._fh is None and not self.nofile:
             self._fh = open(self.filename, "a", encoding="utf-8")
+            # A logfile created by root belongs to loxberry, so that
+            # log_maint.pl (runs as loxberry) can gzip and truncate it (#1612)
+            if os.geteuid() == 0:
+                _chown_loxberry(self.filename)
 
     def close(self):
         if self._fh is not None:
