@@ -33,7 +33,7 @@ use warnings;
 ##########################################################################
 
 # Version of this script
-my $scriptversion="3.0.0.3";
+my $scriptversion="3.0.0.4";
 
 # Global vars
 my $update_path = '/tmp/pluginsupdate';
@@ -98,7 +98,11 @@ foreach my $arg(@ARGV) {
 # Parse Plugins
 ##########################################################################
 
-foreach (@plugins) {
+# Named loop variable, not $_: Config::Simple reads the release.cfg with
+# while(<$fh>) and leaves $_ at "[AUTOUPDATE]". With foreach (@plugins) that
+# overwrote the plugin's hash ref and the script died on the next $_->{...}
+# (issue #1626).
+foreach my $plugin (@plugins) {
 
 	my $notify;
 	my $currentver_raw;
@@ -115,15 +119,15 @@ foreach (@plugins) {
 	my ($pre_verstr, $pre_archive, $pre_info, $pre_ok);
 
 
-	$pid = $_->{PLUGINDB_MD5_CHECKSUM};
-	$currentver_raw = $_->{PLUGINDB_VERSION};
-	$plugintitle = $_->{PLUGINDB_TITLE};
-	$pluginname = $_->{PLUGINDB_NAME};
-	$pluginmd5 = $_->{PLUGINDB_MD5_CHECKSUM};
+	$pid = $plugin->{PLUGINDB_MD5_CHECKSUM};
+	$currentver_raw = $plugin->{PLUGINDB_VERSION};
+	$plugintitle = $plugin->{PLUGINDB_TITLE};
+	$pluginname = $plugin->{PLUGINDB_NAME};
+	$pluginmd5 = $plugin->{PLUGINDB_MD5_CHECKSUM};
 	$installarchive = "";
 	undef $installversion;
 
-	LOGINF "$pluginname: Found plugin $_->{PLUGINDB_TITLE}.";
+	LOGINF "$pluginname: Found plugin $plugin->{PLUGINDB_TITLE}.";
 
 	#
 	# Checks — SemVer + legacy lax compare via LoxBerry::System::plugin_version_compare
@@ -134,29 +138,29 @@ foreach (@plugins) {
 	}
 	LOGINF "$pluginname: Current version is: $currentver_raw";
 	
-	if (!$_->{PLUGINDB_AUTOUPDATE}) {
+	if (!$plugin->{PLUGINDB_AUTOUPDATE}) {
 		LOGINF "$pluginname: Provide no automatic updates. Skipping.";
 		next;
 	}
-	elsif ($_->{PLUGINDB_AUTOUPDATE} eq "1") {
+	elsif ($plugin->{PLUGINDB_AUTOUPDATE} eq "1") {
 		LOGINF "$pluginname: Automatic updates are disabled. Check only.";
 		$notify = 1;
 	}
-	elsif ($_->{PLUGINDB_AUTOUPDATE} eq "2") {
+	elsif ($plugin->{PLUGINDB_AUTOUPDATE} eq "2") {
 		LOGINF "$pluginname: NOTIFY about new versions is enabled.";
 		$notify = 1;
 	}
-	elsif ($_->{PLUGINDB_AUTOUPDATE} eq "3") {
+	elsif ($plugin->{PLUGINDB_AUTOUPDATE} eq "3") {
 		LOGINF "$pluginname: RELEASES enabled.";
 		$release = 1;
 	}
-	elsif ($_->{PLUGINDB_AUTOUPDATE} eq "4") {
+	elsif ($plugin->{PLUGINDB_AUTOUPDATE} eq "4") {
 		LOGINF "$pluginname: PRERELEASES enabled.";
 		$release = 1;
 		$prerelease = 1;
 	}
 	else {
-		LOGINF "$pluginname: Unknown option ($_->{PLUGINDB_AUTOUPDATE}). Skipping.";
+		LOGINF "$pluginname: Unknown option ($plugin->{PLUGINDB_AUTOUPDATE}). Skipping.";
 		next;
 	}
 
@@ -367,7 +371,7 @@ foreach (@plugins) {
 			elsif ($checkonly) {
 				LOGINF "$pluginname: Skipping notification because of --checkonly parameter. This is an interactive call.";
 			}
-			elsif ($_->{PLUGINDB_AUTOUPDATE} eq "1") {
+			elsif ($plugin->{PLUGINDB_AUTOUPDATE} eq "1") {
 				LOGINF "$pluginname: Skipping notification because automatic updates and notifys are disabled.";
 			}
 			else {
