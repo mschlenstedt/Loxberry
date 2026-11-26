@@ -1227,6 +1227,86 @@ async def fw_housekeeping() -> None:
             fw_save_state()
         await notify_flush()
 
+# ─── Send memory like Gateway V1 (#1620, #1622) ──────────────────────────────
+# V2 sends a value only if it differs from the last value delivered to that
+# miniserver (should_send_ms). V1 (LoxBerry::MQTTGateway::IO mshttp_send_mem2,
+# LoxBerry::IO msudp_send_mem) forgets what it sent:
+#  - every hour ($mem_sendall_sec = 3600): the next message of every value is
+#    sent again, also when unchanged - e.g. a VI that fell back to its default
+#    after a validation timeout gets its value back;
+#  - after a miniserver restart, detected at most every 5 minutes from a
+#    smaller packet counter /dev/lan/txp (lastMSRebootCheck).
+# Like V1 nothing is sent actively: forgetting only lets the next incoming
+# message through. VIs the firewall guard marks missing stay blocked.
+MEM_SENDALL_SEC     = 3600   # V1: $mem_sendall_sec
+MS_REBOOT_CHECK_SEC = 300    # V1: lastMSRebootCheck < time-300
+_ms_mem: dict = {}   # ms_id -> {"flush": monotonic, "txp_at": monotonic, "txp": int|None, "task": Task|None}
+
+def ms_mem_forget(ms_id: str) -> int:
+    """Forget the values delivered to this miniserver (per_ms value = None), so
+    the next message of every VI is sent again. Returns the number of VIs."""
+    n = 0
+    for entry in _cache.values():
+        pm = entry.get("per_ms", {}).get(str(ms_id))
+        if pm and pm.get("value") is not None:
+            pm["value"] = None
+            n += 1
+    return n
+
+def ms_mem_tick(session, ms_id: str, now: float | None = None) -> None:
+    """Called before every send job of a miniserver: hourly forget, and start
+    the restart check (in the background, so the job is not delayed)."""
+    now = time.monotonic() if now is None else now
+    st = _ms_mem.get(ms_id)
+    if st is None:
+        # Gateway start: begin the hour now. Retained values stay cache-only (44e09ff5).
+        st = _ms_mem[ms_id] = {"flush": now, "txp_at": 0.0, "txp": None, "task": None}
+    if now - st["flush"] >= MEM_SENDALL_SEC:
+        st["flush"] = now
+        n = ms_mem_forget(ms_id)
+        LOGDEB(f"MS{ms_id}: hourly send cache reset (like V1) - {n} VI(s) are sent again with their next message")
+    if session is not None and now - st["txp_at"] >= MS_REBOOT_CHECK_SEC \
+            and (st["task"] is None or st["task"].done()):
+        st["txp_at"] = now
+        st["task"] = asyncio.create_task(ms_reboot_check(session, ms_id))
+
+_TXP_VALUE = re.compile(r'value="(\d+)"')
+_TXP_CODE  = re.compile(r'Code="(\d+)"')
+
+async def ms_reboot_check(session, ms_id: str) -> None:
+    """Read /dev/lan/txp (packets sent by the miniserver since its start). A
+    smaller value than last time means the miniserver was restarted: forget
+    what was sent. Errors, timeouts and non-200 answers change nothing (V1)."""
+    ms = _miniservers.get(ms_id)
+    if not ms or not ms.get("fulluri"):
+        return
+    if time.monotonic() < _guard(ms_id).pause_until:
+        return   # firewall pause after a 429 - do not add requests
+    ssl_param = False if ms.get("use_https") else None
+    try:
+        async with session.get(ms["fulluri"] + "/dev/lan/txp",
+                               timeout=aiohttp.ClientTimeout(total=5),
+                               ssl=ssl_param) as resp:
+            status = resp.status
+            text = await resp.text() if status == 200 else ""
+    except Exception as exc:
+        LOGDEB(f"MS{ms_id}: restart check failed ({exc})")
+        return
+    code = _TXP_CODE.search(text)
+    val  = _TXP_VALUE.search(text)
+    if status != 200 or not val or (code and code.group(1) != "200"):
+        LOGDEB(f"MS{ms_id}: restart check not possible (HTTP {status})")
+        return
+    txp = int(val.group(1))
+    st = _ms_mem.setdefault(ms_id, {"flush": time.monotonic(), "txp_at": 0.0, "txp": None, "task": None})
+    last, st["txp"] = st["txp"], txp
+    if last is not None and txp < last:
+        n = ms_mem_forget(ms_id)
+        LOGINF(f"MS{ms_id}: Miniserver restart detected (txp {last} -> {txp}) - "
+               f"send cache reset, {n} VI(s) are sent again with their next message")
+        if _status_event is not None:
+            _status_event.set()
+
 # ─── Per-miniserver worker ───────────────────────────────────────────────────
 async def ms_worker(ms_id: str, queue: asyncio.Queue,
                     session: "aiohttp.ClientSession",
@@ -1260,6 +1340,7 @@ async def _process_sends(session, ms_id: str, queue: asyncio.Queue,
 
     seqs        = job.get("seqs") or {}
     g           = _guard(ms_id)
+    ms_mem_tick(session, ms_id)   # V1: forget hourly / after a miniserver restart
 
     udp_pairs: list[tuple[str, str, str]] = []   # (vi_name, udp_name, value)
 
