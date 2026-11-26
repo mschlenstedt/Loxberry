@@ -124,6 +124,37 @@ LOGINF "Setting RemoveIPC=no for systemd-logind, so files of user loxberry in /d
 }
 
 # ---------------------------------------------------------------------------
+# Watchdog: the Logging setting also controls the daemon's verbosity (#1596)
+#
+# The installers and update_v1.4 always started the watchdog daemon with -v
+# (/etc/default/watchdog). It writes status lines every few seconds to
+# log/system/watchdog.log on the SD card, whatever the Logging setting says.
+# services_watchdog.cgi now switches -v with the setting; apply the stored
+# setting once. sbin/serviceshelper is already updated by the rsync.
+# ---------------------------------------------------------------------------
+if ( -e "/etc/default/watchdog" ) {
+	LOGINF "Applying the Watchdog logging setting to the verbosity of the watchdog daemon...";
+	my $wdcfg = LoxBerry::JSON->new()->open( filename => "$lbsconfigdir/general.json", readonly => 1 );
+	my $wdlogging = ( $wdcfg && $wdcfg->{Watchdog} && is_enabled( $wdcfg->{Watchdog}->{Logging} ) ) ? 1 : 0;
+	my ($wdexitcode) = execute( command => "$lbhomedir/sbin/serviceshelper watchdog_logging $wdlogging", log => $log, ignoreerrors => 1 );
+	if ( $wdexitcode != 0 ) {
+		LOGWARN "Could not change /etc/default/watchdog (exit code $wdexitcode) - saving the Watchdog settings in the web interface does it again.";
+	} elsif ( system("systemctl is-active --quiet watchdog.service") != 0 ) {
+		LOGOK "Watchdog verbosity set (" . ( $wdlogging ? "on" : "off" ) . ") - the watchdog is not running, it applies with its next start.";
+	} else {
+		my ($wdrestartcode) = execute( command => "systemctl restart watchdog.service", log => $log, ignoreerrors => 1 );
+		if ( $wdrestartcode != 0 or system("systemctl is-active --quiet watchdog.service") != 0 ) {
+			# Debian's OnFailure=wd_keepalive can cancel the start job of a restart
+			LOGWARN "Watchdog restart failed - starting it explicitly...";
+			execute( command => "systemctl start watchdog.service", log => $log, ignoreerrors => 1 );
+		}
+		LOGOK "Watchdog verbosity set (" . ( $wdlogging ? "on" : "off" ) . ") and watchdog restarted.";
+	}
+} else {
+	LOGINF "No /etc/default/watchdog - watchdog not installed, nothing to do.";
+}
+
+# ---------------------------------------------------------------------------
 # Restart MQTT Gateway V2
 #
 # rsync replaced sbin/mqtt_gateway.py, but the running gateway keeps the old

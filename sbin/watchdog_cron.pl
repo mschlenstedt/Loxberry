@@ -31,6 +31,7 @@ my $version = "1.4.2.2";
 my $cfgfilejson = "$lbsconfigdir/general.json";
 my $jsonobj = LoxBerry::JSON->new();
 my $cfgjson = $jsonobj->open(filename => $cfgfilejson);
+exit unless is_enabled($cfgjson->{Watchdog}->{Logging});
 my $now = currtime("hr");
 
 ##########################################################################

@@ -100,6 +100,15 @@ $maintemplate->param('JSONCONFIG', $cfgfilecontent);
 # Save config
 if ($R::saveformdata) {
 
+	# The Logging setting also switches the verbose mode (-v) of the watchdog
+	# daemon in /etc/default/watchdog (#1596). The daemon is stopped below and
+	# started again with the new options. A failure must not stop the other
+	# settings from being saved.
+	my $logging = $R::Watchdog_Logging ? "1" : "0";
+	if ( system("sudo", "$lbssbindir/serviceshelper", "watchdog_logging", $logging) != 0 ) {
+		print STDERR "services_watchdog.cgi: Could not set the watchdog verbosity in /etc/default/watchdog\n";
+	}
+
 	system ("sudo systemctl stop watchdog.service > /dev/null 2>&1");
 
 	if ($R::Watchdog_Enable) {
