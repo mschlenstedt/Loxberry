@@ -1557,7 +1557,21 @@ sub notify_telegram_command
 {
 	my ($p) = @_;
 	require JSON;
-	return "$telegram_provider " . quotemeta(JSON::to_json($p));
+	require Encode;
+	# Callers hand over UTF-8 bytes (Perl without "use utf8", language files, the Python
+	# gateway via $ARGV) or characters ("use utf8"). JSON::to_json would treat bytes as
+	# Latin-1 characters and system() would encode them a second time ("EingÃ¤nge").
+	# So: bytes -> characters first, then encode exactly once.
+	my %chars;
+	foreach my $key (keys %$p) {
+		my $val = $p->{$key};
+		if (defined $val and !ref($val) and !utf8::is_utf8($val) and $val =~ /[\x80-\xFF]/) {
+			my $dec = eval { Encode::decode('UTF-8', $val, Encode::FB_CROAK() | Encode::LEAVE_SRC()) };
+			$val = $dec if (defined $dec);
+		}
+		$chars{$key} = $val;
+	}
+	return "$telegram_provider " . quotemeta(JSON->new->utf8->encode(\%chars));
 }
 
 # INTERNAL FUNCTION

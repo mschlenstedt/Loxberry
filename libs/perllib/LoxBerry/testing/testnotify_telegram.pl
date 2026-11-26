@@ -108,6 +108,21 @@ write_bytes($cfgfile, '{"ACTIVATE_TELEGRAM":1,"BOT_TOKEN":"1:x","RECIPIENTS":[{"
 	like($res->[0]{text} // '', qr/Benötigt Ä ß €/, 'utf8_roundtrip');
 	is($res->[0]{chat_id}, '42', 'chat_id');
 	unlike($out, qr/1:x/, 'Token nicht in der Ausgabe');
+
+	# Die meisten Aufrufer liefern UTF-8-Bytes: Perl ohne "use utf8", Sprachdateien,
+	# Python-Gateway per "perl -e ... $ARGV[1]". Genau einmal kodiert ankommen,
+	# auch wenn ein anderes Feld schon Zeichen enthaelt (JSON::to_json flaggt dann alles).
+	my $bytes = Encode::encode_utf8('1× gebremst, Eingänge darüber');
+	foreach my $case (
+		[ 'utf8_bytes',       { MESSAGE => $bytes } ],
+		[ 'utf8_bytes_mixed', { MESSAGE => $bytes, PLUGINTITLE => 'Zähler' } ],
+	) {
+		my ($name, $extra) = @$case;
+		$cmd = LoxBerry::Log::notify_telegram_command({SEVERITY=>3, _ISSYSTEM=>1, PACKAGE=>'t', NAME=>'n', %$extra});
+		$out = qx($cmd 2>&1);
+		$res = eval { decode_json($out) };
+		like($res->[0]{text} // '', qr/1× gebremst, Eingänge darüber/, $name) or diag($out);
+	}
 }
 
 # Umlaute aus Sprachdatei und Friendlyname: readlanguage und general.json liefern UTF-8-Bytes.
