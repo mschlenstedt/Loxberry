@@ -200,12 +200,38 @@
   display: none;
 }
 
-/* Expand-Pfeil als Inline-Span direkt nach dem Namen */
+/* Expand-Pfeil als Inline-Span vor dem Namen */
 .mqttgw-expand-arrow {
   font-size: 9px;
   color: var(--lb-gray-400);
   font-weight: normal;
   flex-shrink: 0;
+}
+.mqttgw-group > summary > .mqttgw-expand-arrow,
+.mqttgw-subgroup > summary > .mqttgw-expand-arrow {
+  display: inline-block;
+  width: 14px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--lb-gray-600);
+}
+
+/* "Alle"-Checkbox rechts im Gruppenkopf, abgesetzt vom Pfeil links.
+   Padding vergrößert die Klickfläche. */
+.mqttgw-group-all {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 0 4px 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+/* Untergruppen haben rechts kein Padding: bündig mit der Gruppe darüber */
+.mqttgw-subgroup > summary > .mqttgw-group-all {
+  margin-right: 14px;
+}
+.lb-content .mqttgw-group-all input[type="checkbox"] {
+  margin: 0;
 }
 .mqttgw-expand-arrow::before {
   content: '▶';

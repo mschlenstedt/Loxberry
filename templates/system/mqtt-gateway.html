@@ -211,12 +211,15 @@ MqttgwScan.lang = {
 .mqttgw-topic-row-error input.topic-subscribe[type="checkbox"] {
     accent-color: #b91c1c;
 }
-/* Graue Checkbox für Gruppen mit teils abonnierten Topics (appearance:none → kein accent-color) */
+/* Gruppen mit teils abonnierten Topics: weißes Kästchen mit grünem Quadrat.
+   Kein grauer Strich, der sieht aus wie ein "Zuklappen"-Knopf
+   (appearance:none → kein accent-color) */
 .lb-content .group-toggle:indeterminate,
 .lb-content .sub-group-toggle:indeterminate {
-    border-color: #888;
-    background-color: #888;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' d='M2 6L10 6'/%3E%3C/svg%3E");
+    border-color: var(--lb-primary);
+    background-color: #fff;
+    background-size: 8px 8px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Crect width='8' height='8' rx='1' fill='%236dac20'/%3E%3C/svg%3E");
 }
 
 /* "Miniserver scannen" (V2) */
@@ -1619,6 +1622,16 @@ $(function() {
         renderTopics();
     }
 
+    // "All" checkbox at the right end of a group header, visually separated
+    // from the expand arrow on the left so it is not mistaken for it.
+    function renderGroupAll(dataAttr, allChecked, someChecked, subCount, cls) {
+        return '<span class="mqttgw-group-all" ' + dataAttr
+             + ' data-all="' + (allChecked ? '1' : '0') + '" data-subs="' + subCount + '"'
+             + ' title="<TMPL_VAR MQTT.V2_TITLE_GROUP_ALL>">'
+             + '<input type="checkbox" class="' + cls + '"' + (allChecked ? ' checked' : '')
+             + (someChecked ? ' data-indeterminate="true"' : '') + '></span>';
+    }
+
     function renderTree(topics, prefix) {
         var tree = buildTree(topics, prefix);
         var html = '';
@@ -1633,12 +1646,9 @@ $(function() {
                 : (hasStoredState || !firstRender) ? !!openDetails['sub:' + childPrefix]
                 : (childSubCount > 0);
             html += '<details class="mqttgw-subgroup" data-key="sub:' + safePrefix + '"' + (subIsOpen ? ' open' : '') + '>';
-            html += '<summary><input type="checkbox" class="sub-group-toggle"'
-                 + ' data-prefix="' + safePrefix + '"' + (allChecked ? ' checked' : '')
-                 + (someChecked ? ' data-indeterminate="true"' : '')
-                 + ' style="margin-right:6px"><strong>' + escHtml(seg) + '</strong>'
-                 + '<span class="mqttgw-expand-arrow"></span>';
+            html += '<summary><span class="mqttgw-expand-arrow"></span><strong>' + escHtml(seg) + '</strong>';
             html += '<span class="mqttgw-group-count">(' + childTopics.length + ' Topics, ' + childSubCount + ' abonniert)</span>';
+            html += renderGroupAll('data-prefix="' + safePrefix + '"', allChecked, someChecked, childSubCount, 'sub-group-toggle');
             html += '</summary><div class="mqttgw-subgroup-content">';
             html += renderTree(childTopics, childPrefix);
             html += '</div></details>';
@@ -1693,12 +1703,9 @@ $(function() {
                 : (hasStoredState || !firstRender) ? !!openDetails[detailKey]
                 : (g.subCount > 0);
             html += '<details class="lb-collapsible mqttgw-group" data-key="' + detailKey + '"' + (isOpen ? ' open' : '') + '>';
-            html += '<summary><input type="checkbox" class="group-toggle"'
-                 + ' data-group="' + safeGName + '"' + (allChecked ? ' checked' : '')
-                 + (someChecked ? ' data-indeterminate="true"' : '')
-                 + ' style="margin-right:6px"><strong>' + safeGName + '</strong>'
-                 + '<span class="mqttgw-expand-arrow"></span>';
+            html += '<summary><span class="mqttgw-expand-arrow"></span><strong>' + safeGName + '</strong>';
             html += '<span class="mqttgw-group-count">(' + g.topics.length + ' Topics, ' + g.subCount + ' abonniert)</span>';
+            html += renderGroupAll('data-group="' + safeGName + '"', allChecked, someChecked, g.subCount, 'group-toggle');
             html += '</summary><div class="lb-collapsible-content" style="padding:0">';
             html += renderTree(g.topics, gName);
             html += '</div></details>';
@@ -1830,14 +1837,31 @@ $(function() {
         markDirty();
     });
 
-    $(document).on('click', '.sub-group-toggle', function(e) {
+    // Click on the "all" checkbox or the area around it. preventDefault keeps the
+    // <details> from toggling; the checkbox state comes from renderTopics().
+    // Unsubscribing a whole group drops the settings of its topics (JSON
+    // fields, miniservers) and is saved automatically, so ask first.
+    $(document).on('click', '.mqttgw-group-all', function(e) {
+        e.preventDefault();
         e.stopPropagation();
-        subToggleAll($(this).data('prefix'), this.checked);
-    });
-
-    $(document).on('click', '.group-toggle', function(e) {
-        e.stopPropagation();
-        groupToggleAll($(this).data('group'), this.checked);
+        var $w     = $(this);
+        var enable = $w.attr('data-all') !== '1';
+        var subs   = parseInt($w.attr('data-subs'), 10) || 0;
+        var prefix = $w.attr('data-prefix');
+        var name   = prefix !== undefined ? prefix : $w.attr('data-group');
+        var apply  = function() {
+            if (prefix !== undefined) subToggleAll(prefix, enable);
+            else groupToggleAll(name, enable);
+        };
+        if (!enable && subs > 1) {
+            mqttgwConfirm(
+                '<TMPL_VAR MQTT.WARN_GROUP_DESELECT_TITLE>',
+                '<TMPL_VAR MQTT.WARN_GROUP_DESELECT_MSG>'.replace('%n', subs).replace('%g', name),
+                apply
+            );
+        } else {
+            apply();
+        }
     });
 
     function saveFilterState() {
