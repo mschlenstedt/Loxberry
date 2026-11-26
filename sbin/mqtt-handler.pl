@@ -12,6 +12,17 @@ my $mosq_configdir = "$lbsconfigdir/mosquitto";
 my $mosq_cfgfile = "$mosq_configdir/mosq_mqttgateway.conf";
 my $mosq_passwdfile = "/etc/mosquitto/conf.d/mosq_passwd";
 
+# Needs root (systemctl, chown, "su loxberry -c" in restart_gateway). Called
+# as loxberry without sudo, restartgateway would kill the running gateway and
+# then fail to start it again, because su asks for a password.
+# BEGIN: exits before the END block below is compiled, so the exit code stays 1.
+BEGIN {
+	if ( $> != 0 ) {
+		print STDERR "mqtt-handler.pl must run as root: sudo $lbhomedir/sbin/mqtt-handler.pl @ARGV\n";
+		exit 1;
+	}
+}
+
 my $generaljsonobj;
 my $generalcfg;
 my $mqttobj;
