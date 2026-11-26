@@ -48,6 +48,34 @@ if ( system("systemctl is-active --quiet apache2.service") != 0 ) {
 }
 
 # ---------------------------------------------------------------------------
+# Keep the /dev/shm files of user loxberry (#1608)
+#
+# loxberry is a normal user for logind (uid >= 1000). With RemoveIPC=yes
+# (systemd default) logind deletes all files of loxberry in /dev/shm when its
+# last login session ends. During boot that happens when the short su session
+# for createconfig.pl has ended and the daemons have not started yet - files
+# that cron.reboot scripts of plugins had created by then were lost. The
+# setting matters at boot, so logind is not restarted now: it applies from the
+# next boot on. The installers write the same file.
+# ---------------------------------------------------------------------------
+LOGINF "Setting RemoveIPC=no for systemd-logind, so files of user loxberry in /dev/shm are kept...";
+{
+	my $dropindir = '/etc/systemd/logind.conf.d';
+	my $dropin    = "$dropindir/50-loxberry.conf";
+	my $content   = "# Installed by LoxBerry - keep /dev/shm files of user loxberry (#1608)\n[Login]\nRemoveIPC=no\n";
+	mkdir $dropindir if ( !-d $dropindir );
+	my $fh;
+	if ( open( $fh, '>', $dropin ) ) {
+		print $fh $content;
+		close($fh);
+		chmod 0644, $dropin;
+		LOGOK "$dropin written - active after the next reboot.";
+	} else {
+		LOGWARN "Could not write $dropin: $! - files of user loxberry in /dev/shm may still be removed during boot.";
+	}
+}
+
+# ---------------------------------------------------------------------------
 # Restart MQTT Gateway V2
 #
 # rsync replaced sbin/mqtt_gateway.py, but the running gateway keeps the old
