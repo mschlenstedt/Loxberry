@@ -1199,8 +1199,9 @@ public static function plugindb_changed_time()
 			$seemsrunning = 0;
 
 			// Check for apt-get and dpkg updates running (exitcode 0 -> found)
-			LBSystem::execute('pgrep "apt-get|apt"', $rc_apt);
-			LBSystem::execute('pgrep "dpkg"', $rc_dpkg);
+			// -x: exact process name, not every name containing "apt" or "dpkg" (#1613)
+			LBSystem::execute('pgrep -x "apt|apt-get"', $rc_apt);
+			LBSystem::execute('pgrep -x "dpkg"', $rc_dpkg);
 			LBSystem::execute('pgrep -f /usr/bin/unattended-upgrade', $rc_uu);
 			LBSystem::execute('fuser /var/lib/dpkg/lock', $rc_dpkg_lock);
 			LBSystem::execute('fuser /var/lib/dpkg/lock-frontend', $rc_dpkg_frontend_lock);

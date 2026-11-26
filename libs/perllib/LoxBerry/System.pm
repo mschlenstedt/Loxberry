@@ -1389,8 +1389,10 @@ sub lock
 		my $rc_dpkg_lock;
 		my $rc_dpkg_frontend_lock;
 		my $rc_apt_archives_lock;
-		($rc_apt) = LoxBerry::System::execute( 'pgrep "apt-get|apt"' );
-		($rc_dpkg) = LoxBerry::System::execute( 'pgrep "dpkg"' );
+		# -x: exact process name. Without it every name containing "apt" or
+		# "dpkg" matched - e.g. frigate.capture, apt-cache, dpkg-query (#1613).
+		($rc_apt) = LoxBerry::System::execute( 'pgrep -x "apt|apt-get"' );
+		($rc_dpkg) = LoxBerry::System::execute( 'pgrep -x "dpkg"' );
 		($rc_unattended_upgrade) = LoxBerry::System::execute( 'pgrep -f /usr/bin/unattended-upgrade' );
 		($rc_dpkg_lock) = LoxBerry::System::execute( 'fuser /var/lib/dpkg/lock' );
 		($rc_dpkg_frontend_lock) = LoxBerry::System::execute( 'fuser /var/lib/dpkg/lock-frontend' );

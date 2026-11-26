@@ -135,8 +135,9 @@ def lock(lockfile=None, wait=0):
         seemsrunning = 0
 
         # apt-get / dpkg / unattended-upgrade activity (pgrep/fuser exitcode 0 = found)
-        rc_apt = execute('pgrep "apt-get|apt"')[0]
-        rc_dpkg = execute('pgrep "dpkg"')[0]
+        # -x: exact process name, not every name containing "apt" or "dpkg" (#1613)
+        rc_apt = execute('pgrep -x "apt|apt-get"')[0]
+        rc_dpkg = execute('pgrep -x "dpkg"')[0]
         rc_unattended = execute('pgrep -f /usr/bin/unattended-upgrade')[0]
         rc_dpkg_lock = execute('fuser /var/lib/dpkg/lock')[0]
         rc_dpkg_frontend = execute('fuser /var/lib/dpkg/lock-frontend')[0]

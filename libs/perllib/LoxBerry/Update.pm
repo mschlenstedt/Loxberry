@@ -597,7 +597,8 @@ sub test_dpkg_apt
 	my $rc = 1;
 
 	for ($i=0; $i<600; $i++) {
-		my ($rc_apt) = LoxBerry::System::execute( 'pgrep "apt-get|apt|dpkg"' );
+		# -x: exact process name, not every name containing "apt" or "dpkg" (#1613)
+		my ($rc_apt) = LoxBerry::System::execute( 'pgrep -x "apt|apt-get|dpkg"' );
 		my ($rc_unattended_upgrade) = LoxBerry::System::execute( 'pgrep -f /usr/bin/unattended-upgrade' );
 		my ($rc_dpkg_lock) = LoxBerry::System::execute( 'fuser /var/lib/dpkg/lock' );
 		my ($rc_dpkg_frontend_lock) = LoxBerry::System::execute( 'fuser /var/lib/dpkg/lock-frontend' );

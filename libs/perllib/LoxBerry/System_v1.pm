@@ -1468,8 +1468,9 @@ sub lock
 		
 		my $rc_apt;
 		my $rc_dpkg;
-		($rc_apt) = LoxBerry::System::execute( 'pgrep apt-get' );
-		($rc_dpkg) = LoxBerry::System::execute( 'pgrep dpkg' );
+		# -x: exact process name, not every name containing it (#1613)
+		($rc_apt) = LoxBerry::System::execute( 'pgrep -x "apt|apt-get"' );
+		($rc_dpkg) = LoxBerry::System::execute( 'pgrep -x "dpkg"' );
 		if( $rc_apt eq "0" or $rc_dpkg eq "0") {
 			$seemsrunning = 'apt-get' if ($rc_apt eq "0");
 			$seemsrunning = 'dpkg' if ($rc_dpkg eq "0");
