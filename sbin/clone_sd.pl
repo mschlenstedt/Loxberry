@@ -6,8 +6,9 @@ use LoxBerry::System;
 use LoxBerry::Log;
 use Data::Dumper;
 use LoxBerry::Storage;
+use LoxBerry::JSON;
 
-my $version = "3.0.1.4";
+my $version = "3.0.1.5";
 
 my $dest_bootpart_size = 256; # /boot partition in MB
 
@@ -143,6 +144,36 @@ foreach my $blockdevice ( @{$lsblk->{blockdevices}} ) {
 	}
 }
 print "\n";
+
+# Size of the data to copy: used space of the root partition without the swap
+# file (it is excluded from the copy). Only the allocated blocks of the swap
+# file count - it may be sparse, and subtracting its logical size would
+# underestimate the data (#1533).
+my $swap_alloc = 0;
+if ( -e "/var/swap" ) {
+	my @swapstat = stat("/var/swap");
+	$swap_alloc = $swapstat[12] * 512;
+}
+my $src_data = $src1_used - $swap_alloc;
+
+# Size factor for the root partition of an image file (#1533): it gets
+# data x factor + 512 MiB (ext4 journal, inode tables). The old fixed 10 %
+# left only about 250 MB after the ext4 overhead - a sparse swap file or data
+# growing during the copy filled the image. If the copy runs out of space, it
+# is retried with the factor raised by 0.2 up to 2.0. A factor that worked is
+# stored in general.json (Backup.Sizefactor) and is the start of the next run.
+my $sizefactor_default = 1.2;
+my $sizefactor_max = 2.0;
+my $sizefactor = $sizefactor_default;
+my $sizefactor_stored;
+{
+	my $sfcfg = LoxBerry::JSON->new()->open( filename => "$lbsconfigdir/general.json", readonly => 1 );
+	$sizefactor_stored = $sfcfg->{Backup}->{Sizefactor} if ($sfcfg && $sfcfg->{Backup});
+	if ( defined $sizefactor_stored and $sizefactor_stored =~ /^\d+(?:\.\d+)?$/
+		and $sizefactor_stored >= $sizefactor_default and $sizefactor_stored <= $sizefactor_max ) {
+		$sizefactor = $sizefactor_stored + 0;
+	}
+}
 if ( !$destpath || !$desttype || ($desttype ne "device" && $desttype ne "path") ) {
 	LOGINF "You can clone directly onto a new device (like a SDCard) or into an imagefile saved into an external path (usb or netshare), which then has do be flashed onto a SDcard.";
 	print "\n";
@@ -219,10 +250,9 @@ if ( $desttype eq "device" ) {
 
 	LOGINF "Destination device is $destdevice->{name} ($destdevice->{path}) size " . LoxBerry::System::bytes_humanreadable($destdevice->{size});
 
-	# Size check (used size - swap + $dest_bootpart_size plus 10%)
-	my $swapsize = 0;
-	$swapsize = -s "/var/swap" if -e "/var/swap";
-	$required_space = ($src1_used - $swapsize + $dest_bootpart_size*1024*1024)*1.10;
+	# Size check (data + $dest_bootpart_size plus 10%) - the root partition
+	# takes the whole card, so this is only the minimum
+	$required_space = ($src_data + $dest_bootpart_size*1024*1024)*1.10;
 	if( $destdevice->{size} < $required_space ) {
 		LOGCRIT "$destpath (" . LoxBerry::System::bytes_humanreadable($destdevice->{size}) . ") is smaller than required space (" . LoxBerry::System::bytes_humanreadable($required_space) . ")";
     		$error++;
@@ -270,10 +300,10 @@ if ( $desttype eq "path" ) {
 
 	LOGINF "Destination device is $destdevice->{NAME} ($destdevice->{PATH}) available space " . LoxBerry::System::bytes_humanreadable($destdevice->{AVAILABLE}*1024);
 
-	# Size check (used size - swap + $dest_bootpart_size plus 10%)
-	my $swapsize = 0;
-	$swapsize = -s "/var/swap" if -e "/var/swap";
-	$required_space = ($src1_used - $swapsize + $dest_bootpart_size*1024*1024)*1.10;
+	# Size check with the start size factor (#1533). The image file is sparse,
+	# a retry with a larger factor does not need much more real space.
+	$required_space = image_size($sizefactor);
+	LOGINF "Size of the data to copy: " . LoxBerry::System::bytes_humanreadable($src_data) . ", size factor $sizefactor";
 	if( $destdevice->{AVAILABLE}*1024 < $required_space ) {
 		LOGCRIT "$destpath (" . LoxBerry::System::bytes_humanreadable($destdevice->{AVAILABLE}*1024) . ") is smaller than required space (" . LoxBerry::System::bytes_humanreadable($required_space) . ")";
     		$error++;
@@ -391,7 +421,6 @@ if ($desttype eq "path") {
 		exit (1);
 	}
 
-	LOGINF "Creating destination image file, size " . LoxBerry::System::bytes_humanreadable($required_space);
 	$destpath = $destpath . "/" . LoxBerry::System::lbhostname() . "_image_$now.img";
 	if ( -e $destpath ) {
 		LOGCRIT "$destpath already exists.";
@@ -399,6 +428,33 @@ if ($desttype eq "path") {
 		$notify .= " $destpath already exists.";
 		exit (1);
 	}
+}
+
+# Size factors to try (#1533): image files from the start factor in steps of
+# 0.2 up to the maximum, a device just once (its root partition takes the
+# whole card).
+my @sizefactors;
+if ($desttype eq "path") {
+	for ( my $t = int($sizefactor * 10 + 0.5); $t <= int($sizefactor_max * 10 + 0.5); $t += 2 ) {
+		push @sizefactors, sprintf("%.1f", $t / 10);
+	}
+} else {
+	@sizefactors = ( 0 );
+}
+
+my $destpath1;
+my $destpath2;
+my $loop;
+my %chk_mounts;
+my $mountsok;
+my $sizefactor_used;
+
+ATTEMPT: for my $attempt ( 0 .. $#sizefactors ) {
+my $factor = $sizefactors[$attempt];
+
+if ($desttype eq "path") {
+	$required_space = image_size($factor);
+	LOGINF "Creating destination image file, size " . LoxBerry::System::bytes_humanreadable($required_space) . " (size factor $factor)";
 	$targetsize_mb = int( ($required_space / 1024 / 1024) + 0.5 ); # rounded
 	$targetsize_b = int( ($required_space / 512) + 0.5 ) * 512; # rounded minus 1 byte and multiple of 512
 	#execute ( command => "dd if=/dev/zero of=$destpath bs=1 count=0 seek=" . $targetsize_mb . "MB", log => $log );
@@ -422,10 +478,6 @@ LOGINF "Creating new root partition";
 execute( command => "parted -s $destpath mkpart primary ext4 ". $dest_bootpart_size . "MiB 100%", log => $log );
 
 sleep (1);
-
-my $destpath1;
-my $destpath2;
-my $loop;
 
 # If partitions got re-mounted, unmount again
 # Unmount mounted destination partitions
@@ -487,7 +539,7 @@ if ($desttype eq "device") {
 }
 
 # Mounting and checking all mounts
-my %chk_mounts = (
+%chk_mounts = (
 	'/media/src1' => $part_boot,
 	'/media/src2' => $part_root,
 	'/media/dst1' => $destpath1,
@@ -495,7 +547,6 @@ my %chk_mounts = (
 );
 
 LOGINF "Creating temporary mounts for copying the data";
-my $mountsok;
 for my $i ( 1..10 ) {
 	$mountsok = 1;
 	LOGINF "Checking mounts (try $i)";
@@ -531,6 +582,13 @@ if ($rc ne "0") {
 	log_df("/media/dst1");
     	$error++;
 	$notify .= " Copying the files from your boot partition seems to failed. Your image/backup may be broken!";
+	if ($desttype eq "path") {
+		# The boot partition has a fixed size - a larger factor would not help
+		cleanup_attempt();
+		LOGCRIT "The broken image was deleted.";
+		$notify .= " The broken image was deleted.";
+		exit(1);
+	}
 }
 
 LOGINF "Copy data of root partition (this may take a long time... Please be patient.)";
@@ -538,8 +596,36 @@ LOGINF "Copy data of root partition (this may take a long time... Please be pati
 if ($rc ne "0") {
 	LOGERR "Copying the files from your root partition seems to failed. Your image/backup may be broken!";
 	log_df("/media/dst2");
+	if ($desttype eq "path") {
+		# Never keep a broken image (#1533). Retry with a larger root partition.
+		cleanup_attempt();
+		if ( $attempt < $#sizefactors ) {
+			LOGWARN "Deleted the image. Retrying with size factor " . $sizefactors[$attempt + 1] . " ...";
+			next ATTEMPT;
+		}
+		LOGCRIT "Copying the root partition failed with the largest size factor $sizefactor_max as well. The broken image was deleted - no backup was created.";
+		$error++;
+		$notify .= " Copying the root partition failed even with the largest image size (size factor $sizefactor_max). The broken image was deleted - no backup was created.";
+		exit(1);
+	}
     	$error++;
 	$notify .= " Copying the files from your root partition seems to failed. Your image/backup may be broken!";
+}
+$sizefactor_used = $factor;
+last ATTEMPT;
+}
+
+# Remember the size factor that worked as start of the next run (#1533)
+if ( $desttype eq "path" and defined $sizefactor_used
+	and ( !defined $sizefactor_stored or $sizefactor_stored !~ /^\d+(?:\.\d+)?$/ or $sizefactor_stored != $sizefactor_used ) ) {
+	my $sfobj = LoxBerry::JSON->new();
+	my $sfcfg = $sfobj->open( filename => "$lbsconfigdir/general.json", lockexclusive => 1 );
+	if ($sfcfg) {
+		$sfcfg->{Backup}->{Sizefactor} = $sizefactor_used + 0;
+		$sfobj->write();
+		LOGINF "Stored size factor $sizefactor_used for the next backup.";
+	}
+	undef $sfobj;
 }
 
 # Delete not needed swap file - this is normally quite big. Wa excluded above, just in case...
@@ -779,6 +865,31 @@ sub log_df
 	chomp ($df_inodes);
 	LOGINF "Disk space usage of $mountpoint:\n$df_space";
 	LOGINF "Inode usage of $mountpoint:\n$df_inodes";
+}
+
+# Size of the image file for a size factor (#1533): boot partition plus a
+# root partition of data x factor + 512 MiB
+sub image_size
+{
+	my ($factor) = @_;
+	return $src_data * $factor + 512*1024*1024 + $dest_bootpart_size*1024*1024;
+}
+
+# Undo one attempt of building the image: unmount, detach the loop device and
+# delete the image file
+sub cleanup_attempt
+{
+	foreach my $mountpoint ( '/media/dst1', '/media/dst2', '/media/src1', '/media/src2' ) {
+		execute( command => "umount $mountpoint" );
+	}
+	if ($loop) {
+		execute( command => "losetup -d $loop" );
+		$loop = undef;
+	}
+	if ( $desttype eq "path" and -e $destpath ) {
+		unlink ($destpath);
+		LOGINF "Deleted image file $destpath";
+	}
 }
 
 # Check if folder is empty
