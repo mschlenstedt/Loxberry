@@ -1293,14 +1293,20 @@ sub notify_ext
 
 	notify_send_mail($data);
 
-	# Publish notification stats to MQTT (non-blocking background call)
+	notify_mqtt_publish();
+
+	print STDERR "<--- notify_ext finished\n" if ($DEBUG);
+
+}
+
+# Publish the notification counters to MQTT (non-blocking background call).
+# Called whenever notifications are created or deleted (#1618).
+sub notify_mqtt_publish
+{
 	my $publisher = "$LoxBerry::System::lbhomedir/sbin/mqtt-notify-publisher.pl";
 	if (-f $publisher) {
 		system("perl $publisher >/dev/null 2>&1 &");
 	}
-
-	print STDERR "<--- notify_ext finished\n" if ($DEBUG);
-
 }
 
 
@@ -1634,10 +1640,13 @@ sub delete_notifications
 	print STDERR "   Deletelist: $deletelist\n" if ($DEBUG);
 	$dbh->do("DELETE FROM notifications_attr WHERE keyref IN ($deletelist);");
 	$dbh->do("DELETE FROM notifications WHERE notifykey IN ($deletelist);");
-	
+
 	print STDERR "   Commit\n" if ($DEBUG);
-	$dbh->do("COMMIT;"); 
-	
+	$dbh->do("COMMIT;");
+
+	# Something was deleted - update the MQTT counters (#1618)
+	notify_mqtt_publish();
+
 	print STDERR "<--- delete_notifications\n" if ($DEBUG);
 	
 }
@@ -1654,13 +1663,16 @@ sub delete_notification_key
 	my $dbh = notify_init_database();
 	return undef if (! $dbh);
 
-	$dbh->do("BEGIN TRANSACTION;"); 
+	$dbh->do("BEGIN TRANSACTION;");
 	$dbh->do("DELETE FROM notifications_attr WHERE keyref = $key;");
-	$dbh->do("DELETE FROM notifications WHERE notifykey = $key;");
-	
+	my $deleted = $dbh->do("DELETE FROM notifications WHERE notifykey = $key;");
+
 	print STDERR "   Commit\n" if ($DEBUG);
-	$dbh->do("COMMIT;"); 
-	
+	$dbh->do("COMMIT;");
+
+	# Only if the key existed - update the MQTT counters (#1618)
+	notify_mqtt_publish() if ( $deleted && $deleted > 0 );
+
 	print STDERR "<--- delete_notification_key\n" if ($DEBUG);
 	
 }

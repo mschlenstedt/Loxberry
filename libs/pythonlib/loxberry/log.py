@@ -29,6 +29,7 @@ from __future__ import annotations
 import glob
 import os
 import sqlite3
+import subprocess
 import time as _time
 from datetime import datetime
 
@@ -483,6 +484,7 @@ def notify(package, name, message, error=False):
     _notify_insert(dbh, data)
     dbh.close()
     _chown_loxberry(_notifydbfile())
+    _notify_mqtt_publish()
     # notify_send_mail is not ported yet.
 
 
@@ -501,6 +503,22 @@ def notify_ext(data):
     _notify_insert(dbh, data)
     dbh.close()
     _chown_loxberry(_notifydbfile())
+    _notify_mqtt_publish()
+
+
+def _notify_mqtt_publish():
+    """Publish the notification counters to MQTT in the background, like
+    LoxBerry::Log (#1618). The shell backgrounds the publisher and exits at
+    once, so no zombie process is left behind."""
+    publisher = os.path.join(system.lbhomedir, "sbin", "mqtt-notify-publisher.pl")
+    if not os.path.isfile(publisher):
+        return
+    try:
+        subprocess.call(["sh", "-c", 'perl "$0" >/dev/null 2>&1 &', publisher],
+                        stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL)
+    except OSError:
+        pass
 
 
 def _notify_insert(dbh, p):
@@ -599,6 +617,8 @@ def delete_notifications(package=None, name=None):
         dbh.execute("DELETE FROM notifications_attr WHERE keyref = ?;", (k,))
     dbh.commit()
     dbh.close()
+    if keys:
+        _notify_mqtt_publish()
     return len(keys)
 
 
