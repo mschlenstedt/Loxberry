@@ -628,9 +628,19 @@ async def _process_mqtt(item: dict, status_event: asyncio.Event) -> None:
                       sub["noncached"], sub["resetaftersend"]))
 
     if is_retain:
-        # Broker delivers retained messages on subscribe → cache only, no Miniserver forward
+        # Retained messages (broker delivery on subscribe) go to the Miniserver
+        # like any other message, as in Gateway V1 (#1622): after a gateway
+        # start the send memory is empty, so the Miniserver gets the current
+        # value of every retained topic; after an MQTT reconnect only values
+        # that differ from what was sent. Exception: reset-after-send topics
+        # (pulses, e.g. a Shelly button switching a light) - a retained 1 must
+        # not fire a pulse at every gateway start. They stay cache-only, and
+        # the per-MS value is 0 (the pulse resting state), so the next real 1
+        # is a pulse again.
+        pulses = [s for s in sends if s[5]]
+        sends  = [s for s in sends if not s[5]]
         now = datetime.now()
-        for vi_name, udp_name, value, ms_ids, noncached, resetaftersend in sends:
+        for vi_name, udp_name, value, ms_ids, noncached, resetaftersend in pulses:
             ms_list = [str(m) for m in ms_ids] or [_default_ms]
             entry = _cache.setdefault(vi_name, make_cache_entry(value, ms_list))
             entry["value"]              = str(value)
@@ -638,15 +648,14 @@ async def _process_mqtt(item: dict, status_event: asyncio.Event) -> None:
             entry["udp_name"]           = udp_name
             entry["last_updated"]       = now.isoformat(timespec="seconds")
             entry["last_updated_epoch"] = int(now.timestamp())
-            # Seed per-MS value so the first real message with the same value
-            # is not forwarded (matches single-MS retain behaviour).
             for ms_id in ms_list:
-                pm = entry.setdefault("per_ms", {}).setdefault(str(ms_id), make_per_ms_entry(value))
-                pm["value"] = str(value)
-            LOGDEB(f"Retain: cache-only: {vi_name} = {value}")
-        if sends:
+                pm = entry.setdefault("per_ms", {}).setdefault(str(ms_id), make_per_ms_entry("0"))
+                pm["value"] = "0"
+            LOGDEB(f"Retain: pulse topic cache-only (no pulse at start): {vi_name} = {value}")
+        if pulses:
             status_event.set()
-        return
+        if not sends:
+            return
 
     # Fan out: one 'sends' job per target miniserver. Each send tuple carries
     # the VI's full target list (ms_list) for cache bookkeeping in the worker.
@@ -1259,7 +1268,7 @@ def ms_mem_tick(session, ms_id: str, now: float | None = None) -> None:
     now = time.monotonic() if now is None else now
     st = _ms_mem.get(ms_id)
     if st is None:
-        # Gateway start: begin the hour now. Retained values stay cache-only (44e09ff5).
+        # Gateway start: begin the hour now (the send memory is empty anyway).
         st = _ms_mem[ms_id] = {"flush": now, "txp_at": 0.0, "txp": None, "task": None}
     if now - st["flush"] >= MEM_SENDALL_SEC:
         st["flush"] = now
