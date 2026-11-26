@@ -234,6 +234,12 @@ sub mainmenu {
 				WIDGET_CGI => "/admin/system/mailserver.cgi",
 				NOTIFY_PACKAGE => "mailserver",
 			},
+			{
+				WIDGET_TITLE => $SL{'HEADER.PANEL_TELEGRAM'},
+				WIDGET_ICON => "/system/images/icons/main_telegram.svg",
+				WIDGET_CGI => "/admin/system/telegram.cgi",
+				NOTIFY_PACKAGE => "telegram",
+			},
 			#{
 				#WIDGET_TITLE => $SL{'HEADER.PANEL_SETUPASSISTENT'},
 				#WIDGET_ICON => "/system/images/icons/main_setupassistent.svg",
