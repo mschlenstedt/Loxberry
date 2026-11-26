@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="{{lang}}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{title}} · LoxBerry</title>
+  <link rel="icon" href="/system/images/favicon.ico">
+  <link rel="stylesheet" href="/system/css/design-tokens.css">
+  <link rel="stylesheet" href="/system/css/weblogin.css">
+  <script src="/system/scripts/weblogin.js" defer></script>
+</head>
+<body>
+  <main class="login-shell">
+    <section class="brand-panel" aria-label="LoxBerry">
+      <a class="brand" href="/login"><img src="/system/images/Logo_white_transparent.png" alt="" width="48" height="48"><span>Lox<span class="brand-light">Berry</span></span></a>
+      <div class="brand-copy"><span class="eyebrow">BEYOND THE LIMITS</span><h1>{{welcome}}</h1><p>{{tagline}}</p></div>
+      <span class="brand-bottom">{{local}}</span>
+    </section>
+    <section class="form-panel" aria-labelledby="login-title">
+      <div class="form-content">
+        <span class="eyebrow">LOXBERRY</span>
+        <h2 id="login-title">{{title}}</h2>
+        <p class="intro">{{intro}}</p>
+        <p class="message" role="alert">{{message}}</p>
+        {{form}}
+        <p class="form-note">{{note}}</p>
+      </div>
+      <p class="secure-note"><span aria-hidden="true">&#9679;</span> {{secure}}</p>
+    </section>
+  </main>
+</body>
+</html>

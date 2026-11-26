@@ -157,6 +157,7 @@ class LBWeb
 		// NavBar End
 		
 		$pageobj = new LBTemplate($templatepath);
+		$pageobj->param('FORM_LOGIN', ($_SERVER['LOXBERRY_FORM_LOGIN'] ?? '') === '1');
 		$pageobj->paramArray(array(
 					'TEMPLATETITLE' => $fulltitle,
 					'HELPLINK' => $helpurl,
