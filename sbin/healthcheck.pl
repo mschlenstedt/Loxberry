@@ -8,7 +8,7 @@ use JSON;
 use strict;
 no strict 'refs';
 
-my $version = "3.0.0.4";
+my $version = "3.0.0.5";
 
 ## Check {status}
 # EMPTY --> "UNKNOWN" (grey)
@@ -49,6 +49,7 @@ push (@checks, "check_notifydb");
 push (@checks, "check_miniservers");
 push (@checks, "check_reboot_required");
 push (@checks, "check_mqtt");
+push (@checks, "check_backup");
 push (@checks, "check_loglevels");
 
 # Get plugin healthchecks
@@ -1465,6 +1466,75 @@ sub check_reboot_required
 		$result{result} = "Error executing the test: $@";
 	}
 	return(\%result); 
+}
+
+# Check the scheduled backup (#1594)
+# A schedule that never runs - an outdated crontab, an unreachable network
+# share - produced no message at all. clone_sd_cron.pl records the last
+# successful run in Backup.Lastsuccess; warn when it is older than one interval
+# plus a day. Without a successful run yet, the date the schedule was saved
+# (Schedule.Since) is the reference.
+sub check_backup
+{
+
+	my %result;
+	my ($action) = @_;
+
+	my $sub_name = (caller(0))[3];
+	$sub_name =~ s/main:://;
+	$result{'sub'} = "$sub_name";
+	$result{'title'} = 'Backup';
+	$result{'desc'} = 'Checks if the scheduled backup runs successfully';
+	$result{'url'} = 'https://wiki.loxberry.de/konfiguration/widget_help/widget_backup';
+
+	# Only return Title/Desc for Webif without check
+	if ($action eq "title") {
+		return(\%result);
+	}
+
+	eval {
+		require POSIX;
+		require Time::Local;
+		my $cfg = LoxBerry::System::General->new()->open( readonly => 1 );
+		my $backup = $cfg->{Backup} // {};
+		my $sched = $backup->{Schedule} // {};
+
+		if ( !is_enabled($sched->{Active}) ) {
+			$result{status} = '6';
+			$result{result} = "The scheduled backup is not active.";
+		} else {
+			my $repeat = int($sched->{Repeat} // 1);
+			$repeat = 1 if ($repeat < 1);
+			my $maxdays = $repeat * 7 + 1;
+			my $last = $backup->{Lastsuccess};
+			my $since;
+			if ( ($sched->{Since} // '') =~ /^(\d{4})-(\d{2})-(\d{2})$/ ) {
+				$since = eval { Time::Local::timelocal( 0, 0, 0, $3, $2 - 1, $1 ) };
+			}
+			my $fmt = sub { POSIX::strftime( '%Y-%m-%d %H:%M', localtime($_[0]) ) };
+
+			if ( $last ) {
+				if ( time() - $last > $maxdays * 86400 ) {
+					$result{status} = '4';
+					$result{result} = "The last successful scheduled backup was on " . $fmt->($last) . " - more than $maxdays days ago. Please check the backup log.";
+				} else {
+					$result{status} = '5';
+					$result{result} = "The last successful scheduled backup was on " . $fmt->($last) . ".";
+				}
+			} elsif ( $since and time() - $since > $maxdays * 86400 ) {
+				$result{status} = '4';
+				$result{result} = "No successful scheduled backup since the schedule was saved on " . POSIX::strftime( '%Y-%m-%d', localtime($since) ) . ". Please check the backup log.";
+			} else {
+				$result{status} = '6';
+				$result{result} = "No successful scheduled backup recorded yet.";
+			}
+		}
+	};
+	if ($@) {
+		$result{status} = '3';
+		$result{result} = "Error executing the test: $@";
+	}
+	return(\%result);
 }
 
 # Check MQTT

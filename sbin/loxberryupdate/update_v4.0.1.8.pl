@@ -48,6 +48,54 @@ if ( system("systemctl is-active --quiet apache2.service") != 0 ) {
 }
 
 # ---------------------------------------------------------------------------
+# Backup schedule "every n weeks" saved before 4.0.0.15 (#1594)
+#
+# Up to 4.0.0.14 ajax-backup.cgi put a shell test in front of the command in
+# /etc/cron.d/lbclonesd. It never worked (an unescaped % ends a crontab
+# command, bash syntax under dash), and the fix for #1543 only applies when
+# the schedule is saved again - old schedules kept never running. Remove the
+# test from the line and take its anchor date (--date=YYYYMMDD) as
+# Schedule.Since, so the schedule keeps its rhythm instead of running weekly.
+# ---------------------------------------------------------------------------
+LOGINF "Checking the backup schedule for the old 'every n weeks' crontab line...";
+{
+	my $cronfile = '/etc/cron.d/lbclonesd';
+	my @lines;
+	if ( open( my $in, '<', $cronfile ) ) {
+		@lines = <$in>;
+		close($in);
+	}
+	my $anchor;
+	my $changed = 0;
+	foreach (@lines) {
+		next if ( !/clone_sd_cron\.pl/ or !/\[\[/ );
+		($anchor) = /--date=(\d{8})/ if ( !$anchor );
+		$changed++ if ( s/\bloxberry\s+\[\[.*?\]\]\s*&&\s*/loxberry / );
+	}
+	if ( !$changed ) {
+		LOGOK "No old backup schedule found - nothing to do.";
+	} elsif ( open( my $out, '>', $cronfile ) ) {
+		print $out @lines;
+		close($out);
+		LOGOK "Old shell test removed from $cronfile - the scheduled backup runs again.";
+		if ($anchor) {
+			my $since = substr( $anchor, 0, 4 ) . '-' . substr( $anchor, 4, 2 ) . '-' . substr( $anchor, 6, 2 );
+			my $sobj = LoxBerry::JSON->new();
+			my $scfg = $sobj->open( filename => "$lbsconfigdir/general.json", lockexclusive => 1 );
+			if ( $scfg and !$scfg->{Backup}->{Schedule}->{Since} ) {
+				$scfg->{Backup}->{Schedule}->{Since} = $since;
+				$sobj->write();
+				LOGOK "Backup schedule anchor date set to $since.";
+			}
+			undef $sobj;
+		}
+	} else {
+		LOGERR "Could not write $cronfile: $! - please save the backup schedule again in the web interface.";
+		$errors++;
+	}
+}
+
+# ---------------------------------------------------------------------------
 # Keep the /dev/shm files of user loxberry (#1608)
 #
 # loxberry is a normal user for logind (uid >= 1000). With RemoveIPC=yes

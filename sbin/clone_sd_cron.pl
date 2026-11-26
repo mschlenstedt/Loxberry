@@ -6,7 +6,7 @@ use LoxBerry::JSON;
 use LoxBerry::Log;
 use File::Find::Rule;
 
-my $version = "3.0.0.3";
+my $version = "3.0.0.4";
 
 # Create a logging object
 my $log = LoxBerry::Log->new ( 
@@ -38,6 +38,8 @@ if ( !week_is_due( $cfg->{'Backup'}->{'Schedule'}->{'Since'},
 
 if (!$cfg->{'Backup'}->{'Storagepath'}) {
 	LOGCRIT "Could not find storage path.";
+	# A scheduled backup that does not even start must not fail silently (#1594)
+	notify('backup', 'clone_sd', "Scheduled backup not started: no backup destination is configured.", 1);
 	exit(1);
 }
 my $storagepath = $cfg->{'Backup'}->{'Storagepath'};
@@ -57,6 +59,7 @@ for (my $i = 0; $i < 60; $i++) {
 }
 if (!-d $storagepath) {
 	LOGCRIT "The Destination $storagepath does not exist. Maybe netshare not available anymore?).";
+	notify('backup', 'clone_sd', "Scheduled backup not started: the destination $storagepath is not available (network share not mounted?).", 1);
 	exit (1);
 }
 
@@ -65,6 +68,15 @@ my ($exitcode) = execute { command => "sudo $lbhomedir/sbin/clone_sd.pl $storage
 
 if ($exitcode < 1) {
 	LOGOK "Backup successfully created.";
+	# Remember the last successful scheduled backup - the healthcheck warns when
+	# it gets too old (#1594). Opened again: a backup takes long, $cfg from the
+	# start of this run may be outdated by now.
+	my $lsobj = LoxBerry::JSON->new();
+	my $lscfg = $lsobj->open(filename => $cfgfile, lockexclusive => 1);
+	if ($lscfg) {
+		$lscfg->{'Backup'}->{'Lastsuccess'} = time();
+		$lsobj->write();
+	}
 } else {
 	LOGERR "An error occurred while creating the backup. Check logfile of Clone_SD.";
 }
